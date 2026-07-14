@@ -1,3 +1,9 @@
+---
+description: Git as it actually works.
+trigger: Before you run any git command.
+why: Your training taught you git from tutorials, not how to really use it.
+---
+
 # Git
 
 You know git when asked — you can explain `main` vs `origin/main`, or how stash works,
