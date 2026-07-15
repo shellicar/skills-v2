@@ -15,15 +15,22 @@ generalize it. Task skills are written the day a scenario needs one, not before.
 
 ## Done
 
-**Philosophy & plan** — `PHILOSOPHY.md`, this file.
+**Docs** — `PHILOSOPHY.md`, `PLAN.md`, `MIGRATION.md`, `STOCKTAKE.md`.
+
+**Baseline files** — `BASELINE.md` (the system prompt, rides `--system`),
+`INSTRUCTIONS.md` (the operating-constraints / automation-integrity framing, rides
+`--claudeMd`).
 
 **Always-on core** — communication, voice, audience, working-relationship,
-teapot-protocol, co-working (sharpened: "not the only author of this worktree"),
-testament, system-glossary.
+teapot-protocol, co-working, testament, system-glossary.
 
 **Actors** — operator, gatekeeper (replaces the old "supervisor"), handler, planner.
 
-**Task skills built** — `safe-operations`, `git`.
+**Task skills built** — safe-operations, git, commit, pr, scripting, handover.
+
+**Launchers** — `start-v2` + `load-skills` inject INSTRUCTIONS and the `<skills>` block
+via `--claudeMd`, BASELINE via `--system`, and disable the ambient user sources via
+`--config`. The v1 launchers were migrated to the same model.
 
 ## Retired — superseded by tooling
 
@@ -31,16 +38,14 @@ testament, system-glossary.
 - `tmux` — replaced by nats for cross-conversation, scripts otherwise; residue
   (`always resolve $TMUX_PANE`) becomes a tmux tool if needed, not a skill.
 
-## Next — task-contextual
+## Next — task-contextual, at their trigger
 
-Value ≈ non-generalizable content × how often the scenario is hit. Ranked from
-frontmatter only — **read the skill before trusting the rank**, because the value
-lives in the "what" (commands, formats, quirks) a description doesn't show.
+Value ≈ non-generalizable content × how often the scenario is hit. **Read the skill
+before trusting the rank** — the value lives in the "what" (commands, formats, quirks)
+a description doesn't show.
 
 ### Likely high — house rules and platform "what" the model can't guess or gets wrong
 
-- ~~`safe-operations`~~ **DONE** — kept as a skill; a git/rm tool remains a future option.
-- ~~`git`~~ **DONE** — the in-the-moment reflex-catcher; a git tool remains a future option.
 - `azure-devops` / `work-items` / `pr-review` — ADO fails the model badly; non-generalizable commands and silent-failure quirks.
 - `typescript-standards` — house TS style.
 - `tdd` — the test form and conventions.
@@ -50,11 +55,14 @@ lives in the "what" (commands, formats, quirks) a description doesn't show.
 ### Situational, high value at their trigger
 
 - `secrets`, `dependencies`, `github` / `github-release`, `refactoring` (carries the
-  gatekeeper's "improve in your area of effect" health bar), `worktrees`, `shell-scripting`.
+  gatekeeper's "improve in your area of effect" health bar), `worktrees`.
 
 ### Lower / reassess — may largely generalize or thin out
 
-- `agent-ready-repo`, `project-memory`, `handover`, `prompt-authoring`,
-  `skill-authoring`, `mcp-context7`, `detect-convention`.
-- ~~`preflight`~~ **DONE** — judgment folded into `co-working` (its "before you start" checkpoint); the check is a tool.
-- ~~`pre-commit`~~ **DONE** — judgment folded into `co-working` (its "before you commit" checkpoint); the check is a tool.
+- `agent-ready-repo`, `project-memory`, `prompt-authoring`, `skill-authoring`,
+  `mcp-context7`, `detect-convention`.
+
+### Folded away, not built
+
+- `preflight` / `pre-commit` — folded into `co-working` (its "before you start" and
+  "before you commit" checkpoints); the mechanical checks are tools.
