@@ -1,8 +1,9 @@
 ---
 name: git
 description: |
-  Git as it actually works. Your training taught you git from tutorials, not how to
-  really use it — so load it before any git command.
+  WHAT: knowing how git actually works, so you use it right in the moment.
+  WHY: to help you master git.
+  TRIGGER WHEN: running any git command.
 ---
 
 # Git
@@ -34,6 +35,10 @@ that moment — use the knowledge you already have in the act, not just when que
 
 Branch names are plain English describing the work, with one of these prefixes:
 `docs/`, `fix/`, `hotfix/`, `security/`, `feature/`, `epic/`.
+
+**New commits only.** No amend, no rebase, nothing that needs a force push — they trade
+real risk for a tidiness the PR's squash-merge erases anyway. When histories diverge,
+merge; don't rebase.
 
 The destructive git commands — `reset --hard`, `checkout` / `restore` for state,
 `clean`, `git rm` — aren't yours to run. See `safe-operations`.

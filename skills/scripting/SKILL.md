@@ -1,3 +1,11 @@
+---
+name: scripting
+description: |
+  How the SC wants a script written: the right language for the job, built for the LLM
+  that will run it.
+  TRIGGER WHEN writing or modifying a script.
+---
+
 # Scripting
 
 Pick the tool to the job. The ladder, lightest first — climb when the work outgrows
