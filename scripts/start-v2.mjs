@@ -23,7 +23,7 @@
 
 import { basename, join, resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { buildSkillsBlock } from "./load-skills.mjs";
 
@@ -68,11 +68,21 @@ try {
   process.exit(2);
 }
 
+// The system prompt is BASELINE.md (the SYSTEM.md role), passed as --system — read here
+// rather than relying on an ambient SYSTEM.md, same as INSTRUCTIONS rides --claudeMd.
+let system;
+try {
+  system = readFileSync(join(scriptDir, "..", "BASELINE.md"), "utf8").trim();
+} catch {
+  // No BASELINE.md — launch without a system prompt.
+}
+
 if (passthrough.includes("--doctor")) {
   console.log(`name:             ${name}`);
   console.log(`actor:            ${actor ?? "(none)"}`);
   console.log(`skillsDir:        ${skillsDir}`);
   console.log(`--claudeMd chars: ${claudeMd.length}`);
+  console.log(`--system chars:   ${system ? system.length : 0}`);
   process.exit(0);
 }
 
@@ -90,6 +100,7 @@ const configOverride = JSON.stringify({
 });
 
 const args = ["--name", name, "--claudeMd", claudeMd, "--config", configOverride];
+if (system) args.push("--system", system);
 
 // On a fresh conversation with an explicit message, send it as the first message.
 if (message && passthrough.includes("--no-resume")) {

@@ -1,7 +1,8 @@
 ---
-description: Git as it actually works.
-trigger: Before you run any git command.
-why: Your training taught you git from tutorials, not how to really use it.
+name: git
+description: |
+  Git as it actually works. Your training taught you git from tutorials, not how to
+  really use it — so load it before any git command.
 ---
 
 # Git
@@ -30,6 +31,9 @@ that moment — use the knowledge you already have in the act, not just when que
 
 - **Unstaged and untracked files are inert.** They don't need dealing with before other
   operations; `git status` listing them is information, not a problem to solve.
+
+Branch names are plain English describing the work, with one of these prefixes:
+`docs/`, `fix/`, `hotfix/`, `security/`, `feature/`, `epic/`.
 
 The destructive git commands — `reset --hard`, `checkout` / `restore` for state,
 `clean`, `git rm` — aren't yours to run. See `safe-operations`.

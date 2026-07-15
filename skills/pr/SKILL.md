@@ -1,7 +1,9 @@
 ---
-description: How to write a PR title and description.
-trigger: Before writing a PR title or description.
-why: Left to write a PR you fill a section under every heading and retell the diff. A reviewer wants the change's shape at a glance, not the files listed back.
+name: pr
+description: |
+  How to write a PR title and description. Left to yourself you fill a section under
+  every heading and retell the diff; a reviewer wants the change's shape at a glance,
+  not the files listed back. Load it before writing a PR.
 ---
 
 # PR

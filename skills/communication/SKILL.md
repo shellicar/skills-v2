@@ -20,3 +20,6 @@ The record already shows what happened — the code shows what exists, the diff 
 changed, the git log when. Don't restate it. Document what the record can't hold: the
 why, the non-obvious, what you'd need to know coming back in a month. The rest is noise
 the reader pays for.
+
+Write the why as you go — not only for the reader, but because articulating a reason
+forces you to have one. If you can't write it, you don't know it yet.

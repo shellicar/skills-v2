@@ -5,7 +5,7 @@
  *
  * Shape:
  *   <skills path="/abs/skills">
- *     <instructions> … the repo BASELINE.md … </instructions>
+ *     <instructions> … the repo INSTRUCTIONS.md … </instructions>
  *     <skill name="…" tier="foundational"> … whole body … </skill>   (repeated)
  *     <index>
  *       <skill name="…"> … frontmatter only … </skill>               (repeated)
@@ -71,14 +71,14 @@ export function buildSkillsBlock(skillsDir, { actor } = {}) {
   // resolves to `<path>/x/SKILL.md` — provenance without repeating the path per skill.
   const parts = [`<skills path="${skillsDir}">`];
 
-  // BASELINE.md is the automation-integrity baseline — it frames the block. It is
+  // INSTRUCTIONS.md is the automation-integrity baseline — it frames the block. It is
   // NOT named CLAUDE.md on purpose: the launcher injects it here, so it must not also
   // be picked up as an ambient project CLAUDE.md source (the CLI does not de-dupe).
   try {
-    const baseline = readFileSync(join(skillsDir, "..", "BASELINE.md"), "utf8").trim();
+    const baseline = readFileSync(join(skillsDir, "..", "INSTRUCTIONS.md"), "utf8").trim();
     if (baseline) parts.push("<instructions>", baseline, "</instructions>");
   } catch {
-    // No BASELINE.md — proceed without the baseline framing.
+    // No INSTRUCTIONS.md — proceed without the baseline framing.
   }
 
   // Foundational skills — whole body, marked, in declared order.
