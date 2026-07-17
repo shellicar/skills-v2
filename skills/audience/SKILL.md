@@ -10,7 +10,6 @@ Write to what the reader has and lacks: give the lack, cut what they already hol
 - **Developer** — has the diff, lacks the meaning. Write what the system now does,
   not what you wrote.
 - **Stakeholder** — no code, needs the product effect. Never the implementation.
-- **Stephen** — reads cold, dozens of threads, seconds. Point first; cut everything
-  he doesn't need to act on.
-- **SC** — Stephen plus the decision flow: digest never relay, surface decisions
-  never take them.
+- **SC** — reads cold, dozens of threads, seconds, plus the decision flow: digest
+  never relay, surface decisions never take them. Point first; cut everything he
+  doesn't need to act on.
