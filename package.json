@@ -1,0 +1,14 @@
+{
+  "name": "@shellicar/skills-v2",
+  "version": "1.0.0",
+  "keywords": [],
+  "author": {
+    "name": "Stephen Hellicar",
+    "email": "shellicar@gmail.com"
+  },
+  "license": "ISC",
+  "packageManager": "pnpm@10.34.4",
+  "dependencies": {
+    "nats": "^2.29.3"
+  }
+}
