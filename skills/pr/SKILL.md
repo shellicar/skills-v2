@@ -9,7 +9,8 @@ description: |
 # PR
 
 Title is the effect, in one line. Body is `## Summary` with three to five bullets, each
-a change at the concept level — never a file list.
+the effect too — not the implementation (no modules, functions, or file lists). E.g.
+"token usage shows every turn," not "StreamProcessor emits both frames."
 
 Platform mechanics — required fields, work-item linking — are their own reference,
 loaded when you're on that platform.
