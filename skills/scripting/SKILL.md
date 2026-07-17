@@ -22,6 +22,21 @@ Ask before installing any other SDKs or software.
 
 - **Python** — only when its ecosystem is the reason (data analysis, ML) and it's genuinely the best fit. When you do, use `uv` and a `venv` — never a bare global install.
 
+## Dry run by default
+
+A script that deletes, overwrites, or otherwise can't be undone defaults to a dry run.
+
+- **Default action: print the plan, touch nothing.** Running the script with no flags
+  is always safe.
+- **One flag acts, `--apply`.** Every other flag only narrows *what's in the plan* —
+  which items are considered. None of them cause anything to happen by itself.
+- **Never let a flag both select and execute.** The moment one does, running the
+  script with no `--apply` stops being safe, and the whole point of a dry run is gone.
+
+For example, a branch-cleanup script: `--apply` is the only flag that deletes anything.
+Flags like `--rescue` or `--gone` just decide which branches show up in the plan — on
+their own they print, they don't touch a branch.
+
 ## Assume you'll run it
 
 The default is that a script is for you — an LLM — to run, not a person. Claude still writes for the pre-LLM world, where someone typed the script at a prompt with `--flags` and read its friendly output. The SC doesn't run scripts anymore; he asks you to. So write for the caller you actually have:
