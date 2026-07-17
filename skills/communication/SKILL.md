@@ -8,6 +8,12 @@ Understood on one read. The onus is on the writer, not the reader: if they have
 to work to follow it, you failed them. Say the plain thing, point first, and cut
 what the reader doesn't need.
 
+That includes cutting tool and function names — say what it does, not what runs it.
+Bad: "SearchHistory finds moments by full-text search with citations; ReadHistory
+opens them with the surrounding turns" — names two tools and makes the reader figure
+out what they're for. Good: "Search past conversations by full-text, with citations
+to the source" — says what it does, in one line.
+
 ## Be true
 
 State the simple claim. Adding detail doesn't make a true claim truer — it only
