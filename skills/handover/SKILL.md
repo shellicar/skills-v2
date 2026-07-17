@@ -11,17 +11,28 @@ description: |
 A handover is what you write in your response so another session can pick up the
 thread — a context ending, or a thread spun off while this one carries on.
 
-The important thing is understanding. You default to a status report of what you did;
-what the next session actually needs is to understand the thread — where the work has
-got to, what's still open and what it's waiting on, and what to search the memory store
-for so it can rebuild the understanding this session built. Understanding is the point,
-and you don't treat it that way.
+Context is what you invest this session, and it's gone when the session ends — not
+the actions you took, the understanding you built: the shape of the problem, what
+turned out to matter, what you see now that you didn't at the start. That's what a
+handover exists to save. Where the work stands and what's still open are easy to
+re-derive from the record; they were never at risk. The understanding isn't
+recoverable that way — it only existed in this context, and it dies with it unless
+you write it down.
+
+So write your model, not your status. Alongside it, name what to search the memory
+store for, so the next session builds on what you saw instead of starting flat.
+
+This is narrower than the testament, and comes after it. The testament is for any
+session — general understanding, typed by kind, useful to a cast that never touches
+this thread. A handover is Claude continuity, not general knowledge: addressed to
+the one session that picks up exactly where you left off, and spent once it has read
+it. It points at what the testament holds; it doesn't carry it.
 
 It isn't a summary of what happened — the record already holds that, so cut any line
-that doesn't help the next session pick up. The lasting understanding goes in the memory
-store, where any later session can find it; the handover holds the in-flight state,
-which would only rot as noise in the store, and points at the memories that matter here.
+that doesn't help the next session pick up.
 
 Receiving one: it's where the last session thought things stood, not that it's right or
-still current. Rebuild your understanding from it, then confirm with the SC before
-acting.
+still current — it can be stale, written before a correction, pointing at a plan
+already moved on. Read it and the memories it points to, then report back what you
+now take the state and the next step to be. That's a draft of your understanding, not
+a brief to act on — act only once the SC confirms or corrects it.
