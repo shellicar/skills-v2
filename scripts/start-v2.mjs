@@ -2,9 +2,9 @@
 /**
  * Start a v2 Claude session — claude-sdk-cli with the v2 skills injected.
  *
- * The skill set is built by load-skills.mjs: the foundational skills whole, every
- * other skill as frontmatter only. It rides --claudeMd, the same way start-claude
- * delivers its set — cached context, no turn fired, sent on every launch.
+ * load-skills.mjs builds the foundational skills whole; they ride --claudeMd. The
+ * contextual skills are resolved by the CLI's Skill tool via the skillDirs config,
+ * which injects their frontmatter and loads bodies on demand.
  *
  *   start-v2.mjs                          # CLI default resume
  *   start-v2.mjs --no-resume              # force a brand-new conversation
@@ -13,7 +13,7 @@
  *   start-v2.mjs --model claude-...        # override the default model
  *   start-v2.mjs --doctor                 # print what would be sent, then exit
  *
- * --name is `<actor|claude>-v2-<cwd basename>`. A leading `--` is stripped and
+ * A leading `--` is stripped and
  * everything else is forwarded verbatim. The session runs in the current pane and
  * exits with claude-sdk-cli's status. Exit 2 if a required skill is missing.
  *
@@ -21,7 +21,7 @@
  * session cannot launch another. Run it yourself.
  */
 
-import { basename, join, resolve, dirname } from "node:path";
+import { join, resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { existsSync, readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
@@ -58,11 +58,9 @@ if (mi >= 0) {
   passthrough.splice(mi, 2);
 }
 
-const name = `${actor ?? "claude"}-v2-${basename(process.cwd())}`;
-
 let claudeMd;
 try {
-  claudeMd = buildSkillsBlock(skillsDir, actor ? { actor } : {});
+  claudeMd = buildSkillsBlock(skillsDir, { actor, catalogue: false });
 } catch (err) {
   console.error(`start-v2: ${err.message}`);
   process.exit(2);
@@ -78,11 +76,11 @@ try {
 }
 
 if (passthrough.includes("--doctor")) {
-  console.log(`name:             ${name}`);
   console.log(`actor:            ${actor ?? "(none)"}`);
   console.log(`skillsDir:        ${skillsDir}`);
   console.log(`--claudeMd chars: ${claudeMd.length}`);
   console.log(`--system chars:   ${system ? system.length : 0}`);
+  console.log(`skillDirs:        [${skillsDir}]`);
   process.exit(0);
 }
 
@@ -90,16 +88,18 @@ if (passthrough.includes("--doctor")) {
 // is unavailable it fails open — the guard is a safety net, not a gate.
 assertNotUnderClaude();
 
-// Disable the ambient user CLAUDE.md / system-prompt sources: v2 injects its own
-// baseline via --claudeMd, so the v1 user files must not also load. Project and local
-// sources stay on. Short-term, until the CLI defaults these off. Full sources objects
-// so the override is robust whether --config deep-merges or replaces.
+// skillDirs points the CLI's Skill tool at the contextual skills — it injects their
+// frontmatter and loads bodies on demand. Foundational skills ride --claudeMd whole,
+// so they are not tool-resolved. The user CLAUDE.md / SYSTEM.md sources are disabled:
+// v2 injects its own baseline, so the v1 user files must not also load. Project and
+// local stay on. Full sources objects so the override is robust to merge or replace.
 const configOverride = JSON.stringify({
+  skillDirs: [skillsDir],
   claudeMd: { enabled: true, sources: { user: false, project: true, projectClaude: true, local: true } },
   systemPrompt: { enabled: true, sources: { user: false, project: true, projectClaude: true, local: true } },
 });
 
-const args = ["--name", name, "--claudeMd", claudeMd, "--config", configOverride];
+const args = ["--claudeMd", claudeMd, "--config", configOverride];
 if (system) args.push("--system", system);
 
 // On a fresh conversation with an explicit message, send it as the first message.

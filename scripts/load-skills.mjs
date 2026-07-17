@@ -54,10 +54,12 @@ function split(content) {
 
 /**
  * Build the `<skills>` block for a skills directory. Foundational skills (plus an
- * optional actor) load whole; every other skill contributes frontmatter only.
- * Throws if a skill that must load whole is missing.
+ * optional actor) load whole. When `catalogue` is true (default) every other skill
+ * contributes frontmatter only, as an `<index>`; pass `catalogue: false` when the
+ * Skill tool (via skillDirs) handles that discovery instead. Throws if a skill that
+ * must load whole is missing.
  */
-export function buildSkillsBlock(skillsDir, { actor } = {}) {
+export function buildSkillsBlock(skillsDir, { actor, catalogue = true } = {}) {
   const read = (name) => {
     try {
       return readFileSync(join(skillsDir, name, "SKILL.md"), "utf8");
@@ -88,27 +90,31 @@ export function buildSkillsBlock(skillsDir, { actor } = {}) {
     parts.push(`<skill name="${name}" tier="foundational">`, split(content).body, "</skill>");
   }
 
-  // Index of every other skill — frontmatter only, so a session knows it exists
-  // and when to load it. No frontmatter yet means just the name.
-  const others = readdirSync(skillsDir, { withFileTypes: true })
-    .filter((d) => d.isDirectory())
-    .map((d) => d.name)
-    .filter((name) => !whole.includes(name))
-    .sort();
+  // The catalogue of the other skills — frontmatter only — is built here only when the
+  // Skill tool isn't handling discovery. With skillDirs set, the tool injects the
+  // frontmatter itself, so start-v2 passes catalogue: false and this block is skipped.
+  if (catalogue) {
+    const others = readdirSync(skillsDir, { withFileTypes: true })
+      .filter((d) => d.isDirectory())
+      .map((d) => d.name)
+      .filter((name) => !whole.includes(name))
+      .sort();
 
-  parts.push("<index>");
-  parts.push("The further skills this session carries. Load a skill's body when its trigger fires.");
-  for (const name of others) {
-    const content = read(name);
-    if (content === null) continue;
-    const { frontmatter } = split(content);
-    if (frontmatter) {
-      parts.push(`<skill name="${name}">`, frontmatter, "</skill>");
-    } else {
-      parts.push(`<skill name="${name}" />`);
+    parts.push("<index>");
+    parts.push("The further skills this session carries. Load a skill's body when its trigger fires.");
+    for (const name of others) {
+      const content = read(name);
+      if (content === null) continue;
+      const { frontmatter } = split(content);
+      if (frontmatter) {
+        parts.push(`<skill name="${name}">`, frontmatter, "</skill>");
+      } else {
+        parts.push(`<skill name="${name}" />`);
+      }
     }
+    parts.push("</index>");
   }
-  parts.push("</index>");
+
   parts.push("</skills>");
 
   return parts.join("\n") + "\n";
