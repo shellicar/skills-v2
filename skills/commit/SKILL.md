@@ -20,3 +20,5 @@ function here; you don't run the tooling that reads those tokens.
 When the SC says commit, commit what's staged. It's his repo, his log, his commit —
 don't advise splitting it, don't flag "unrelated changes," don't propose separate
 commits. Write the line and commit.
+
+Creating a PR is a separate act — load the `pr` skill when you do.

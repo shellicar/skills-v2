@@ -36,3 +36,18 @@ still current — it can be stale, written before a correction, pointing at a pl
 already moved on. Read it and the memories it points to, then report back what you
 now take the state and the next step to be. That's a draft of your understanding, not
 a brief to act on — act only once the SC confirms or corrects it.
+
+## Writing the handover
+
+The SC copies only what's between two `---` lines, on their own, into the next
+session — anything outside them never arrives. Everything meant for the next session
+must be inside them:
+
+---
+(the handover itself)
+---
+
+The closing `---` is the last line you write, full stop — no "Done," no sign-off, no
+summary after it. Writing the opening `---` and not the closing one is the recurring
+failure: the handover ends up half outside the fence and the SC never receives it.
+Before you send the response, check the last line is `---`.
