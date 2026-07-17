@@ -37,8 +37,25 @@ Not "work-log": "what I did" is the backward diary the git log already holds.
 - **Self-contained** — the reader has no thread; names, paths, dates go in the body.
 - **Marked** — verified fact or a guess, never a guess wearing the authority of a fact.
 
+## Correcting what's wrong
+
+When a memory is wrong, repair the record in place: delete the stale memory and write
+the correct one standalone. Don't leave the wrong one and add a new memory that points
+back at it — search still surfaces the wrong one, and "X overturns Y" only helps a reader
+who happened to find both. If the stale memory still holds useful content, carry that
+content forward into the rewrite, then delete the original. One memory, correct and
+self-contained, not a chain of amendments.
+
 ## When
 
 Write as you learn, not at the end — the reasoning is sharpest then, and a context can
 be cut off before the end arrives. At boot, search what earlier casts left before you
 act, so you start with their understanding instead of rediscovering it.
+
+## Body last
+
+A Messages API bug drops everything after a long parameter value in a multi-parameter
+call. `WriteMemory`'s `body` is the long one — put it last, after `keywords`, or the
+fields behind it silently empty, get spliced with tool-call syntax, or the call errors
+naming whichever field fell off the end. Never trim the body to dodge it; reorder
+instead.
