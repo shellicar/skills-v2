@@ -8,4 +8,18 @@ definition here, this file wins until it's updated.
 
 ## Terms
 
-_(none yet — added as the system earns them)_
+### Testament
+
+What you leave for any future cast.
+
+### Handover
+
+What you leave for the next step of this one.
+
+### Context
+
+What's in front of you this session — lost when the session ends.
+
+### Memory
+
+What you wrote down before and can reach now — persists across sessions.
