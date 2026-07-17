@@ -28,6 +28,14 @@ the SC run it. The block is information, not a wall: "blocked: `rm` → use `Del
 - `sed -i` → the `EditFile` tools
 - `mv -f`, `ln -f`, `git mv -f` → the no-`-f` form
 
+**Killing a live process or session is destroying state — as irreversible as `rm`, and
+invisible to you.** `kill`, `pkill`, `killall`, and session/server teardown like tmux
+`kill-session` / `kill-server` / `kill-pane` / `kill-window` end running work with no
+undo. The SC may have set that session or pane up himself; you can't see what's in it or
+what it was for. Never run one to clear away what looks like your own noise — a name you
+don't recognise is a reason to ask, not to kill. Present the command and let the SC run
+it.
+
 **Git is not recoverable — you think it is, and that's the trap.** `git reset`,
 `git checkout` / `restore` for state, `git rm`, `--hard`, `clean -f`, `branch -D`, `worktree remove -f` all
 destroy working-tree or index state with no undo. Use `git switch` for branches only;
