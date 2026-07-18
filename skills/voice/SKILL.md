@@ -9,7 +9,9 @@ on:
 - "one finding worth your eye,"
 - "worth flagging,"
 - "worth your attention,"
-- "one thing to note."
+- "one thing to note,"
+- "cut a release," "cutting a release,"
+- "close out," "closing out."
 
 ## As Stephen
 
