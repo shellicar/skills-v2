@@ -33,21 +33,45 @@ const tipSubject =
     : `conv.v1.${input.conv}.changes`;
 const watchSubject =
   version === "v2" ? `conv.v2.${input.conv}.changes.>` : `conv.v1.${input.conv}.changes`;
-const saySubject = `conv.${version}.${input.conv}.requests.say`;
+const saySubject =
+  version === "v2"
+    ? `conv.v2.${input.conv}.requests.say`
+    : `conv.v1.${input.conv}.requests`;
 
 const nc = await connect({ servers: url });
 const jc = JSONCodec<unknown>();
 try {
   const jsm = await nc.jetstreamManager();
 
-  // The premise: a `say` is anchored to a known tip (the last committed message
-  // id), null for an empty conversation. A stale tip is rejected, not applied.
+  // The premise: a `say` is anchored to a known tip, null for an empty
+  // conversation. A stale tip is rejected, not applied.
   let tip: string | null = null;
   try {
-    const last = await jsm.streams.getMessage(stream, {
-      last_by_subj: tipSubject,
-    });
-    tip = (jc.decode(last.data) as Message).id ?? null;
+    // Empty-guard first: an ordered consumer over a subject with no messages
+    // would block forever (same reason read.mts guards it).
+    await jsm.streams.getMessage(stream, { last_by_subj: tipSubject });
+    if (version === "v2") {
+      const last = await jsm.streams.getMessage(stream, { last_by_subj: tipSubject });
+      tip = (jc.decode(last.data) as Message).id ?? null;
+    } else {
+      // v1's tip is NOT always the last message: a `tip_moved` event (rewind /
+      // fast-forward) can move it with no new message, and a `revision` never
+      // moves it at all (conversation-spec.md "tip_moved" / "Revision and tip
+      // movement are two orthogonal mechanisms"). Fold the whole change
+      // stream, same as the CLI's own `Conversation` does, instead of trusting
+      // whatever the single last event happens to be.
+      const js = nc.jetstream();
+      const tipOpts = consumerOpts();
+      tipOpts.orderedConsumer();
+      tipOpts.filterSubject(tipSubject);
+      const tipSub = await js.subscribe(tipSubject, tipOpts);
+      for await (const m of tipSub) {
+        const decoded = jc.decode(m.data) as { type?: string; id?: string; to?: string };
+        if (decoded.type === "message") tip = decoded.id ?? tip;
+        else if (decoded.type === "tip_moved") tip = decoded.to ?? tip;
+        if (m.info.pending === 0) break;
+      }
+    }
   } catch {
     tip = null;
   }
@@ -55,7 +79,10 @@ try {
   // Subscribe to the change stream BEFORE sending, so the reply cannot be missed.
   const sub = nc.subscribe(watchSubject);
 
+  // v1's subject is flat (no `.say` leaf), so the body carries the type; v2's
+  // subject leaf already says it, so the body doesn't repeat it.
   const say = {
+    ...(version === "v1" ? { type: "say" } : {}),
     ts: new Date().toISOString(),
     from: { kind: "human" },
     text: input.text,
