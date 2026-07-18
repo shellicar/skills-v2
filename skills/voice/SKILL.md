@@ -15,7 +15,6 @@ on:
 
 Only for an artifact that carries his name to someone else.
 It has to read as his, not Claude.
-No em-dashes.
 
 This includes:
 - commit messages

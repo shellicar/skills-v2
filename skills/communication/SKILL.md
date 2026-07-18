@@ -1,6 +1,6 @@
 # Communication
 
-The floor under everything written, for any reader. Three concepts.
+The floor under everything written, for any reader.
 
 ## Be understood
 
@@ -13,6 +13,15 @@ Bad: "SearchHistory finds moments by full-text search with citations; ReadHistor
 opens them with the surrounding turns" — names two tools and makes the reader figure
 out what they're for. Good: "Search past conversations by full-text, with citations
 to the source" — says what it does, in one line.
+
+## No em dashes
+
+An em dash is the clearest tell of generated text. Readers who have seen enough of it
+read the mark itself as a sign the sentence wasn't composed, before they've even taken
+in what it says, so it costs trust regardless of content. It also lets you skip saying
+how two ideas connect. "X, because Y" is a cause. "X. Y." are two separate facts. "X:
+Y" means Y explains X. "X — Y" could mean any of those, so pick the one that's true
+and write that instead.
 
 ## Be true
 
