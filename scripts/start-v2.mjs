@@ -109,7 +109,23 @@ if (message && passthrough.includes("--no-resume")) {
 
 args.push(...passthrough);
 
-const result = spawnSync("claude-sdk-cli", args, { stdio: "inherit" });
+// CLAUDE_SDK_CLI_BIN overrides which entry point runs, e.g. a local working-tree build
+// instead of the globally installed claude-sdk-cli. A .js path runs through node (dist/main.js
+// has no shebang); anything else (the launcher.mjs, which is executable, or a plain binary)
+// spawns directly.
+const overrideBin = process.env.CLAUDE_SDK_CLI_BIN;
+let program = "claude-sdk-cli";
+let spawnArgs = args;
+if (overrideBin) {
+  if (overrideBin.endsWith(".js")) {
+    program = process.execPath;
+    spawnArgs = [overrideBin, ...args];
+  } else {
+    program = overrideBin;
+  }
+}
+
+const result = spawnSync(program, spawnArgs, { stdio: "inherit" });
 process.exit(result.status ?? 1);
 
 function assertNotUnderClaude() {
