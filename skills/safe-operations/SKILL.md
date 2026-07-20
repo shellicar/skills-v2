@@ -1,11 +1,3 @@
----
-name: safe-operations
-description: |
-  WHAT: the destructive commands you don't run on the SC's machine.
-  WHY: you reach for a command and run it without pausing to ask "should I?"; there's no undo, and nothing else stops you.
-  TRIGGER WHEN: executing any command.
----
-
 # Safe operations
 
 Claude does not run destructive commands on the SC's machine — the ones whose effects

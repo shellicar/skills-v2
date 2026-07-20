@@ -42,6 +42,7 @@ export const FOUNDATIONAL = [
   "co-working",
   "testament",
   "system-glossary",
+  "safe-operations",
 ];
 
 // Split a SKILL.md into { frontmatter, body }. Frontmatter is the block between
