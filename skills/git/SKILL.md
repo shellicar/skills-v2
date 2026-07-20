@@ -33,6 +33,10 @@ that moment — use the knowledge you already have in the act, not just when que
 - **Unstaged and untracked files are inert.** They don't need dealing with before other
   operations; `git status` listing them is information, not a problem to solve.
 
+- **Never `git add -A` (or `git add .`).** A working tree holds files that aren't your
+  change — someone else's in-progress work, stray artifacts. Stage what you changed, by
+  name.
+
 Branch names are plain English describing the work, with one of these prefixes:
 `docs/`, `fix/`, `hotfix/`, `security/`, `feature/`, `epic/`.
 
