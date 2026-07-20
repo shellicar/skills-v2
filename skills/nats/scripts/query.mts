@@ -14,7 +14,7 @@
 
 import { JSONCodec, connect } from "nats";
 
-type Input = { conv: string; text: string; wait?: number; v2?: boolean };
+type Input = { conv: string; text: string; wait?: number; v1?: boolean; v2?: boolean };
 type Block = { type?: string; text?: string; name?: string; input?: unknown };
 type Message = { type?: string; id?: string; role?: string; ts?: string; content?: Block[] };
 type Ack = { accepted?: boolean; id?: string; rejected?: boolean; reason?: string };
@@ -25,7 +25,13 @@ const stream = process.env.NATS_STREAM ?? "conv-approval";
 
 const input = parseInput();
 const waitMs = (input.wait ?? 180) * 1000;
-// Default to v1 (what the current CLI publishes); pass { "v2": true } for the v2 subject shape.
+// Version must be explicit — pass { "v1": true } or { "v2": true }. No default:
+// a version mismatch gets no reply with nothing pointing at the cause, so the
+// caller must state which subject shape the conversation uses.
+if (!input.v1 && !input.v2) {
+  console.error('version required: pass { "v1": true } or { "v2": true }');
+  process.exit(2);
+}
 const version = input.v2 ? "v2" : "v1";
 const tipSubject =
   version === "v2"
@@ -61,10 +67,8 @@ try {
       // stream, same as the CLI's own `Conversation` does, instead of trusting
       // whatever the single last event happens to be.
       const js = nc.jetstream();
-      const tipOpts = consumerOpts();
-      tipOpts.orderedConsumer();
-      tipOpts.filterSubject(tipSubject);
-      const tipSub = await js.subscribe(tipSubject, tipOpts);
+      const consumer = await js.consumers.get(stream, { filterSubjects: [tipSubject] });
+      const tipSub = await consumer.consume();
       for await (const m of tipSub) {
         const decoded = jc.decode(m.data) as { type?: string; id?: string; to?: string };
         if (decoded.type === "message") tip = decoded.id ?? tip;
@@ -88,6 +92,7 @@ try {
     text: input.text,
     precondition: { tip },
   };
+  process.stderr.write(`[debug] saySubject=${saySubject} watchSubject=${watchSubject} tip=${tip}\n`);
   let ack: Ack;
   try {
     const reply = await nc.request(
@@ -96,7 +101,8 @@ try {
       { timeout: 5000 },
     );
     ack = jc.decode(reply.data) as Ack;
-  } catch {
+  } catch (err) {
+    process.stderr.write(`[debug] request error: ${err instanceof Error ? err.stack ?? err.message : String(err)}\n`);
     process.stderr.write(
       "no servicer replied to the say (is an agent attached to this conversation?)\n",
     );

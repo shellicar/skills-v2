@@ -10,5 +10,8 @@
   "packageManager": "pnpm@10.34.4",
   "dependencies": {
     "nats": "^2.29.3"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.1"
   }
 }

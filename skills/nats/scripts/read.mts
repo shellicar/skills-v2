@@ -20,7 +20,13 @@ const url = process.env.NATS_URL ?? "nats://127.0.0.1:4222";
 const stream = process.env.NATS_STREAM ?? "conv-approval";
 
 const input = parseInput();
-// Default to v1 (what the current CLI publishes); pass { "v2": true } for the v2 subject shape.
+// Version must be explicit — pass { "v1": true } or { "v2": true }. No default:
+// a version mismatch reads silently empty (no messages, no cause), so the
+// caller must state which subject shape the conversation uses.
+if (!input.v1 && !input.v2) {
+  console.error('version required: pass { "v1": true } or { "v2": true }');
+  process.exit(2);
+}
 const version = input.v2 ? "v2" : "v1";
 const subject =
   version === "v2"

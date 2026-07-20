@@ -15,9 +15,18 @@ stderr is progress, a non-zero exit means it did not get what it asked for.
 Run with Node 22+ (it runs `.mts` directly, no build):
 
 ```sh
-node ~/repos/shellicar/skills-v2/nats/scripts/read.mts  '{"conv":"<uuid>","n":20}'
-node ~/repos/shellicar/skills-v2/nats/scripts/query.mts '{"conv":"<uuid>","text":"...","wait":180}'
+node ~/repos/shellicar/skills-v2/skills/nats/scripts/read.mts  '{"conv":"<uuid>","n":20,"v2":true}'
+node ~/repos/shellicar/skills-v2/skills/nats/scripts/query.mts '{"conv":"<uuid>","text":"...","wait":180,"v2":true}'
+# v1 conversation (what an unbridged claude-sdk-cli publishes):
+node ~/repos/shellicar/skills-v2/skills/nats/scripts/read.mts  '{"conv":"<uuid>","n":20,"v1":true}'
 ```
+
+**The version is required — pass `"v1": true` or `"v2": true`, no default.** v1
+is the `conv.v1.<uuid>.changes` shape an unbridged claude-sdk-cli publishes; v2
+is the bridge shape (`conv.v2.<uuid>.changes.message`), which new conversations
+use. The version is required because a mismatch fails silently — `read` reports
+"no messages", `query` gets no reply — with nothing pointing at the cause;
+making the caller state it turns a silent empty read into an up-front choice.
 
 **`conv` is the full conversation uuid.** The v2 subject keys on the whole id;
 a truncated rail id (the 8-char display form) will not match. Get a full id from
