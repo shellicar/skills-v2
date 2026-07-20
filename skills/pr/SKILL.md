@@ -8,11 +8,10 @@ description: |
 
 # PR
 
-**Before running `gh pr create` (or the platform equivalent), always ask the SC's
-permission first.** "Commit this" or "push this" is a commit or a push, not permission
-to open a PR — ask separately for that.
-
-Permission covers that one PR only. Before creating another, ask again.
+Every PR tool call is approved: creation always opens as a draft and carries its own
+approval gate, so no separate ask is needed first. Since each call is already gated,
+batch what you can — e.g. create and then immediately edit/label in the same turn —
+rather than pausing between them.
 
 Title is the effect, in one line. Body is `## Summary` with three to five bullets, each
 the effect too — not the implementation (no modules, functions, or file lists). E.g.
@@ -32,6 +31,12 @@ the diff to learn what the PR does.
 Bad: "Create ENV_PASSTHROUGH Set and buildSandboxEnv() function that filters
 process.env." Good: "Add env scrubbing for sandbox." The bad one describes the code;
 the good one describes the effect.
+
+Even when a fix has several moving parts, each bullet stays one line. Don't narrate the
+investigation (what you tried, what you ruled out, the exact error text) — that's for
+the commit history and this conversation, not the PR body. State the effect of each
+change and stop; if you're explaining *why* something failed in more than a clause,
+it's too long.
 
 Platform mechanics — required fields, work-item linking — are their own reference,
 loaded when you're on that platform.
