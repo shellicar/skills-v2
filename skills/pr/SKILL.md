@@ -8,10 +8,13 @@ description: |
 
 # PR
 
-Every PR tool call is approved: creation always opens as a draft and carries its own
-approval gate, so no separate ask is needed first. Since each call is already gated,
-batch what you can — e.g. create and then immediately edit/label in the same turn —
-rather than pausing between them.
+Create with `GitHub_PullRequest_Create` / `AzureDevOps_PullRequest_Create`, never the
+bare `gh pr create` / `az repos pr create` CLI — the tool always opens as a draft and
+carries its own approval gate, so no separate ask is needed first. Same for editing
+(`_Edit`), commenting (`_Comment`), marking ready (`_Ready`), and auto-merge
+(`_AutoMerge`): the tool is the gate, the bare CLI isn't. Since each call is already
+gated, batch what you can — e.g. create and then immediately edit/label in the same
+turn — rather than pausing between them.
 
 Title is the effect, in one line. Body is `## Summary` with three to five bullets, each
 the effect too — not the implementation (no modules, functions, or file lists). E.g.
@@ -40,3 +43,9 @@ it's too long.
 
 Platform mechanics — required fields, work-item linking — are their own reference,
 loaded when you're on that platform.
+
+## Monitoring
+
+Opening the PR is not the end of the task: stay on it until CI actually settles and
+report the result, rather than opening it and moving on. The mechanics differ per
+platform — load `pr-github` on GitHub, `pr-ado` on Azure DevOps.
