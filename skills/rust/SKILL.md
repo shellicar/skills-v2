@@ -1,17 +1,22 @@
 ---
 name: rust
 description: |
-  WHAT: how the general testing principles look in Rust's own syntax.
-  WHY: the principle in `testing` is language-agnostic; the syntax to express it isn't.
-  TRIGGER WHEN: writing or modifying a Rust test.
+  WHAT: how Rust is written here. Currently just testing syntax; general conventions land as they're decided.
+  WHY: without it, generated code has no house style to belong to.
+  TRIGGER WHEN: writing or modifying Rust.
 ---
 
 # Rust
 
-Composes onto `testing` — read that first. This is the Rust-specific syntax for the
-same principles, not a separate set of rules.
+No general Rust conventions have been decided yet — only testing syntax, below. Add
+sections here as they're settled, the same shape as `typescript`.
 
-## `#[test]` is the grouping mechanism
+## Testing
+
+Composes onto `testing` — read that first. This section is the Rust-specific syntax
+for those principles, not a separate set of rules.
+
+### `#[test]` is the grouping mechanism
 
 Where TypeScript nests `it` inside `describe`, Rust groups with modules and a `#[test]`
 attribute per case:
@@ -26,7 +31,7 @@ mod format_phone_e164 {
 }
 ```
 
-## The expected/actual pattern with `assert_eq!`
+### The expected/actual pattern with `assert_eq!`
 
 ```rust
 #[test]
@@ -40,12 +45,11 @@ fn formats_australian_mobile_to_e164() {
 ```
 
 `assert_eq!` reports both sides as "left" and "right" on failure regardless of whether
-`expected` is named, so naming it is purely for the reader scanning the test, not for
-the failure output — the same justification as the general principle. Idiomatic Rust
-often skips naming `expected` for a bare literal; name it once it's assembled from
-pieces already in scope.
+`expected` is named, so naming it is purely for the shape of the test, not the failure
+output — the same reasoning as `testing`. Name both every time, including a bare
+literal like this one.
 
-## There is no `.toThrow()`
+### There is no `.toThrow()`
 
 TypeScript wraps a call in a closure and asserts on invocation. Rust doesn't have that
 shape — assert on a `Result` directly:

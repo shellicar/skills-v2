@@ -1,76 +1,87 @@
 ---
 name: typescript
 description: |
-  WHAT: how the general testing principles look in TypeScript's own syntax.
-  WHY: the principle in `testing` is language-agnostic; the syntax to express it isn't.
-  TRIGGER WHEN: writing or modifying a TypeScript test.
+  WHAT: how TypeScript is written here — the type system, `any`, refactoring, temporal naming, DI, time, and testing syntax.
+  WHY: without it, generated code ignores established conventions and has to be rewritten.
+  TRIGGER WHEN: writing or modifying TypeScript.
 ---
 
 # TypeScript
 
-Composes onto `testing` — read that first. This is the TypeScript-specific syntax for
-the same principles, not a separate set of rules.
+## Use the type system
 
-## `satisfies`, not `as`, for test data
+Work with the type system, not around it. When a type problem stalls you, write the
+code as if the types work, then use `TsDiagnostics` to see if they don't — fix the
+reported error, not a guessed one. Don't pre-emptively cast because a type *might* be a
+union or missing a property; that's often wrong and hides the real type.
 
-`satisfies` checks the object's shape against the type while keeping its literal type;
-the compiler catches a missing or wrong field. `as` skips the check — the object is
-trusted to match regardless of what it actually contains, so test data assembled with
-`as` can be quietly wrong and the test still compiles.
+## `any`: value vs constraint
 
-```typescript
-const input = {
-  interactionId: 'de80e429-5d13-4536-b824-89e9c43c80fb',
-  step: WelcomeStep.Overview,
-} satisfies WelcomeNextInput;
-```
+`const data: any = fetchSomething()` throws away type safety and is never the fix.
+`any` inside a generic constraint (`type Constructor<T> = new (...args: any[]) => T`)
+is different — it still carries full type info for `T`, it just doesn't care about the
+constructor's arguments. If a value seems to need `as any` or `: any`, ask; it almost
+certainly doesn't, and the tradeoff is the SC's call either way.
 
-## `describe`/`it` is the grouping mechanism
+## Casts are debt without evidence
 
-One assertion per test, in practice:
+The type system is a defence; a cast opts out of it. A cast added before an error
+occurred is speculation with no reason behind it — syntactically identical to a real
+fix, distinguishable only by whether an error actually happened. If it compiles
+without the cast, remove it; if it doesn't, the cast is hiding a real problem, so fix
+that instead.
 
-```typescript
-describe('formatPhoneE164', () => {
-  it('formats Australian mobile to E.164', () => { ... });
-  it('throws on invalid phone number', () => { ... });
-});
-```
+- **`as unknown as T`** — routes around a type disagreement instead of resolving it.
+- **`as T` when inference already works** — noise; hides whether the type is what you
+  think.
+- **Defensive union types** (`T | null | undefined` when it's never null) — forces
+  null checks at every call site for a case that can't occur.
 
-## The expected/actual pattern with `expect`
+## `satisfies`, not `as`
 
-```typescript
-it('formats Australian mobile to E.164', () => {
-  const expected = '+61412345678';
+`satisfies` checks a value's shape while keeping its literal type; `as` skips the check,
+so something wrong can still compile. Use it on return values, constants, and test
+data: `{ host: 'localhost', port: 3000 } satisfies ServerConfig`. Use an explicit
+annotation instead only when the type genuinely needs to widen (an empty object to
+fill in later).
 
-  const actual = formatPhoneE164('0412 345 678', 'AU');
+## No async IIFEs
 
-  expect(actual).toBe(expected);
-});
-```
+Don't run async work from a synchronous context as an anonymous IIFE —
+`void (async () => { ... })()` is async-void, an unhandled rejection with nowhere to
+land. Extract a named function that owns its own try/catch, then call that:
+`void reloadOnChange()`. The function is safe by construction; a `.catch` at the call
+site relies on every caller remembering it.
 
-Leave the pattern where the matcher already carries the expectation — `toThrow`,
-`toBeNull`, `toBeUndefined`, snapshots — see `testing` for why. `toEqual` is still the
-pattern, just for deep equality instead of `toBe`.
+## Refactoring: update imports, don't re-export
 
-## Dependency injection: `@shellicar/core-di`
+When moving something, update every import to the new location. Don't leave a
+re-export behind for backwards compatibility — it hides where things actually live.
+Exception: an `index.ts` barrel in a published npm package, which exists to be a
+stable public API.
 
-When a class needs DI, use `@shellicar/core-di`. Prefer `@dependsOn` property injection
-over constructor injection.
+## Temporal naming
 
-```typescript
-class MyService {
-  @dependsOn(Clock)
-  private readonly clock!: Clock;
-}
-```
+A temporal value stored as a plain string or number needs a suffix, or `string` is
+ambiguous. Skip it where the field already has a typed schema.
 
-## Time: `@js-joda/core`, not bare `Date`
+| js-joda type | suffix | example |
+|---|---|---|
+| `Instant` / `Date` | `*Utc` | `createdUtc` |
+| `LocalDate` | `*Date` | `birthDate` |
+| `LocalTime` | `*Time` | `startTime` |
+| `LocalDateTime` | `*DateTime` | `scheduledDateTime` |
+| `ZonedDateTime` | `*ZonedDateTime` | `appointmentZonedDateTime` |
+| `Duration` | `*Duration` | `validDuration` |
+| `Period` | `*Period` | `billingPeriod` |
+| `ZoneId` | `*ZoneId` | `userZoneId` |
 
-Always prefer `@js-joda/core` over the bare `Date`. `Clock` is injectable, so a service
-takes a `Clock` instead of calling `Date.now()` or `new Date()` directly, and
-`@js-joda/core`'s `Instant`, `LocalDate`, `Duration`, and friends handle time zones and
-date arithmetic correctly in a way `Date` doesn't. This is the stand-in until TC39's
-Temporal proposal ships.
+## DI and time: `@shellicar/core-di`, `@js-joda/core`
+
+Use `@shellicar/core-di` for DI, with `@dependsOn` property injection over constructor
+injection. Use `@js-joda/core` over bare `Date` always — `Clock` is injectable, and
+`Instant`/`LocalDate`/`Duration` handle time zones and arithmetic correctly where
+`Date` doesn't. It's the stand-in until TC39 Temporal ships.
 
 ```typescript
 class MyService {
@@ -82,3 +93,19 @@ class MyService {
   }
 }
 ```
+
+## Testing
+
+Composes onto `testing` — read that first; this is just the TypeScript syntax for it.
+Group with `describe`/`it`. Name expected/actual before comparing:
+
+```typescript
+it('formats Australian mobile to E.164', () => {
+  const expected = '+61412345678';
+  const actual = formatPhoneE164('0412 345 678', 'AU');
+  expect(actual).toBe(expected);
+});
+```
+
+Skip naming where the matcher already carries the expectation — `toThrow`, `toBeNull`,
+`toBeUndefined`, snapshots. `toEqual` is the same pattern, for deep equality.
