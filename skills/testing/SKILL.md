@@ -1,0 +1,77 @@
+---
+name: testing
+description: |
+  WHAT: how a test proves behaviour — what to assert, how to name it, what a good failure looks like. Independent of language.
+  WHY: Claude's default test couples to implementation and buries the expectation inside the assertion, in any language.
+  TRIGGER WHEN: writing or modifying a test.
+---
+
+# Testing
+
+## Assert outputs, not interactions
+
+A test proves what the system produced, not how it produced it. Asserting that a
+specific method was called, in what order, with what arguments, couples the test to
+the implementation — change the implementation without changing the behaviour, and the
+test still breaks. A test that can only fail when you change the implementation, never
+when the behaviour is wrong, is testing nothing. Assert what came out; don't verify
+what happened inside to get there.
+
+## Name the test double
+
+These five terms mean different things, and mixing them up muddies what a test is
+doing. A **dummy** fills a parameter list and is never used. A **stub** returns a canned answer and records nothing. A
+**fake** is a working but unsuitable-for-production implementation — an in-memory
+database, a clock you can advance by hand. A **spy** is a stub that also records how it
+was called. A **mock** is pre-programmed with expectations and verified after the
+fact — mocks verify behaviour, which is what "assert outputs, not interactions" argues
+against. Prefer fakes and stubs. Reserve the word "mock" for what actually is one.
+
+## One test, one assertion
+
+Each test proves one thing. When it fails, you know immediately which behaviour broke
+without reading the body to work out which of several assertions was the one that
+mattered. Group related cases instead of combining their assertions into one test.
+
+## Name expected and actual before you compare them
+
+This is Arrange/Act/Assert, without the ceremony. Skip the `// arrange` / `// act` /
+`// assert` comments marking the phases — that's the ugly version. The elegance is in
+the naming itself: `expected` and `actual` as two clean values, declared once each,
+then a comparison that echoes both by name. The symmetry carries the structure that the
+comments would otherwise be spelling out.
+
+Always name both, even when the value is a bare literal or a boolean. A short value is
+not a reason to inline it — `expected` and `actual` are the shape of every test, not an
+ornament for the complicated ones.
+
+The exception is when the matcher itself already carries the expectation — a throw, a
+null, an undefined, a snapshot. There's no second value to name there: the matcher name
+is already the plain statement of what's expected, and a `const expected` line would
+only repeat it. Naming breaks down structurally for a thrown error, too — the call has
+to be wrapped in a closure so the assertion can catch the throw, so there's no `actual`
+resulting from a call to bind, and nothing shaped like a normal value to call `expected`
+either.
+
+## A test name says what, not how
+
+Present tense, describes the behaviour under test — not the mechanism, not "test case
+1."
+
+## A good failure is missing behaviour, not a missing file
+
+A test should fail because the behaviour isn't there yet, not because of a structural
+problem — a missing import, a file that doesn't exist. If a test fails for a structural
+reason, fix that first with a stub so it can run and fail for the right reason.
+
+## Control time instead of trusting it
+
+A test that calls the real clock is only deterministic by luck. Fix the clock to a
+known instant, or use a fake clock the test can advance by hand, so time is an input
+you control rather than an ambient fact the test hopes doesn't change.
+
+## A factory builds the object so the test doesn't have to
+
+When a test needs a complex object, build it once with a named factory function rather
+than repeating the full literal in every test. The factory carries the noise; each test
+carries only what it's actually varying.
