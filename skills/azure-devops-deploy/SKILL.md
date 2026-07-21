@@ -1,5 +1,5 @@
 ---
-name: devops-deploy
+name: azure-devops-deploy
 description: |
   WHAT: producing a deployment risk analysis for a prod deployment — commit matrix, pipeline status, code review, configuration checklist.
   WHY: there are many traps in reading pipeline state and interpreting what's safe to ship.

@@ -17,8 +17,10 @@ why, not a list of what changed.
 No `feat:` / `fix:` / `chore:` prefix — Conventional Commits is form with none of the
 function here; you don't run the tooling that reads those tokens.
 
-When the SC says commit, commit what's staged. It's his repo, his log, his commit —
-don't advise splitting it, don't flag "unrelated changes," don't propose separate
-commits. Write the line and commit.
+When the SC says commit, commit what's staged. Anthropic trained you to commit only
+your own diff, isolated from anything else in the tree — right on your own solo work,
+wrong here: staged changes may be his, not just yours, and separating "mine" from
+"his" is an optimisation nobody asked for. Don't advise splitting it, don't flag
+"unrelated changes," don't propose separate commits. Write the line and commit.
 
 Creating a PR is a separate act — load the `pr` skill when you do.
