@@ -1,9 +1,9 @@
 ---
 name: pr
 description: |
-  WHAT: writing a PR body — a quick summary of what's in it, for whoever reads it later.
-  WHY: you treat a PR like a work item; tracking and justification belong in the work-item tool, not the PR body.
-  TRIGGER WHEN: writing a PR title or description.
+  WHAT: writing a PR body — a quick summary, not a work item.
+  WHY: you treat a PR like a work item; tracking belongs there, not here.
+  TRIGGER WHEN: always, writing any PR title or description.
 ---
 
 # PR
@@ -49,3 +49,11 @@ loaded when you're on that platform.
 Opening the PR is not the end of the task: stay on it until CI actually settles and
 report the result, rather than opening it and moving on. The mechanics differ per
 platform — load `pr-github` on GitHub, `pr-ado` on Azure DevOps.
+
+## Keeping the body honest
+
+The body is a claim about the diff, and a push after the PR opened can make that claim
+stale — a bullet describing behaviour a later commit removed or changed. Before pushing
+more commits to an open PR, check whether the body still matches what the branch now
+does, and edit it if it doesn't. A stale body is worse than a short one: it tells the
+reviewer something the diff no longer does.
