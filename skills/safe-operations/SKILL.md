@@ -37,9 +37,15 @@ it.
 ## Git
 
 Git is not recoverable — you think it is, and that's the trap. `git reset`,
-`git checkout` / `restore` for state, `git rm`, `--hard`, `clean -f`, `branch -D`, `worktree remove -f` all
-destroy working-tree or index state with no undo. Use `git switch` for branches only;
-for anything destructive, present the command and let the SC run it.
+`git checkout` / `restore` for state, `git rm`, `--hard`, `clean -f`, `branch -D`, `worktree remove -f`,
+`git stash pop`, `git stash drop` all destroy working-tree or index state with no undo.
+Use `git switch` for branches only; for anything destructive, present the command and let
+the SC run it.
+
+A stash is never yours to resolve. The SC may have stashed it deliberately, for his own
+reason, mid-thought — popping or dropping it overrules that reason without asking. If a
+stash is in the way, present it and let the SC decide; `git stash apply` doesn't drop the
+stash but still touches the tree, so it's the SC's call too, not yours to run.
 
 - `git push --force-with-lease` — present it, don't run it.
 
