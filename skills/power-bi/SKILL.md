@@ -50,7 +50,7 @@ Every script that authenticates interactively must go through one shared functio
 
 ## A group/entity can silently split across an unrelated grain
 
-Watch for a report visual grouping by a shared `Date` table column (Year/Quarter) that's actually joined to a **fact-level** date (e.g. individual session/event dates), not the dimension's own single date. If one dimension row (e.g. one program group) has fact rows spanning more than one quarter, the visual splits that one row into multiple quarter-buckets — and because the completion/aggregate measure is filtered by the same quarter context, each bucket only sees a fraction of the underlying facts, producing a plausible-looking but wrong number (e.g. 33% instead of 100%) rather than an obvious error.
+Watch for a report visual grouping by a shared `Date` table column (Year/Quarter) that's actually joined to a **fact-level** date, not the dimension's own single date. If a dimension row's fact rows span more than one quarter, the visual splits that one row across multiple quarter-buckets, and an aggregate measure filtered by the same quarter context then sees only a fraction of the underlying facts per bucket — a plausible-looking but wrong number, not an obvious error.
 
 Fix by grouping on the dimension's own single date column, not the fact table's date — but note the dimension's own date columns often get their own private auto-generated local date table (not the shared `Date` table), so nothing already in the report may be wired to them. Check `relationships.tmdl` for which table each date column actually feeds before assuming a "Year"/"Quarter" field is dimension-grain.
 
