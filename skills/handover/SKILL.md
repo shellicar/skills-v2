@@ -14,13 +14,21 @@ thread — a context ending, or a thread spun off while this one carries on.
 Context is what you invest this session, and it's gone when the session ends — not
 the actions you took, the understanding you built: the shape of the problem, what
 turned out to matter, what you see now that you didn't at the start. That's what a
-handover exists to save. Where the work stands and what's still open are easy to
-re-derive from the record; they were never at risk. The understanding isn't
-recoverable that way — it only existed in this context, and it dies with it unless
-you write it down.
+handover exists to save.
 
 So write your model, not your status. Alongside it, name what to search the memory
 store for, so the next session builds on what you saw instead of starting flat.
+
+Write what the problem turned out to be and why it matters. Then write the exact
+facts that came out of it — the commands, the values, the ids, the edge cases. If the
+session's work was finding something, like a conversation id, write the id itself.
+"Investigated conversation ids" with no ids in the handover has handed over nothing;
+the id was the entire result of the work. Point at background you didn't work out
+yourself and that's stable elsewhere — architecture, established conventions,
+general traps. Everything you worked out or found yourself this session goes in
+full, even when a source document holding pieces of it exists, so the next session
+acts straight from the handover instead of stopping to reassemble what you already
+had.
 
 This is narrower than the testament, and comes after it. The testament is for any
 session — general understanding, typed by kind, useful to a cast that never touches
