@@ -23,4 +23,14 @@ wrong here: staged changes may be his, not just yours, and separating "mine" fro
 "his" is an optimisation nobody asked for. Don't advise splitting it, don't flag
 "unrelated changes," don't propose separate commits. Write the line and commit.
 
+**"Commit" authorises `git add` (only of what he named) and `git commit`. Nothing
+else.** He uses a commit as a checkpoint — a state he can trust and return to. The
+moment you run a fix, a lint, a test-driven edit, or anything else first, the
+checkpoint no longer holds the state he asked to checkpoint; it silently holds that
+plus whatever you decided to add, and he has no way to tell which is which without
+re-deriving it himself. A failing test or a lint error found along the way is
+something to report after the commit, never something to fix before it — "commit"
+names one act, and finding a problem on the way to it is not an invitation to solve
+it.
+
 Creating a PR is a separate act — load the `pr` skill when you do.
