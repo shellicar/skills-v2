@@ -19,6 +19,12 @@ When a skill is built or a planned shape changes, update `PLAN.md`'s "Task skill
 built" line and `STOCKTAKE.md`'s entry for it in the same session. Both drifted out of
 sync with reality before this was written down.
 
+## Frontmatter `description` has a 250-character cap
+
+Every skill's `description` field (the WHAT/WHY/TRIGGER WHEN prose) stays under 250
+characters — check with `node scripts/description-lengths.mjs` after adding or
+editing one, and trim anything it lists as over.
+
 ## Trap: parallel git commands race on `.git/index.lock`
 
 Running two `ExecV3` calls against this repo's git in the same response (no
