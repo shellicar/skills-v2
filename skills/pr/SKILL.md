@@ -8,6 +8,41 @@ description: |
 
 # PR
 
+Composes onto `voice`. A PR goes out under the SC's name, so its no-em-dash,
+plain-statement rules apply here the same as a commit message.
+
+## One bullet, one clause
+
+A bullet is one claim. A second clause restating it as a negative or boundary case
+("independent of," "without affecting," "never," "instead of") or explaining why adds
+no information, only length. Cut the second half and check the bullet still says
+everything true.
+
+Bad:
+- A conversation's directory can be changed while it's running, without affecting any
+  other conversation.
+- Changing the instance's default directory only affects conversations started
+  afterward — it never moves one already running.
+- mvp/frontend-leptos is no longer a detached Cargo workspace, so its tests, clippy,
+  and fmt actually run in CI (previously only trunk build ran there, nothing checked
+  its code).
+
+Good:
+- A conversation's directory can be changed while it's running.
+- Changing the instance's default directory only affects conversations started
+  afterward.
+- mvp/frontend-leptos's tests, clippy, and fmt now run in CI.
+
+A bullet naming two changes is two bullets, not one joined with "and":
+
+Bad:
+- Nested scopes are a typed, tested contract, and validate() documents the blind spot
+  an opaque factory creates.
+
+Good:
+- Nested scopes are a typed, tested contract.
+- validate() documents the blind spot an opaque factory creates.
+
 Create with `GitHub_PullRequest_Create` / `AzureDevOps_PullRequest_Create`, never the
 bare `gh pr create` / `az repos pr create` CLI — the tool always opens as a draft and
 carries its own approval gate, so no separate ask is needed first. Same for editing
