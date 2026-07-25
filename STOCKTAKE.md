@@ -22,12 +22,14 @@ Caveat: platform skills ranked from frontmatter — read before trusting.
 - `audience-sc` → `audience`
 - `audience-stakeholder` → `audience`
 - `audience-stephen` → `audience`
-- `claude-philosophy` → `working-relationship`
+- `claude-philosophy` → `working-relationship` (relationship half) + `operating-mode`
+  (the conversation/execution two-mode framework, restored after being dropped)
 - `commander-protocol` → `working-relationship` (now the escalation model)
 - `co-working` → kept, sharpened to "not the only author of this worktree"
 - `testament` → kept as-is
 - `system-glossary` → kept as-is (seeded empty)
-- `teapot-protocol` → kept as-is (mode marker dropped)
+- `teapot-protocol` → kept as-is; the mode marker it once carried now lives in
+  `operating-mode`
 
 ## Retired — superseded by tooling
 

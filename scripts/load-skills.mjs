@@ -41,6 +41,7 @@ export const FOUNDATIONAL = [
   "voice",
   "audience",
   "teapot-protocol",
+  "operating-mode",
   "co-working",
   "testament",
   "system-glossary",
