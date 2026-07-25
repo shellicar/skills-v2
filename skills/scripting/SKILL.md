@@ -1,8 +1,8 @@
 ---
 name: scripting
 description: |
-  WHAT: writing portable scripts — POSIX shell, not bash — and picking the right tool for the job.
-  WHY: you reach for what's common (bash, python) because that's how you're trained; this is the way the SC does things.
+  WHAT: writing portable scripts — POSIX shell, not bash.
+  WHY: you default to bash/python because that's your training; this is how the SC does it.
   TRIGGER WHEN: writing or modifying a script.
 ---
 

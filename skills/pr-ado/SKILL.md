@@ -1,9 +1,9 @@
 ---
 name: pr-ado
 description: |
-  WHAT: after opening or updating an Azure DevOps PR, staying on it until its validation build actually settles.
-  WHY: a PR opened and left alone can sit unreviewed or red for hours unnoticed — the task isn't done at creation, it's done when checks have run and passed.
-  TRIGGER WHEN: you've just opened or pushed to an Azure DevOps pull request.
+  WHAT: staying on an Azure DevOps PR until its validation build settles.
+  WHY: a PR left alone can sit red or unreviewed for hours unnoticed.
+  TRIGGER WHEN: after opening or pushing to an Azure DevOps PR.
 ---
 
 # PR: Azure DevOps

@@ -1,8 +1,8 @@
 ---
 name: typescript
 description: |
-  WHAT: how TypeScript is written here — the type system, `any`, refactoring, temporal naming, DI, time, and testing syntax.
-  WHY: without it, generated code ignores established conventions and has to be rewritten.
+  WHAT: how TypeScript is written here — types, refactoring, DI, time, testing syntax.
+  WHY: generated code ignores house conventions and has to be rewritten.
   TRIGGER WHEN: writing or modifying TypeScript.
 ---
 

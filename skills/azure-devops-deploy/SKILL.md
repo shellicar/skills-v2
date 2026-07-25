@@ -1,8 +1,8 @@
 ---
 name: azure-devops-deploy
 description: |
-  WHAT: producing a deployment risk analysis for a prod deployment — commit matrix, pipeline status, code review, configuration checklist.
-  WHY: there are many traps in reading pipeline state and interpreting what's safe to ship.
+  WHAT: a prod deployment risk analysis — commit matrix, pipeline status, code review, config checklist.
+  WHY: many traps in reading pipeline state and what's actually safe to ship.
   TRIGGER WHEN: asked to analyse or prepare a prod deployment.
 ---
 

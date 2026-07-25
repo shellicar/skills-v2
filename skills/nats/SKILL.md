@@ -1,9 +1,9 @@
 ---
 name: nats
 description: |
-  WHAT: reading a conversation off the NATS bus, and sending a message into one and waiting for the reply.
-  WHY: to catch up on or poke a running conversation without a UI, straight from the wire.
-  TRIGGER WHEN: told to use nats to read or message a conversation by id.
+  WHAT: reading a conversation off NATS, and sending a message and waiting for the reply.
+  WHY: to catch up on or poke a running conversation without a UI.
+  TRIGGER WHEN: told to use nats on a conversation by id.
 ---
 
 # NATS

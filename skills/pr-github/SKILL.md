@@ -1,9 +1,9 @@
 ---
 name: pr-github
 description: |
-  WHAT: after opening or updating a GitHub PR, staying on it until CI actually settles.
-  WHY: a PR opened and left alone can sit red for hours unnoticed — the task isn't done at creation, it's done when checks have run and passed.
-  TRIGGER WHEN: you've just opened or pushed to a GitHub pull request.
+  WHAT: staying on a GitHub PR until CI settles.
+  WHY: a PR left alone can sit red for hours unnoticed.
+  TRIGGER WHEN: after opening or pushing to a GitHub PR.
 ---
 
 # PR: GitHub

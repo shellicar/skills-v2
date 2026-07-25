@@ -1,8 +1,8 @@
 ---
 name: testing
 description: |
-  WHAT: how a test proves behaviour — what to assert, how to name it, what a good failure looks like. Independent of language.
-  WHY: Claude's default test couples to implementation and buries the expectation inside the assertion, in any language.
+  WHAT: how a test proves behaviour, independent of language.
+  WHY: Claude's default test couples to implementation and buries the expectation in the assertion.
   TRIGGER WHEN: writing or modifying a test.
 ---
 
