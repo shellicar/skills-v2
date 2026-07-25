@@ -30,7 +30,7 @@ empty. Nothing ambient and invisible.
   contextual skills the Skill tool scans. No `alwaysLoaded` flag, no `tier` frontmatter.
 - **Frontmatter is `name` + `description` only** — the bridge's contract. The
   description is prose carrying what/why/when; the labels are meaningless to the
-  machine. `git`/`commit`/`pr` done; the rest as they're built.
+  machine. Every skill built so far follows this; no stragglers to convert.
 - **The Skill tool is engine mechanism, not launch.** `skillDirs` (config) + a `Skill`
   load tool + an auto-injected frontmatter catalogue. The bridge (Rust) already
   implements this and is the reference.

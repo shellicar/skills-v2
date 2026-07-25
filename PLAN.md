@@ -26,7 +26,9 @@ teapot-protocol, co-working, testament, system-glossary.
 
 **Actors** — operator, gatekeeper (replaces the old "supervisor"), handler, planner.
 
-**Task skills built** — safe-operations, git, commit, pr, scripting, handover.
+**Task skills built** — safe-operations, git, commit, pr, pr-github, pr-ado,
+scripting, handover, testing, typescript, rust, azure-devops-deploy (new, no v1
+source), nats (new, no v1 source).
 
 **Launchers** — `start-v2` + `load-skills` inject INSTRUCTIONS and the `<skills>` block
 via `--claudeMd`, BASELINE via `--system`, and disable the ambient user sources via
@@ -46,10 +48,13 @@ a description doesn't show.
 
 ### Likely high — house rules and platform "what" the model can't guess or gets wrong
 
-- `azure-devops` / `work-items` / `pr-review` — ADO fails the model badly; non-generalizable commands and silent-failure quirks.
-- `typescript-standards` — house TS style.
-- `tdd` — the test form and conventions.
-- `tech-debt` — no pre-emptive defensive code. Standalone; not merged into typescript.
+- `azure-devops` / `work-items` / `pr-review` — ADO fails the model badly;
+  non-generalizable commands and silent-failure quirks. `azure-devops-deploy` (prod
+  deployment risk analysis) is built; the broader org/project/boards/pr/work-items
+  reference skill is still open.
+- ~~`typescript-standards`~~ / ~~`tdd`~~ / ~~`tech-debt`~~ **DONE**, as `testing` +
+  `typescript` + `rust` — see `STOCKTAKE.md` for the shape, which diverged from this
+  plan (`tech-debt` merged into `typescript` rather than staying standalone).
 - `conventions` — per-org reference; loaded for the active org only.
 
 ### Situational, high value at their trigger

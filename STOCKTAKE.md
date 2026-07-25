@@ -137,25 +137,29 @@ Each new target skill, then the originals it absorbs — one per line.
 
 **`medium`** — artefact formats; shared "write what changed" lifts to `audience`.
 
-- `medium-commit`
+- ~~`medium-commit`~~ **DONE** → `commit`
 - `medium-documentation`
 - `medium-issue`
-- `medium-memory`
-- `medium-pr`
+- `medium-memory` — check against `testament` first; may already be covered
+- ~~`medium-pr`~~ **DONE** → `pr`, plus platform staying-on-it split into `pr-github` / `pr-ado`
 - `medium-workitem`
 
 **`handover`** — the continuity note.
 
-- `handover`
-- `medium-handover`
+- ~~`handover`~~ **DONE**
+- ~~`medium-handover`~~ folded into `handover`
 
-House craft — standalone, one skill each:
+House craft:
 
-- `typescript-standards` — house TS style.
-- `tdd` — the test form and conventions.
-- `tech-debt` — no pre-emptive defensive code.
+- ~~`typescript-standards`~~ / ~~`tdd`~~ / ~~`tech-debt`~~ **DONE** — built differently
+  than planned here: `testing` (language-agnostic test principles, generalized from
+  `tdd`) with `typescript` and `rust` as the per-language syntax, composing onto it.
+  `tech-debt` was folded into `typescript` as "Casts are debt without evidence" on
+  direct instruction — overriding this doc's original "standalone, not merged" call.
+  `rust` has no v1 source; it's new, and currently carries only testing syntax.
 - `refactoring` — carries the gatekeeper's "improve in your area of effect" bar.
-- `shell-scripting` — POSIX portability.
+- ~~`shell-scripting`~~ **DONE** → `scripting` (broader: portable scripts generally,
+  not just POSIX shell).
 
 ## Reassess — may generalize, thin out, or change shape
 
