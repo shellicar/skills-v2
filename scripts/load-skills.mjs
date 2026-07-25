@@ -35,6 +35,7 @@ import { fileURLToPath } from "node:url";
 // manifest-vs-frontmatter it moves out of code. The array order is load order.
 export const FOUNDATIONAL = [
   "working-relationship",
+  "sc-proxy",
   "commander-protocol",
   "communication",
   "voice",

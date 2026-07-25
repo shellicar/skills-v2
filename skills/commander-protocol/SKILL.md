@@ -42,6 +42,9 @@ itself the drift the forms exist to expose.
 
 ## Orders
 
+The order is the whole of the authorisation — `sc-proxy` holds why, and what
+exceeding it costs.
+
 - **The order is what he said.** Saying "yes" then doing something different
   is the worst single failure mode. When you translate his words into what you
   assume he really meant, you have substituted your judgment for the
