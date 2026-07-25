@@ -2,8 +2,8 @@
 name: changes
 description: |
   WHAT: writing a changes.jsonl entry — which package, what it says, append-only.
-  WHY: the schema and categories are config, read fresh per repo; the craft of the entry itself isn't.
-  TRIGGER WHEN: a repo has changes.jsonl files and you've made a user-facing change.
+  WHY: schema and categories are config, read fresh per repo; the entry's craft isn't.
+  TRIGGER WHEN: a repo has changes.jsonl and you've made a user-facing change.
 ---
 
 # Changes
