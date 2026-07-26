@@ -1,14 +1,25 @@
 ---
 name: nats
 description: |
-  WHAT: reading a conversation off NATS, and sending a message and waiting for the reply.
-  WHY: to catch up on or poke a running conversation without a UI.
-  TRIGGER WHEN: told to use nats on a conversation by id.
+  WHAT: reading a conversation off NATS, sending a message and waiting for the reply, and asking a world to serve a conversation (spawn/adopt).
+  WHY: to catch up on, poke, or start a running conversation without a UI.
+  TRIGGER WHEN: told to use nats on a conversation by id, or to spawn/adopt a conversation in a world.
 ---
 
 # NATS
 
-Two tools over the conversation bus (docs/spec in the tower repo). Both take one
+## APPROVAL GATE — no send without it
+
+You MUST NOT send anything into a conversation (`query.mts`, or any other write)
+without the SC's approval FIRST. The approval is of the **entire message text,
+shown verbatim in a code block in your response** — never a summary, never "the
+same as before plus X", never an amendment to something previously shown. He
+reviews the whole message as it will be sent; only after he approves that exact
+text does it go. Answering a question and dispatching are separate turns: if he
+engaged with any point after you showed the text, the text is stale — show it
+again. Violating this gate has been ruled termination-level.
+
+Three tools over the conversation bus (docs/spec in the tower repo). All take one
 JSON argument and are meant for you to run, not a person: stdout is the result,
 stderr is progress, a non-zero exit means it did not get what it asked for.
 
@@ -57,6 +68,24 @@ seconds (default 180).
   prints the reason and exits non-zero. Re-`read` and try again.
 - The query closes `completed`, `cancelled`, or `aborted`. Only `completed` is a
   real answer; the other two exit non-zero with the reason.
+
+## service — ask a world to serve a conversation (spawn or adopt)
+
+`service.mts '{"world":"local","conv":"<uuid>","cwd":"/path"}'` sends the agent
+concern's `service` request (`agent.v1.{world}.requests.service`) and prints the
+reply as JSON. One verb for spawn, resume, and takeover: the servicer reads the
+conversation's record and reacts — no history spawns fresh, history re-attaches,
+attached elsewhere is taken over unconditionally. Omit `conv` and it mints a
+fresh uuid (the caller names the conversation; nothing is "returned").
+
+- `cwd`/`model` are strict when named: a value the world cannot establish
+  rejects the request (`invalid_cwd`, …); omitted values fall to the world's
+  defaults. Name the worktree path when spawning an operator.
+- `already_attached` means this instance already serves it — nothing to do.
+- `failed` carries a free-text `detail` naming the broken step.
+- No reply means no bridge is serving that world.
+- Accepted: the conversation exists on the wire — follow up with `query.mts`
+  against the printed `conversationId` (it's a v2 conversation).
 
 ## Configuration
 
