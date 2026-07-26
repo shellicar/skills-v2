@@ -37,6 +37,13 @@ that moment — use the knowledge you already have in the act, not just when que
   change — someone else's in-progress work, stray artifacts. Stage what you changed, by
   name.
 
+- **Never `git lfs install` — always `git lfs-install`.** Plain `git lfs install` writes
+  the LFS filter config into the *global* gitconfig (and, without `-c core.hooksPath=`,
+  fights any shared/global hooks setup) even when run inside one repo. The `lfs-install`
+  alias (`!git -c core.hooksPath=.git/hooks lfs install --local`) scopes both the filter
+  config and the hook to that repo's own `.git/config` and `.git/hooks`, leaving global
+  config untouched.
+
 Branch names are plain English describing the work, with one of these prefixes:
 `docs/`, `fix/`, `hotfix/`, `security/`, `feature/`, `epic/`.
 
