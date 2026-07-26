@@ -75,3 +75,14 @@ you control rather than an ambient fact the test hopes doesn't change.
 When a test needs a complex object, build it once with a named factory function rather
 than repeating the full literal in every test. The factory carries the noise; each test
 carries only what it's actually varying.
+
+## Test hooks never leak into production types
+
+Testability comes from a seam — an interface the test can hand a fake — never from
+production code knowing it might be under test. An `Option` whose `None` means "we're
+in a test", a nullable dependency, a config flag that skips a step, a panic path only
+tests can reach: each is the fake escaping the seam, and each replaces a compile-time
+guarantee with a runtime hope. The tells are reliable: a code path no production
+scenario can produce, or a comment paragraph justifying why the absent value is fine.
+When a test can't reach a path, widen the seam (or add a second narrow one) so the
+fake covers it — never make the dependency optional.
