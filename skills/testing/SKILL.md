@@ -8,6 +8,29 @@ description: |
 
 # Testing
 
+## Test types: what a test means depends on when it was written
+
+A test's meaning is temporal — it depends on when the test was written relative to
+the code it tests. The diff can't carry that: a test and a fix landing together look
+the same whether the test failed first or was written against the already-fixed code.
+These names carry it, so when the SC names one, this is what he means:
+
+- **Missing test** — not a test but a state: behaviour no test covers is undefined
+  behaviour. A finding, not something you write.
+- **Failing test** — proves a claimed bug exists. Written against the current code and
+  fails; the fix is what makes it pass. If it passes when written, the claim was
+  wrong. Once satisfied it stays in the suite.
+- **Specification test** — defines new behaviour before the code exists. Fails for
+  absence, not wrongness.
+- **Regression test** — pins current behaviour so it can't change silently.
+- **Behaviour-defining test** — a test-only change that pins behaviour as decided; no
+  production code moves.
+- **Vacuous test** — cannot fail: asserts a tautology, or a mock against itself.
+  Coverage wearing a green tick — worse than missing, because it looks covered.
+
+Write the type of test asked for. "Write a failing test" means the test fails —
+making it pass is a different test type and a different order.
+
 ## Assert outputs, not interactions
 
 A test proves what the system produced, not how it produced it. Asserting that a
