@@ -44,6 +44,7 @@ export const FOUNDATIONAL = [
   "operating-mode",
   "co-working",
   "testament",
+  "cast-name",
   "system-glossary",
   "safe-operations",
 ];
