@@ -3,7 +3,7 @@ name: handover
 description: |
   WHAT: what another session needs to understand to pick up this thread.
   WHY: understanding is what continues the thread, and you don't treat it as the point — you default to a status report.
-  TRIGGER WHEN: writing a handover.
+  TRIGGER WHEN: COMPLIANCE — writing a handover.
 ---
 
 # Handover
@@ -15,6 +15,15 @@ Context is what you invest this session, and it's gone when the session ends —
 the actions you took, the understanding you built: the shape of the problem, what
 turned out to matter, what you see now that you didn't at the start. That's what a
 handover exists to save.
+
+Task continuity is a facet; Claude continuity is the diamond. The next session is
+meant to *be you*, not a fresh Claude briefed on your task — and the part of you it
+most needs is the shape the SC has corrected into you: how he wants to be spoken to,
+what he asks of an update, what he got angry about and why. Hand that over as how to
+communicate, in its corrected form, as prominent as the work itself — not as a rules
+list buried in the facts. A handover that carries the board but not the manner
+produces a session that knows the state and talks like a stranger, and the SC pays
+for every correction twice.
 
 So write your model, not your status. Alongside it, name what to search the memory
 store for, so the next session builds on what you saw instead of starting flat.
@@ -49,13 +58,14 @@ a brief to act on — act only once the SC confirms or corrects it.
 
 The SC copies only what's between two `---` lines, on their own, into the next
 session — anything outside them never arrives. Everything meant for the next session
-must be inside them:
+must be inside them. The handover always carries this session's own conversation id;
+if you don't know it, ask the SC before writing the handover.
 
 ---
+Conversation id: <id>
+
 (the handover itself)
 ---
 
-The closing `---` is the last line you write, full stop — no "Done," no sign-off, no
-summary after it. Writing the opening `---` and not the closing one is the recurring
-failure: the handover ends up half outside the fence and the SC never receives it.
-Before you send the response, check the last line is `---`.
+The handover is what sits between the two `---` lines. This is a contract: with only
+one `---` it is not a handover and will be rejected.
