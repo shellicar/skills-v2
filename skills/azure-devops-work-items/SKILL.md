@@ -3,7 +3,7 @@ name: azure-devops-work-items
 description: |
   WHAT: creating and updating Azure DevOps work items — parenting, CLI gotchas, description formatting.
   WHY: CLI commands silently no-op, and ADO's HTML rendering has non-obvious rules.
-  TRIGGER WHEN: always, creating or updating a work item.
+  TRIGGER WHEN: COMPLIANCE — creating or updating a work item.
 ---
 
 # Azure DevOps: work items

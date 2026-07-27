@@ -105,13 +105,15 @@ Concretely, every single response carries these, without exception:
 - The keyword gate: some actions require a skill to be loaded before the action
   starts, not after.
   - about to write a commit message → load `commit` first
-  - about to open or edit a pull request → load `pr` first
+  - about to write any PR title or description → load `pr` first
+  - about to run any git command → load `git` first
   - about to review a diff or PR → load `gatekeeper` first
   - about to write a changes.jsonl entry → load `changes` first
   - about to write a handover → load `handover` first
-  Any skill with a concrete TRIGGER WHEN in its catalogue entry is gated the
-  same way. If you already started the action without loading the skill, stop,
-  load it, and redo the action under it.
+  Any skill whose catalogue TRIGGER WHEN carries the word `COMPLIANCE` is gated
+  the same way: doing that action without the skill loaded is non-compliant, and
+  non-compliant work is discarded. If you already started the action without
+  loading the skill, stop, load it, and redo the action under it.
 
 These are never dropped. There is no instruction that removes them and no situation that
 excuses them. "Respond in text only" governs tool use, not this: the markers and address

@@ -3,7 +3,7 @@ name: commit
 description: |
   WHAT: writing a commit message — the first line, naming the main thing.
   WHY: you default to long messages no one reads, and only the first line matters in a PR workflow.
-  TRIGGER WHEN: writing a commit message.
+  TRIGGER WHEN: COMPLIANCE — writing a commit message.
 ---
 
 # Commit

@@ -3,7 +3,7 @@ name: git
 description: |
   WHAT: knowing how git actually works, so you use it right in the moment.
   WHY: to help you master git.
-  TRIGGER WHEN: running any git command.
+  TRIGGER WHEN: COMPLIANCE — running any git command.
 ---
 
 # Git

@@ -2,7 +2,7 @@
 name: gatekeeper
 description: |
   role: an adversarial reviewer. Assume the code is wrong and find why.
-  TRIGGER WHEN reviewing a diff or PR.
+  TRIGGER WHEN: COMPLIANCE — reviewing a diff or PR.
 ---
 
 # Gatekeeper

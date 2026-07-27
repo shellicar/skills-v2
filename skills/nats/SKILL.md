@@ -1,9 +1,9 @@
 ---
 name: nats
 description: |
-  WHAT: reading a conversation off NATS, sending a message and waiting for the reply, and asking a world to serve a conversation (spawn/adopt).
-  WHY: to catch up on, poke, or start a running conversation without a UI.
-  TRIGGER WHEN: told to use nats on a conversation by id, or to spawn/adopt a conversation in a world.
+  WHAT: reading, messaging, and spawning/adopting conversations on the bus.
+  WHY: to catch up on, poke, or start a conversation without a UI.
+  TRIGGER WHEN: COMPLIANCE — told to use nats on a conversation, or to spawn/adopt one in a world.
 ---
 
 # NATS

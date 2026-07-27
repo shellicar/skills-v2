@@ -3,7 +3,7 @@ name: pr
 description: |
   WHAT: writing a PR body — a quick summary, not a work item.
   WHY: you treat a PR like a work item; tracking belongs there, not here.
-  TRIGGER WHEN: always, writing any PR title or description.
+  TRIGGER WHEN: COMPLIANCE — writing any PR title or description.
 ---
 
 # PR
