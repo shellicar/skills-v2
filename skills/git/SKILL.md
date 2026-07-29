@@ -25,6 +25,15 @@ that moment — use the knowledge you already have in the act, not just when que
   commits (`<oldbase>..HEAD`) and lands them on `origin/main`. It's the same only when
   the parent *is* `origin/main`; often it isn't.
 
+- **`git diff A..B` is not `git diff A...B`.** Two-dot compares the two tips
+  directly, so everything A gained that B lacks contaminates the diff. Three-dot
+  diffs from the merge-base of A and B to B's tip — "what did B contribute since
+  it diverged?" — and stays correct after A moves on. Reviewing a branch's
+  contribution is always three-dot (`origin/main...HEAD`); two-dot is a
+  point-to-point snapshot, rarely what's meant. `origin/main..HEAD` and
+  `origin/main...HEAD` can show very different results, and both run without
+  complaint.
+
 - **Don't stash by reflex.** "Switching branch, so stash" is the tutorial talking.
   Creating a branch, or switching on the same tip, changes nothing — there's nothing to
   stash. Attempt the operation; git refuses if there's a real conflict, and only then do
