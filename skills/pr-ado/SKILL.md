@@ -31,6 +31,9 @@ report it, and you may propose a solution, but shipping is a separate job from f
 that decision belongs elsewhere. If the PR triggers no validation at all, that absence is
 the answer: report it, and flag it if one should have run.
 
+A draft PR does not trigger validation at all — the absence you'd otherwise report is
+expected there; poll again once it's marked ready.
+
 ## Before marking ready
 
 Bring the branch up to date with the target branch unconditionally, not only when a
