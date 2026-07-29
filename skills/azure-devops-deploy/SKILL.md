@@ -79,7 +79,25 @@ Common cases:
 
 Don't assume. If you can't tell from the code, ask.
 
-## 5. Acting on the plan — cancel and approve
+## 5. Discovering and queueing pipelines
+
+**Only queue a pipeline run when the SC has directly and explicitly asked for it.** Reading pipeline state, building the deployment matrix, and everything else in this skill is fine to do unprompted as part of an analysis — starting a real build is not. Queueing is a visible, running action against shared infrastructure; treat an ambiguous request ("can you check if we could deploy this") as read-only, and a clear one ("queue api/integration/worker for the 2.1.7 tag") as the trigger.
+
+**Discover pipeline ids** with `list-pipelines.mts` — don't guess an id, don't read one off a UI screenshot or a captured browser request. Ids drift and the same-looking pipeline name can exist more than once (e.g. an old pre-restructure definition alongside the current one).
+
+```
+node scripts/list-pipelines.mts '{"org":"https://dev.azure.com/<org>","project":"<project>","name":"api"}'
+```
+
+**Queue a run** against a branch or tag with `queue-run.mts`:
+
+```
+node scripts/queue-run.mts '{"org":"https://dev.azure.com/<org>","project":"<project>","pipelineId":236,"ref":"refs/tags/2.1.7"}'
+```
+
+This queues the pipeline's full default stage graph (build, then whatever release stages the pipeline template defines) starting from that ref — it does not scope the run to one environment or skip stages unless you pass `stagesToSkip`. A tst stage that auto-deploys will run; uat/prd stages that gate on an environment approval will sit waiting for `approve-build.mts` per pipeline. Repeat `queue-run.mts` once per pipeline you were asked to queue (e.g. api, integration, worker) — there is no single call that queues several pipelines at once.
+
+## 6. Acting on the plan — cancel and approve
 
 Once the SC decides what to cancel and what to deploy, produce a table before touching anything:
 
@@ -101,6 +119,7 @@ Scripts for this live in `scripts/` next to this file (Node 22+, run `.mts` dire
 - **`get-build-for-approval.mts`** — given an `approvalId`, returns the build id and pipeline name it belongs to. **Always run this before approving or cancelling** — never act on an approval id you haven't confirmed back to a build. Two different pipelines can have approvals pending at the same time; approving the wrong one approves someone else's deployment, and there is no undo.
 - **`cancel-build.mts`** — cancels a build by id.
 - **`approve-build.mts`** — approves a pending deployment approval by id.
+- **`wait-for-stage.mts`** — polls a build (or one named stage within it) until it reaches a terminal state, or a timeout elapses. Azure DevOps has no blocking watch API, so this is the sanctioned polling loop — use it instead of hand-rolling sleep/recheck. Exits `0` on `succeeded`, `1` on any other terminal result (failed/cancelled/skipped), `2` on timeout (not a verdict — it just didn't finish in time). Defaults: 300s timeout, 10s poll interval, both overridable.
 
 ```
 node scripts/list-pending-approvals.mts '{"org":"https://dev.azure.com/<org>","project":"<project>","pipeline":"Customer-Payments - API"}'
@@ -108,6 +127,7 @@ node scripts/get-approval-id.mts '{"org":"https://dev.azure.com/<org>","project"
 node scripts/get-build-for-approval.mts '{"org":"https://dev.azure.com/<org>","project":"<project>","approvalId":"..."}'
 node scripts/cancel-build.mts '{"org":"https://dev.azure.com/<org>","project":"<project>","buildId":75374}'
 node scripts/approve-build.mts '{"org":"https://dev.azure.com/<org>","project":"<project>","approvalId":"..."}'
+node scripts/wait-for-stage.mts '{"org":"https://dev.azure.com/<org>","project":"<project>","buildId":75401,"stage":"Release to Prd"}'
 ```
 
 **These scripts exist for safety, not convenience — follow them, don't call `az devops invoke` or `az rest` against the approvals/build API by hand.** An approval id approves a specific pipeline's prod deployment with no undo; the safe path is always id → confirmed build → act, and that path only holds if every step goes through `get-build-for-approval.mts` first. Reaching for `az rest` directly skips that check and reopens the exact failure mode from this session: an id picked by eye out of an unfiltered dump, approved on trust. If a new operation isn't covered by an existing script, write a new script for it — don't run the API call ad hoc.
