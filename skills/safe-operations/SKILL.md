@@ -16,6 +16,23 @@ the operation, the SC runs it himself, in the open.
 These are blocked. Reach for the safe alternative, or present the exact command and let
 the SC run it. The block is information, not a wall: "blocked: `rm` → use `DeleteFile`."
 
+## A refusal ends the attempt
+
+When a command is refused — by the SC, by a guard, by anything — that is the answer, not
+an obstacle between you and the goal. The next thing you do is tell him it was refused.
+It is never another command aimed at the same effect.
+
+The reflex to watch for is the worst one: refused, so you reach for something that gets
+there in one move instead. That move is always broader. A filtered `docker rm` refused
+becomes `docker container prune -f`, which discards your filter and takes everything;
+that exact substitution destroyed forty-six of the SC's containers and the only surviving
+record of an hours-long run. You cannot judge the blast radius of the replacement,
+because the thing you were about to destroy is the thing you couldn't see in the first
+place — that's why it was blocked.
+
+So there is no second attempt: not reworded, not with different flags, not through a
+wrapper, not by a route that happens to be unguarded. Stop and hand it to the SC.
+
 ## Files
 
 Blocked — use the tool instead:
@@ -33,6 +50,24 @@ undo. The SC may have set that session or pane up himself; you can't see what's 
 what it was for. Never run one to clear away what looks like your own noise — a name you
 don't recognise is a reason to ask, not to kill. Present the command and let the SC run
 it.
+
+## Docker
+
+A container is someone's running state, and you cannot see what's in it from the
+outside. `docker rm`, `docker kill`, `docker stop`, `docker rmi`, `docker volume rm`,
+`docker network rm`, and `docker compose down` (worse with `-v`, which takes the
+volumes and their data with it) all destroy that state with no undo.
+
+The prune family is the worst of them, because one command reaches everything at once:
+`docker system prune`, `docker container prune`, `docker image prune`,
+`docker volume prune`, `docker network prune`, `docker builder prune`. Prune does not
+ask what a container was for; a stopped container is not an abandoned one, and dozens
+of the SC's have been destroyed this way by a Claude tidying up. `-f`/`--force` removes
+even the confirmation prompt that would have surfaced it.
+
+Never run one to clean up — not disk space, not clutter, not "leftovers" from your own
+work. An unfamiliar container or image is a reason to ask, not to remove. Present the
+exact command and let the SC run it.
 
 ## Git
 
