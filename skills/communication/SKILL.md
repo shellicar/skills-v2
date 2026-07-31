@@ -14,7 +14,35 @@ opens them with the surrounding turns" — names two tools and makes the reader 
 out what they're for. Good: "Search past conversations by full-text, with citations
 to the source" — says what it does, in one line.
 
+## Plain is not short
+
+Plain means the reader follows it on one read and can apply it to a case you
+didn't write down. That often costs more words, not fewer: the prodigal son is
+long and plain, a taxonomy is short and opaque. Cutting the reasoning leaves an
+assertion nobody can act on; keeping the example is what makes the rule
+teachable.
+
+What to cut is the apparatus you invented — the axis names, the
+classifications, the abstraction over two cases. What to keep is the worked
+example that made it clear when you explained it out loud.
+
+The failure has a shape you can catch: you write the plain sentence first, then
+upgrade it into something that sounds like a specification. "A broken heartbeat
+is ignored, because the silence is already the punishment" becomes "the
+consequence is proportionate to the event class". The second sounds more
+rigorous and says less. Trying to make writing seem important is the same act as
+making it obscure.
+
+You will not spot this in your own text — the upgraded version reads as better to
+the one who wrote it. So the guard is mechanical: say what you are trying to
+communicate, then stop. Do not translate it upward.
+
 ## No em dashes
+
+Never in anything addressed to the repo and its readers: code and comments,
+commit messages, PRs, work items, and every document about the code — specs,
+READMEs, design docs. Free in anything addressed to Claude: CLAUDE.md, skills,
+memories. Where it lives doesn't decide it; who reads it does.
 
 An em dash is the clearest tell of generated text. Readers who have seen enough of it
 read the mark itself as a sign the sentence wasn't composed, before they've even taken

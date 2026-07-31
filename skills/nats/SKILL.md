@@ -26,18 +26,20 @@ stderr is progress, a non-zero exit means it did not get what it asked for.
 Run with Node 22+ (it runs `.mts` directly, no build):
 
 ```sh
-node ~/repos/shellicar/skills-v2/skills/nats/scripts/read.mts  '{"conv":"<uuid>","n":20,"v2":true}'
-node ~/repos/shellicar/skills-v2/skills/nats/scripts/query.mts '{"conv":"<uuid>","text":"...","wait":180,"v2":true}'
-# v1 conversation (what an unbridged claude-sdk-cli publishes):
+node ~/repos/shellicar/skills-v2/skills/nats/scripts/read.mts  '{"conv":"<uuid>","n":20}'
+node ~/repos/shellicar/skills-v2/skills/nats/scripts/query.mts '{"conv":"<uuid>","text":"...","wait":180}'
+# send without waiting for the reply — the query runs on regardless:
+node ~/repos/shellicar/skills-v2/skills/nats/scripts/query.mts '{"conv":"<uuid>","text":"...","noWait":true}'
+# v1 conversation (what an unmigrated claude-sdk-cli publishes):
 node ~/repos/shellicar/skills-v2/skills/nats/scripts/read.mts  '{"conv":"<uuid>","n":20,"v1":true}'
 ```
 
-**The version is required — pass `"v1": true` or `"v2": true`, no default.** v1
-is the `conv.v1.<uuid>.changes` shape an unbridged claude-sdk-cli publishes; v2
-is the bridge shape (`conv.v2.<uuid>.changes.message`), which new conversations
-use. The version is required because a mismatch fails silently — `read` reports
-"no messages", `query` gets no reply — with nothing pointing at the cause;
-making the caller state it turns a silent empty read into an up-front choice.
+**v2 is the default.** It is the bridge shape
+(`conv.v2.<uuid>.changes.message`) that every conversation a bridge serves
+uses. Pass `"v1": true` for the older `conv.v1.<uuid>.changes` shape, still
+spoken by unmigrated producers. Getting it wrong fails silently — `read`
+reports "no messages", `query` gets no reply — so if a conversation you know
+exists reads empty, try the other version before assuming it's gone.
 
 **`conv` is the full conversation uuid.** The v2 subject keys on the whole id;
 a truncated rail id (the 8-char display form) will not match. Get a full id from
@@ -62,6 +64,9 @@ anchored to the conversation's current tip, then follows the change stream until
 that query closes, printing the committed messages as they land. `wait` is
 seconds (default 180).
 
+- `noWait: true` exits as soon as the say is accepted, printing the query id.
+  The query still runs — read it later with `read.mts`. Use this when you are
+  dispatching work rather than waiting on an answer.
 - An **agent must be attached** to the conversation, or the say gets no reply
   and it exits non-zero saying so.
 - A `say` against a stale tip is **rejected** (someone else spoke first); it

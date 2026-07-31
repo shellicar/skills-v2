@@ -7,14 +7,17 @@
 // rejected or the wait times out.
 //
 //   node query.mts '{"conv":"<uuid>","text":"hello","wait":180}'
+//   node query.mts '{"conv":"<uuid>","text":"hello","noWait":true}'
 //
-// conv is the FULL conversation uuid. wait is seconds, default 180. An agent
-// must be attached to the conversation, or the say gets no reply. NATS_URL and
-// NATS_STREAM override the defaults below.
+// conv is the FULL conversation uuid. wait is seconds, default 180; noWait
+// exits as soon as the say is accepted, without following the reply. v2 is the
+// default shape - pass { "v1": true } for a conversation on the old tree. An
+// agent must be attached to the conversation, or the say gets no reply.
+// NATS_URL and NATS_STREAM override the defaults below.
 
 import { JSONCodec, connect } from "nats";
 
-type Input = { conv: string; text: string; wait?: number; v1?: boolean; v2?: boolean };
+type Input = { conv: string; text: string; wait?: number; noWait?: boolean; v1?: boolean; v2?: boolean };
 type Block = { type?: string; text?: string; name?: string; input?: unknown };
 type Message = { type?: string; id?: string; role?: string; ts?: string; content?: Block[] };
 type Ack = { accepted?: boolean; id?: string; rejected?: boolean; reason?: string };
@@ -25,14 +28,10 @@ const stream = process.env.NATS_STREAM ?? "conv-approval";
 
 const input = parseInput();
 const waitMs = (input.wait ?? 180) * 1000;
-// Version must be explicit — pass { "v1": true } or { "v2": true }. No default:
-// a version mismatch gets no reply with nothing pointing at the cause, so the
-// caller must state which subject shape the conversation uses.
-if (!input.v1 && !input.v2) {
-  console.error('version required: pass { "v1": true } or { "v2": true }');
-  process.exit(2);
-}
-const version = input.v2 ? "v2" : "v1";
+// v2 is the default: every conversation a bridge serves is on that tree. v1 is
+// still spoken by unmigrated producers, so the flag stays — pass { "v1": true }
+// for one of those. { "v2": true } is accepted and redundant.
+const version = input.v1 ? "v1" : "v2";
 const tipSubject =
   version === "v2"
     ? `conv.v2.${input.conv}.changes.message`
@@ -116,6 +115,13 @@ try {
   }
 
   const queryId = ack.id;
+  // noWait: the say landed, which is all the caller wanted to know. The query
+  // runs on server-side regardless — read.mts picks it up later.
+  if (input.noWait) {
+    process.stdout.write(`query ${queryId} accepted\n`);
+    await nc.drain();
+    process.exit(0);
+  }
   process.stderr.write(
     `query ${queryId} accepted; waiting up to ${input.wait ?? 180}s for it to close...\n`,
   );
