@@ -104,6 +104,29 @@ them, so present the exact command and let the SC run it.
 from whoever is watching the host's process list. Present the exact command and let
 the SC run it.
 
+## A script you wrote is a wrapper too
+
+The file you just authored is the last wrapper on that list, and the easiest one to
+miss, because writing it feels like the work rather than a way to run a command. It
+isn't. A force-push inside a script is a force-push; `./cleanup.sh` shows up as one
+program name and executes every blocked command in it.
+
+So a script the SC asked for is his to run, always. Writing it is the whole task.
+Testing it is not part of that task and does not follow from it — not once, not "just
+to check it works", not because you are fairly sure the operation is a no-op on this
+branch today. You cannot know that before it runs; that is what running it tells you.
+Hand it over and stop.
+
+And write it so his run is safe too: **a script that deletes, overwrites, force-pushes,
+or otherwise can't be undone is dry-run by default.** No flags prints the plan and
+touches nothing; `--apply` is the only thing that acts. `scripting` holds the detail.
+
+That rule is not a judgement call and there is no question in it to put to him. That
+the script is routine, that a flag is friction on something run constantly, that he
+described the steps and never mentioned a dry run, that you asked and he didn't answer
+— none of these are openings. His silence is not permission. Deciding the rule doesn't
+apply here is not a decision you have.
+
 ## Backgrounding
 
 Backgrounding or detaching a process takes it out of the SC's shell, where he can't

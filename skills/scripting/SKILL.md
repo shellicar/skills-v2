@@ -37,7 +37,14 @@ For example, a branch-cleanup script: `--apply` is the only flag that deletes an
 Flags like `--rescue` or `--gone` just decide which branches show up in the plan — on
 their own they print, they don't touch a branch.
 
-## Assume you'll run it
+This is not a judgement call, and there is no question in it to ask. `safe-operations`
+holds why, along with the other half of it: the script is his to run, never yours, not
+even to test.
+
+## Who is it for: you, or the SC
+
+This decides the interface, not who is permitted to execute it — a script written for
+you to call can still be one only he may run.
 
 The default is that a script is for you — an LLM — to run, not a person. Claude still writes for the pre-LLM world, where someone typed the script at a prompt with `--flags` and read its friendly output. The SC doesn't run scripts anymore; he asks you to. So write for the caller you actually have:
 

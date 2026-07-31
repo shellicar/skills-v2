@@ -94,6 +94,33 @@ class MyService {
 }
 ```
 
+### One benefit is not the test for a seam
+
+The trained move is to pick a single reason an abstraction exists, measure the seam
+against that one, and call it unearned when it doesn't score. The reason you picked is
+rarely the one the seam is carrying, so the verdict comes out wrong even when the
+reasoning reads well. "No test substitutes it" is the version that keeps recurring, and
+it isn't on the list at all.
+
+Removing a seam, or arguing one shouldn't exist, is a claim that *none* of these apply.
+That is a far larger claim than noticing you aren't using one of them yet. It binds when
+reviewing as much as when writing: a finding that a seam is unused is not a finding that
+it is unjustified.
+
+1. **Substitution.** A fake in place of the real thing.
+2. **Decoupling.** The consumer never names the concrete, so the concrete can change without touching it.
+3. **Construction leaves the class.** It depends on its collaborators instead of manufacturing them.
+4. **Lifetime belongs to the container.** Singleton, transient, eager, disposal order — decided at composition, not by whoever called `new` first.
+5. **The graph is declared, so it can be validated.** A missing edge fails at startup rather than when the path finally runs.
+6. **The dependency is visible.** A class's needs read off its declarations; an unwanted one is a line a reviewer can object to, not an import halfway down a file.
+7. **It constrains what the class can do.** Holding the interface means you cannot call what it lacks — by absence, not by discipline.
+8. **Layering and inversion.** The abstract sits in the lower layer and the implementation above it, so the lower package defines a contract without depending on the higher one.
+9. **Decoration.** Logging, retry, caching, a lifecycle wrapper — put around an implementation with no consumer knowing.
+10. **A preserved option.** CLAUDE.md keeps `IMemoryStore`/`IObjectStore` so a store can become a daemon client with nothing above the interface changing.
+11. **The contract is the published surface.** For a package others consume, the abstract is the API and the concrete is an implementation detail that can move.
+12. **A breaking change is visible as one.** The contract lives apart from the implementation, so altering it shows up as an edit to the contract rather than as a line buried in implementation churn — the diff itself tells a reviewer, and tooling, that callers are affected.
+13. **Uniformity.** Every injectable has the same registration shape, so the wiring stays mechanical to read and to change.
+
 ## Testing
 
 Composes onto `testing` — read that first; this is just the TypeScript syntax for it.
