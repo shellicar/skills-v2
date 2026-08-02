@@ -163,7 +163,7 @@ function parseInput(): Input {
     process.exit(2);
   }
   const parsed = JSON.parse(raw) as Input;
-  if (!parsed?.conv || !parsed?.text) {
+  if (!parsed?.conv || typeof parsed?.text !== "string") {
     process.stderr.write("input needs { conv, text }\n");
     process.exit(2);
   }
