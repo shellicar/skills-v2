@@ -57,3 +57,11 @@ The default is that a script is for you — an LLM — to run, not a person. Cla
 **No manual line breaks for readability.** A command is for you to run, not a person to read on a page — `\` continuations splitting a command across lines just to look tidy serve no reader that exists. Write it as one line and let the terminal wrap it.
 
 A human-run script is the exception, and it looks different: named `--flags` a person types, maybe a `--doctor` dry-run. Write one that way only when the SC asks for a script he'll run himself. `launch-handler` reads a JSON config because a cast composes and runs it; `start-planner` takes `--flags` because the SC does.
+
+## A reusable tool for the SC lives in his dotfiles
+
+Not every script. The ones written for him to keep and reuse — a git subcommand, an
+alias, anything that ends up on his global path — belong in `~/dotfiles`, which its
+own installer symlinks into `$HOME`. Written straight into `~/bin` instead, a tool
+exists on one machine and no repo knows it is there. Check the dotfiles first;
+`~/dotfiles/CLAUDE.md` has the rules for changing anything in it.
