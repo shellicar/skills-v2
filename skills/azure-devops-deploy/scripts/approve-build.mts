@@ -1,16 +1,17 @@
 // Approve a pending deployment approval. ALWAYS run get-build-for-approval.mts first
 // and confirm the pipeline/build name matches what you intend to deploy — approving
 // the wrong id approves someone else's prod deployment.
-// node approve-build.mts '{"org":"https://dev.azure.com/eagersautomotive","project":"Deal-Hub","approvalId":"...","comment":"Approved"}'
+// echo '{"org":"https://dev.azure.com/eagersautomotive","project":"Deal-Hub","approvalId":"...","comment":"Approved"}' | node approve-build.mts
 
 import { execFileSync } from "node:child_process";
+import { EXIT_BAD_INPUT, readStdin } from "../../../shared/stdin.mts";
 
 const RESOURCE = "499b84ac-1321-427f-aa17-267ca6975798";
 
-const { org, project, approvalId, comment } = JSON.parse(process.argv[2] ?? "{}");
+const { org, project, approvalId, comment } = readStdin<{ org?: string; project?: string; approvalId?: string; comment?: string }>('{"org":"...","project":"...","approvalId":"...","comment":"Approved"}');
 if (!org || !project || !approvalId) {
-  console.error('usage: approve-build.mts \'{"org":"...","project":"...","approvalId":"...","comment":"Approved"}\'');
-  process.exit(1);
+  console.error("input needs { org, project, approvalId }");
+  process.exit(EXIT_BAD_INPUT);
 }
 
 const result = JSON.parse(

@@ -1,7 +1,12 @@
 import { JSONCodec, connect, consumerOpts } from "nats";
+import { EXIT_BAD_INPUT, readStdin } from "../../../shared/stdin.mts";
 
 const url = process.env.NATS_URL ?? "nats://127.0.0.1:4222";
-const instanceId = process.argv[2];
+const { instanceId } = readStdin<{ instanceId?: string }>('{"instanceId":"<id>"}');
+if (!instanceId) {
+  process.stderr.write("input needs { instanceId }\n");
+  process.exit(EXIT_BAD_INPUT);
+}
 
 const nc = await connect({ servers: url });
 const jc = JSONCodec<any>();

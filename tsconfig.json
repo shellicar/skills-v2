@@ -16,5 +16,9 @@
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true,
+    // Node runs these scripts by stripping types, so nothing is ever emitted and an
+    // import must carry the real .mts extension.
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
   }
 }

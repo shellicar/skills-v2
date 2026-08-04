@@ -2,16 +2,17 @@
 // directly and explicitly asked you to queue a pipeline — never as a side effect of
 // investigating or documenting. Confirm the pipeline id with list-pipelines.mts first;
 // queueing the wrong pipeline id starts someone else's build.
-// node queue-run.mts '{"org":"https://dev.azure.com/eagersautomotive","project":"Deal-Hub","pipelineId":236,"ref":"refs/tags/2.1.7"}'
+// echo '{"org":"https://dev.azure.com/eagersautomotive","project":"Deal-Hub","pipelineId":236,"ref":"refs/tags/2.1.7"}' | node queue-run.mts
 
 import { execFileSync } from "node:child_process";
+import { EXIT_BAD_INPUT, readStdin } from "../../../shared/stdin.mts";
 
 const RESOURCE = "499b84ac-1321-427f-aa17-267ca6975798";
 
-const { org, project, pipelineId, ref } = JSON.parse(process.argv[2] ?? "{}");
+const { org, project, pipelineId, ref } = readStdin<{ org?: string; project?: string; pipelineId?: number; ref?: string }>('{"org":"...","project":"...","pipelineId":123,"ref":"refs/tags/..."}');
 if (!org || !project || !pipelineId || !ref) {
-  console.error('usage: queue-run.mts \'{"org":"...","project":"...","pipelineId":123,"ref":"refs/tags/..."}\'');
-  process.exit(1);
+  console.error("input needs { org, project, pipelineId, ref }");
+  process.exit(EXIT_BAD_INPUT);
 }
 
 const result = JSON.parse(

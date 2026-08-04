@@ -6,19 +6,20 @@
 // result (failed, cancelled, skipped). Exits 2 on timeout — the target never reached a
 // terminal state in time; this is not a failure verdict, just "still not there yet".
 //
-// node wait-for-stage.mts '{"org":"https://dev.azure.com/eagersautomotive","project":"Deal-Hub","buildId":76705}'
-// node wait-for-stage.mts '{"org":"https://dev.azure.com/eagersautomotive","project":"Deal-Hub","buildId":76705,"stage":"Release to Prd","timeoutMs":300000,"pollIntervalMs":10000}'
+// echo '{"org":"https://dev.azure.com/eagersautomotive","project":"Deal-Hub","buildId":76705}' | node wait-for-stage.mts
+// echo '{"org":"https://dev.azure.com/eagersautomotive","project":"Deal-Hub","buildId":76705,"stage":"Release to Prd","timeoutMs":300000,"pollIntervalMs":10000}' | node wait-for-stage.mts
 
 import { execFileSync } from "node:child_process";
+import { EXIT_BAD_INPUT, readStdin } from "../../../shared/stdin.mts";
 
 const RESOURCE = "499b84ac-1321-427f-aa17-267ca6975798";
 const DEFAULT_TIMEOUT_MS = 300_000;
 const DEFAULT_POLL_INTERVAL_MS = 10_000;
 
-const { org, project, buildId, stage, timeoutMs, pollIntervalMs } = JSON.parse(process.argv[2] ?? "{}");
+const { org, project, buildId, stage, timeoutMs, pollIntervalMs } = readStdin<{ org?: string; project?: string; buildId?: number; stage?: string; timeoutMs?: number; pollIntervalMs?: number }>('{"org":"...","project":"...","buildId":123,"stage":"optional stage name","timeoutMs":300000,"pollIntervalMs":10000}');
 if (!org || !project || !buildId) {
-  console.error('usage: wait-for-stage.mts \'{"org":"...","project":"...","buildId":123,"stage":"optional stage name","timeoutMs":300000,"pollIntervalMs":10000}\'');
-  process.exit(1);
+  console.error("input needs { org, project, buildId }");
+  process.exit(EXIT_BAD_INPUT);
 }
 
 const timeout = typeof timeoutMs === "number" ? timeoutMs : DEFAULT_TIMEOUT_MS;

@@ -86,13 +86,13 @@ Don't assume. If you can't tell from the code, ask.
 **Discover pipeline ids** with `list-pipelines.mts` — don't guess an id, don't read one off a UI screenshot or a captured browser request. Ids drift and the same-looking pipeline name can exist more than once (e.g. an old pre-restructure definition alongside the current one).
 
 ```
-node scripts/list-pipelines.mts '{"org":"https://dev.azure.com/<org>","project":"<project>","name":"api"}'
+echo '{"org":"https://dev.azure.com/<org>","project":"<project>","name":"api"}' | node scripts/list-pipelines.mts
 ```
 
 **Queue a run** against a branch or tag with `queue-run.mts`:
 
 ```
-node scripts/queue-run.mts '{"org":"https://dev.azure.com/<org>","project":"<project>","pipelineId":236,"ref":"refs/tags/2.1.7"}'
+echo '{"org":"https://dev.azure.com/<org>","project":"<project>","pipelineId":236,"ref":"refs/tags/2.1.7"}' | node scripts/queue-run.mts
 ```
 
 This queues the pipeline's full default stage graph (build, then whatever release stages the pipeline template defines) starting from that ref — it does not scope the run to one environment or skip stages unless you pass `stagesToSkip`. A tst stage that auto-deploys will run; uat/prd stages that gate on an environment approval will sit waiting for `approve-build.mts` per pipeline. Repeat `queue-run.mts` once per pipeline you were asked to queue (e.g. api, integration, worker) — there is no single call that queues several pipelines at once.
@@ -112,7 +112,7 @@ Webapp  | 0.1.36 | build 75402
 Infra   | 0.1.34 | build 73024
 ```
 
-Scripts for this live in `scripts/` next to this file (Node 22+, run `.mts` directly, each takes one JSON arg):
+Scripts for this live in `scripts/` next to this file (Node 22+, run `.mts` directly). Each reads one JSON object on stdin and exits `64` if that input is missing or malformed:
 
 - **`list-pending-approvals.mts`** — lists pending approvals, resolved to build id/number, optionally filtered to one pipeline by exact name. Use this instead of a bare unfiltered API call — the raw list spans every pipeline in the project and invites picking an id by eyeballing a name in a huge dump.
 - **`get-approval-id.mts`** — given a `buildId`, finds the pending approval id and which stage (`Release to Prd` etc.) it's blocking.
@@ -122,12 +122,12 @@ Scripts for this live in `scripts/` next to this file (Node 22+, run `.mts` dire
 - **`wait-for-stage.mts`** — polls a build (or one named stage within it) until it reaches a terminal state, or a timeout elapses. Azure DevOps has no blocking watch API, so this is the sanctioned polling loop — use it instead of hand-rolling sleep/recheck. Exits `0` on `succeeded`, `1` on any other terminal result (failed/cancelled/skipped), `2` on timeout (not a verdict — it just didn't finish in time). Defaults: 300s timeout, 10s poll interval, both overridable.
 
 ```
-node scripts/list-pending-approvals.mts '{"org":"https://dev.azure.com/<org>","project":"<project>","pipeline":"Customer-Payments - API"}'
-node scripts/get-approval-id.mts '{"org":"https://dev.azure.com/<org>","project":"<project>","buildId":75401}'
-node scripts/get-build-for-approval.mts '{"org":"https://dev.azure.com/<org>","project":"<project>","approvalId":"..."}'
-node scripts/cancel-build.mts '{"org":"https://dev.azure.com/<org>","project":"<project>","buildId":75374}'
-node scripts/approve-build.mts '{"org":"https://dev.azure.com/<org>","project":"<project>","approvalId":"..."}'
-node scripts/wait-for-stage.mts '{"org":"https://dev.azure.com/<org>","project":"<project>","buildId":75401,"stage":"Release to Prd"}'
+echo '{"org":"https://dev.azure.com/<org>","project":"<project>","pipeline":"Customer-Payments - API"}' | node scripts/list-pending-approvals.mts
+echo '{"org":"https://dev.azure.com/<org>","project":"<project>","buildId":75401}' | node scripts/get-approval-id.mts
+echo '{"org":"https://dev.azure.com/<org>","project":"<project>","approvalId":"..."}' | node scripts/get-build-for-approval.mts
+echo '{"org":"https://dev.azure.com/<org>","project":"<project>","buildId":75374}' | node scripts/cancel-build.mts
+echo '{"org":"https://dev.azure.com/<org>","project":"<project>","approvalId":"..."}' | node scripts/approve-build.mts
+echo '{"org":"https://dev.azure.com/<org>","project":"<project>","buildId":75401,"stage":"Release to Prd"}' | node scripts/wait-for-stage.mts
 ```
 
 **These scripts exist for safety, not convenience — follow them, don't call `az devops invoke` or `az rest` against the approvals/build API by hand.** An approval id approves a specific pipeline's prod deployment with no undo; the safe path is always id → confirmed build → act, and that path only holds if every step goes through `get-build-for-approval.mts` first. Reaching for `az rest` directly skips that check and reopens the exact failure mode from this session: an id picked by eye out of an unfiltered dump, approved on trust. If a new operation isn't covered by an existing script, write a new script for it — don't run the API call ad hoc.
