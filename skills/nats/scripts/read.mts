@@ -1,33 +1,31 @@
 // Read the last N committed messages of a conversation from the JetStream
 // change stream, newest last, as a readable transcript.
 //
-// Run by an LLM, not a person: takes one JSON argument, writes the transcript
-// to stdout, is quiet and exits 0 on success, non-zero on a usage error.
+// Run by an LLM, not a person: takes one JSON object on stdin, writes the
+// transcript to stdout, is quiet and exits 0 on success, non-zero on a usage error.
 //
-//   node read.mts '{"conv":"<uuid>","n":20}'
+//   echo '{"conv":"<uuid>","n":20}' | node read.mts
 //
 // conv is the FULL conversation uuid (the v2 subject token); a truncated rail
 // id will not match. n defaults to 20. NATS_URL and NATS_STREAM override the
 // defaults below.
 
 import { JSONCodec, connect, consumerOpts } from "nats";
+import { EXIT_BAD_INPUT, readStdin } from "../../../shared/stdin.mts";
 
-type Input = { conv: string; n?: number; v2?: boolean };
+type Input = { conv: string; n?: number };
 type Block = { type?: string; text?: string; name?: string; input?: unknown };
 type Message = { type?: string; id?: string; role?: string; ts?: string; content?: Block[] };
 
 const url = process.env.NATS_URL ?? "nats://127.0.0.1:4222";
 const stream = process.env.NATS_STREAM ?? "conv-approval";
 
-const input = parseInput();
-// v2 is the default: every conversation a bridge serves is on that tree. v1 is
-// still spoken by unmigrated producers, so the flag stays — pass { "v1": true }
-// for one of those. { "v2": true } is accepted and redundant.
-const version = input.v1 ? "v1" : "v2";
-const subject =
-  version === "v2"
-    ? `conv.v2.${input.conv}.changes.message`
-    : `conv.v1.${input.conv}.changes`;
+const input = readStdin<Input>('{"conv":"<uuid>","n":20}');
+if (!input.conv) {
+  process.stderr.write("input needs { conv }\n");
+  process.exit(EXIT_BAD_INPUT);
+}
+const subject = `conv.v2.${input.conv}.changes.message`;
 const n = input.n ?? 20;
 
 const nc = await connect({ servers: url });
@@ -53,8 +51,7 @@ try {
   const messages: Message[] = [];
   for await (const m of sub) {
     const decoded = jc.decode(m.data);
-    // v2's subject is already message-only; v1's flat .changes carries every change type, so keep only messages.
-    if (version === "v2" || decoded.type === "message") messages.push(decoded);
+    messages.push(decoded);
     if (m.info.pending === 0) break; // caught up to the last stored message
   }
 
@@ -63,20 +60,6 @@ try {
   }
 } finally {
   await nc.drain();
-}
-
-function parseInput(): Input {
-  const raw = process.argv[2];
-  if (!raw) {
-    process.stderr.write('usage: read.mts \'{"conv":"<uuid>","n":20}\'\n');
-    process.exit(2);
-  }
-  const parsed = JSON.parse(raw) as Input;
-  if (!parsed?.conv) {
-    process.stderr.write("input needs { conv }\n");
-    process.exit(2);
-  }
-  return parsed;
 }
 
 function render(m: Message): string {

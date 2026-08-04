@@ -5,11 +5,11 @@
 // the conversation's record and reacts. The caller mints the conversation id
 // for a fresh spawn — existence follows from the record, no id is returned.
 //
-// Run by an LLM, not a person: takes one JSON argument, writes the reply to
+// Run by an LLM, not a person: takes one JSON object on stdin, writes the reply to
 // stdout, progress to stderr, exits non-zero on rejection or no reply.
 //
-//   node service.mts '{"world":"local","conv":"<uuid>"}'
-//   node service.mts '{"world":"local","conv":"<uuid>","cwd":"/path/to/worktree"}'
+//   echo '{"world":"local","conv":"<uuid>"}' | node service.mts
+//   echo '{"world":"local","conv":"<uuid>","cwd":"/path/to/worktree"}' | node service.mts
 //
 // conv is the FULL conversation uuid (mint one with uuidgen for a spawn).
 // cwd/model are strict when named: a value the world cannot establish rejects
@@ -18,13 +18,18 @@
 
 import { randomUUID } from "node:crypto";
 import { JSONCodec, connect } from "nats";
+import { readStdin } from "../../../shared/stdin.mts";
 
 type Input = { world: string; conv?: string; cwd?: string; model?: string; wait?: number };
 type Reply = { accepted?: boolean; rejected?: boolean; reason?: string; detail?: string };
 
 const url = process.env.NATS_URL ?? "nats://127.0.0.1:4222";
 
-const input = parseInput();
+const input = readStdin<Input>('{"world":"local","conv":"<uuid>","cwd":"..."}');
+if (!input.world) {
+  process.stderr.write("input needs { world }\n");
+  process.exit(2);
+}
 // Minting here (not in the servicer) matches the wire's creation model: the
 // caller names the conversation and asks for it to be served.
 const conv = input.conv ?? randomUUID();
@@ -61,18 +66,4 @@ try {
   }
 } finally {
   await nc.drain();
-}
-
-function parseInput(): Input {
-  const raw = process.argv[2];
-  if (!raw) {
-    process.stderr.write('usage: service.mts \'{"world":"local","conv":"<uuid>","cwd":"..."}\'\n');
-    process.exit(2);
-  }
-  const parsed = JSON.parse(raw) as Input;
-  if (!parsed?.world) {
-    process.stderr.write("input needs { world }\n");
-    process.exit(2);
-  }
-  return parsed;
 }

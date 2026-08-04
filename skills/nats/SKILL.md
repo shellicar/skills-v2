@@ -20,26 +20,27 @@ engaged with any point after you showed the text, the text is stale — show it
 again. Violating this gate has been ruled termination-level.
 
 Three tools over the conversation bus (docs/spec in the tower repo). All take one
-JSON argument and are meant for you to run, not a person: stdout is the result,
-stderr is progress, a non-zero exit means it did not get what it asked for.
+JSON object on stdin and are meant for you to run, not a person: stdout is the
+result, stderr is progress, a non-zero exit means it did not get what it asked for.
 
 Run with Node 22+ (it runs `.mts` directly, no build):
 
 ```sh
-node ~/repos/shellicar/skills-v2/skills/nats/scripts/read.mts  '{"conv":"<uuid>","n":20}'
-node ~/repos/shellicar/skills-v2/skills/nats/scripts/query.mts '{"conv":"<uuid>","text":"...","wait":180}'
+echo '{"conv":"<uuid>","n":20}' | node ~/repos/shellicar/skills-v2/skills/nats/scripts/read.mts
+echo '{"conv":"<uuid>","from":"<uuid>","text":"...","wait":180}' | node ~/repos/shellicar/skills-v2/skills/nats/scripts/query.mts
 # send without waiting for the reply — the query runs on regardless:
-node ~/repos/shellicar/skills-v2/skills/nats/scripts/query.mts '{"conv":"<uuid>","text":"...","noWait":true}'
-# v1 conversation (what an unmigrated claude-sdk-cli publishes):
-node ~/repos/shellicar/skills-v2/skills/nats/scripts/read.mts  '{"conv":"<uuid>","n":20,"v1":true}'
+echo '{"conv":"<uuid>","from":"<uuid>","text":"...","noWait":true}' | node ~/repos/shellicar/skills-v2/skills/nats/scripts/query.mts
+# a long message text is easier to keep in a file:
+node ~/repos/shellicar/skills-v2/skills/nats/scripts/query.mts < payload.json
 ```
 
-**v2 is the default.** It is the bridge shape
-(`conv.v2.<uuid>.changes.message`) that every conversation a bridge serves
-uses. Pass `"v1": true` for the older `conv.v1.<uuid>.changes` shape, still
-spoken by unmigrated producers. Getting it wrong fails silently — `read`
-reports "no messages", `query` gets no reply — so if a conversation you know
-exists reads empty, try the other version before assuming it's gone.
+**The payload goes on stdin, and there is no argv form.** Endpoint scanning
+(SentinelOne on the work machine) SIGKILLs `node` before it starts when a long
+message text sits in the process argv. The kill lands in ~20ms with no output, so it
+reads as "writes are broken" rather than as a scanner.
+
+**v2 is the only conversation tree.** Messages are `conv.v2.<uuid>.changes.message`
+and a send is `conv.v2.<uuid>.requests.say`.
 
 **`conv` is the full conversation uuid.** The v2 subject keys on the whole id;
 a truncated rail id (the 8-char display form) will not match. Get a full id from
@@ -51,7 +52,7 @@ nats stream subjects conv-approval "conv.v2.*.changes.message"
 
 ## read — catch up on a conversation
 
-`read.mts '{"conv":"<uuid>","n":20}'` prints the last `n` committed messages
+`echo '{"conv":"<uuid>","n":20}' | read.mts` prints the last `n` committed messages
 (default 20), oldest first, as a transcript: each message a `role · ts` header
 and its content. Tool calls show as `[tool_use: name] input`; tool results and
 other blocks show as a labelled placeholder (the full content vocabulary is not
@@ -59,10 +60,16 @@ rendered yet). It reads only committed messages, never the in-flight stream.
 
 ## query — say something and wait for the answer
 
-`query.mts '{"conv":"<uuid>","text":"...","wait":180}'` publishes a `say`
-anchored to the conversation's current tip, then follows the change stream until
-that query closes, printing the committed messages as they land. `wait` is
-seconds (default 180).
+`echo '{"conv":"<uuid>","from":"<uuid>","text":"...","wait":180}' | query.mts`
+publishes a `say` anchored to the conversation's current tip, then follows the change
+stream until that query closes, printing the committed messages as they land. `wait`
+is seconds (default 180).
+
+**`from` is your own conversation id, and it is required.** It lands on the wire
+as `from: { kind: "agent", conversationId }`, so a say is always attributable and
+a reply has somewhere to go. Nothing tells a session its own id automatically, so
+if you do not know yours, ask — and when you spawn a conversation yourself you
+mint its id, so pass that value to the child as the `from` it should use.
 
 - `noWait: true` exits as soon as the say is accepted, printing the query id.
   The query still runs — read it later with `read.mts`. Use this when you are
@@ -76,7 +83,7 @@ seconds (default 180).
 
 ## service — ask a world to serve a conversation (spawn or adopt)
 
-`service.mts '{"world":"local","conv":"<uuid>","cwd":"/path"}'` sends the agent
+`echo '{"world":"local","conv":"<uuid>","cwd":"/path"}' | service.mts` sends the agent
 concern's `service` request (`agent.v1.{world}.requests.service`) and prints the
 reply as JSON. One verb for spawn, resume, and takeover: the servicer reads the
 conversation's record and reacts — no history spawns fresh, history re-attaches,
@@ -90,7 +97,7 @@ fresh uuid (the caller names the conversation; nothing is "returned").
 - `failed` carries a free-text `detail` naming the broken step.
 - No reply means no bridge is serving that world.
 - Accepted: the conversation exists on the wire — follow up with `query.mts`
-  against the printed `conversationId` (it's a v2 conversation).
+  against the printed `conversationId`.
 
 ## Configuration
 

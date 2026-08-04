@@ -2,22 +2,29 @@
 // request, then follow the change stream until that query closes, printing the
 // committed messages of the query as they land.
 //
-// Run by an LLM, not a person: takes one JSON argument, writes the reply
-// transcript to stdout, progress to stderr, exits non-zero if the say is
-// rejected or the wait times out.
+// Run by an LLM, not a person: takes one JSON object on stdin, writes the reply
+// transcript to stdout, progress to stderr. Exits 1 if the say is rejected or the
+// query did not complete, 2 if the wait timed out before it closed.
 //
-//   node query.mts '{"conv":"<uuid>","text":"hello","wait":180}'
-//   node query.mts '{"conv":"<uuid>","text":"hello","noWait":true}'
+//   echo '{"conv":"<uuid>","from":"<uuid>","text":"hello","wait":180}' | node query.mts
+//   echo '{"conv":"<uuid>","from":"<uuid>","text":"hello","noWait":true}' | node query.mts
+//   node query.mts < payload.json
 //
-// conv is the FULL conversation uuid. wait is seconds, default 180; noWait
-// exits as soon as the say is accepted, without following the reply. v2 is the
-// default shape - pass { "v1": true } for a conversation on the old tree. An
-// agent must be attached to the conversation, or the say gets no reply.
+// conv is the FULL conversation uuid being spoken INTO; from is the FULL
+// conversation uuid of the sender, recorded on the wire as
+// `from: { kind: "agent", conversationId }`. It is required so that a say is
+// always attributable: an unattributed message is indistinguishable from the
+// human's own, and a reply then has no sender to route back to. A conversation
+// learns its own id from whoever minted it (service.mts's caller), so a parent
+// can always tell a child the value to pass here. wait is seconds, default 180; noWait
+// exits as soon as the say is accepted, without following the reply. An agent must
+// be attached to the conversation, or the say gets no reply.
 // NATS_URL and NATS_STREAM override the defaults below.
 
 import { JSONCodec, connect } from "nats";
+import { EXIT_BAD_INPUT, readStdin } from "../../../shared/stdin.mts";
 
-type Input = { conv: string; text: string; wait?: number; noWait?: boolean; v1?: boolean; v2?: boolean };
+type Input = { conv: string; from: string; text: string; wait?: number; noWait?: boolean };
 type Block = { type?: string; text?: string; name?: string; input?: unknown };
 type Message = { type?: string; id?: string; role?: string; ts?: string; content?: Block[] };
 type Ack = { accepted?: boolean; id?: string; rejected?: boolean; reason?: string };
@@ -26,22 +33,15 @@ type Change = Message & { queryId?: string; reason?: string };
 const url = process.env.NATS_URL ?? "nats://127.0.0.1:4222";
 const stream = process.env.NATS_STREAM ?? "conv-approval";
 
-const input = parseInput();
+const input = readStdin<Input>('{"conv":"<uuid>","from":"<uuid>","text":"hello","wait":180}');
+if (!input.conv || !input.from || typeof input.text !== "string") {
+  process.stderr.write("input needs { conv, from, text }\n");
+  process.exit(EXIT_BAD_INPUT);
+}
 const waitMs = (input.wait ?? 180) * 1000;
-// v2 is the default: every conversation a bridge serves is on that tree. v1 is
-// still spoken by unmigrated producers, so the flag stays — pass { "v1": true }
-// for one of those. { "v2": true } is accepted and redundant.
-const version = input.v1 ? "v1" : "v2";
-const tipSubject =
-  version === "v2"
-    ? `conv.v2.${input.conv}.changes.message`
-    : `conv.v1.${input.conv}.changes`;
-const watchSubject =
-  version === "v2" ? `conv.v2.${input.conv}.changes.>` : `conv.v1.${input.conv}.changes`;
-const saySubject =
-  version === "v2"
-    ? `conv.v2.${input.conv}.requests.say`
-    : `conv.v1.${input.conv}.requests`;
+const tipSubject = `conv.v2.${input.conv}.changes.message`;
+const watchSubject = `conv.v2.${input.conv}.changes.>`;
+const saySubject = `conv.v2.${input.conv}.requests.say`;
 
 const nc = await connect({ servers: url });
 const jc = JSONCodec<unknown>();
@@ -52,42 +52,19 @@ try {
   // conversation. A stale tip is rejected, not applied.
   let tip: string | null = null;
   try {
-    // Empty-guard first: an ordered consumer over a subject with no messages
-    // would block forever (same reason read.mts guards it).
-    await jsm.streams.getMessage(stream, { last_by_subj: tipSubject });
-    if (version === "v2") {
-      const last = await jsm.streams.getMessage(stream, { last_by_subj: tipSubject });
-      tip = (jc.decode(last.data) as Message).id ?? null;
-    } else {
-      // v1's tip is NOT always the last message: a `tip_moved` event (rewind /
-      // fast-forward) can move it with no new message, and a `revision` never
-      // moves it at all (conversation-spec.md "tip_moved" / "Revision and tip
-      // movement are two orthogonal mechanisms"). Fold the whole change
-      // stream, same as the CLI's own `Conversation` does, instead of trusting
-      // whatever the single last event happens to be.
-      const js = nc.jetstream();
-      const consumer = await js.consumers.get(stream, { filterSubjects: [tipSubject] });
-      const tipSub = await consumer.consume();
-      for await (const m of tipSub) {
-        const decoded = jc.decode(m.data) as { type?: string; id?: string; to?: string };
-        if (decoded.type === "message") tip = decoded.id ?? tip;
-        else if (decoded.type === "tip_moved") tip = decoded.to ?? tip;
-        if (m.info.pending === 0) break;
-      }
-    }
+    const last = await jsm.streams.getMessage(stream, { last_by_subj: tipSubject });
+    tip = (jc.decode(last.data) as Message).id ?? null;
   } catch {
+    // Nothing on the subject yet, so this is an empty conversation: it anchors to null.
     tip = null;
   }
 
   // Subscribe to the change stream BEFORE sending, so the reply cannot be missed.
   const sub = nc.subscribe(watchSubject);
 
-  // v1's subject is flat (no `.say` leaf), so the body carries the type; v2's
-  // subject leaf already says it, so the body doesn't repeat it.
   const say = {
-    ...(version === "v1" ? { type: "say" } : {}),
     ts: new Date().toISOString(),
-    from: { kind: "human" },
+    from: { kind: "agent", conversationId: input.from },
     text: input.text,
     precondition: { tip },
   };
@@ -132,9 +109,8 @@ try {
   for await (const m of sub) {
     const body = jc.decode(m.data) as Change;
     if (body?.queryId !== queryId) continue;
-    // v2 discriminates by sub-subject; v1's flat .changes carries the change type on the payload.
-    const isClose = version === "v2" ? m.subject.endsWith(".changes.query") : body.type === "query";
-    const isMessage = version === "v2" ? m.subject.endsWith(".changes.message") : body.type === "message";
+    const isClose = m.subject.endsWith(".changes.query");
+    const isMessage = m.subject.endsWith(".changes.message");
     if (isClose) {
       process.stdout.write(`\u2500\u2500 query ${queryId} closed: ${body.reason}\n`);
       closed = true;
@@ -150,24 +126,10 @@ try {
   clearTimeout(timer);
   if (!closed) {
     process.stderr.write("timed out before the query closed\n");
-    process.exitCode = 1;
+    process.exitCode = 2;
   }
 } finally {
   await nc.drain();
-}
-
-function parseInput(): Input {
-  const raw = process.argv[2];
-  if (!raw) {
-    process.stderr.write('usage: query.mts \'{"conv":"<uuid>","text":"hello"}\'\n');
-    process.exit(2);
-  }
-  const parsed = JSON.parse(raw) as Input;
-  if (!parsed?.conv || typeof parsed?.text !== "string") {
-    process.stderr.write("input needs { conv, text }\n");
-    process.exit(2);
-  }
-  return parsed;
 }
 
 function render(m: Message): string {
