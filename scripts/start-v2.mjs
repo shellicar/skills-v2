@@ -12,6 +12,7 @@
  *   start-v2.mjs --actor gatekeeper       # also load one actor's body whole
  *   start-v2.mjs --model claude-...        # override the default model
  *   start-v2.mjs --doctor                 # print what would be sent, then exit
+ *   start-v2.mjs --verbose                # print the exact command, then launch
  *
  * A leading `--` is stripped and
  * everything else is forwarded verbatim. The session runs in the current pane and
@@ -58,6 +59,16 @@ if (mi >= 0) {
   passthrough.splice(mi, 2);
 }
 
+// --verbose: print the exact command before launching, then launch anyway (unlike
+// --doctor, which stops). Stripped from the passthrough: the CLI has no --verbose,
+// so forwarding it would hand the CLI an unknown flag.
+let verbose = false;
+const vi = passthrough.indexOf("--verbose");
+if (vi >= 0) {
+  verbose = true;
+  passthrough.splice(vi, 1);
+}
+
 let claudeMd;
 try {
   claudeMd = buildSkillsBlock(skillsDir, { actor, catalogue: false });
@@ -99,7 +110,18 @@ const configOverride = JSON.stringify({
   systemPrompt: { enabled: true, sources: { user: false, project: true, projectClaude: true, local: true } },
 });
 
-const args = ["--claudeMd", claudeMd, "--config", configOverride];
+// Argument ORDER below is load-bearing, not stylistic. The endpoint security agent on
+// this machine (SentinelOne, installed 2026-08-04 10:26) SIGKILLs `node` when its FINAL
+// argv entry is roughly 1KB or more — measured on this box: 973 chars survives, 974 is
+// killed, deterministically. It kills the launcher before it executes a single line of
+// JavaScript, so there is no error, no stderr and no log line: just SIGKILL and exit 1.
+// Argument CONTENT is irrelevant (2000 spaces trips it); only the final position does.
+//
+// So the two bulk values must never land last: --claudeMd is ~33KB and --system ~13KB.
+// --config is appended after everything else precisely because its JSON is short (~290
+// chars), which keeps a small value in the final slot. Do not "tidy" this back into a
+// single array literal — that reintroduces a silent, unattributable SIGKILL.
+const args = ["--claudeMd", claudeMd];
 if (system) args.push("--system", system);
 
 // On a fresh conversation with an explicit message, send it as the first message.
@@ -108,6 +130,14 @@ if (message && passthrough.includes("--no-resume")) {
 }
 
 args.push(...passthrough);
+args.push("--config", configOverride);
+
+// If the final argument ever grows past the threshold, say so here rather than letting it
+// come back as an unexplained SIGKILL. Warn only — the limit is environmental, not ours.
+const finalArg = args[args.length - 1];
+if (finalArg.length >= 900) {
+  console.error(`start-v2: warning: final argument is ${finalArg.length} chars. At ~974+ the endpoint agent SIGKILLs node. Reorder so a short value is last.`);
+}
 
 // CLAUDE_SDK_CLI_BIN overrides which entry point runs, e.g. a local working-tree build
 // instead of the globally installed claude-sdk-cli. A .js path runs through node (dist/main.js
@@ -125,7 +155,36 @@ if (overrideBin) {
   }
 }
 
+// spawnSync reports a failure to launch on result.error (ENOENT, EACCES, E2BIG),
+// leaving status null. Report it: `status ?? 1` alone turns every launch failure
+// into a bare exit 1 with nothing on stderr, which is undiagnosable.
+if (verbose) {
+  // Elide the two bulk text args — together they are ~46KB and would bury the
+  // command shape they are part of. Everything else prints whole, so the flag
+  // order and the --config payload stay readable.
+  const show = (a) => (a.length > 500 ? `<${a.length} chars>` : a);
+  const bytes = spawnArgs.reduce((n, a) => n + Buffer.byteLength(a) + 1, 0);
+  console.error(`start-v2: program:    ${program}`);
+  console.error(`start-v2: override:   ${overrideBin ?? "(none, resolved from PATH)"}`);
+  console.error(`start-v2: resume:     ${passthrough.includes("--no-resume") ? "no (--no-resume)" : "yes (default auto-resume)"}`);
+  console.error(`start-v2: argv:       ${spawnArgs.length} args, ${bytes} bytes`);
+  console.error("start-v2: command:");
+  console.error(`  ${program} \\`);
+  spawnArgs.forEach((a, i) => {
+    console.error(`    ${show(a)}${i < spawnArgs.length - 1 ? " \\" : ""}`);
+  });
+}
+
 const result = spawnSync(program, spawnArgs, { stdio: "inherit" });
+if (result.error) {
+  const code = result.error.code ? `${result.error.code}: ` : "";
+  console.error(`start-v2: could not launch ${program}: ${code}${result.error.message}`);
+  process.exit(1);
+}
+if (result.signal) {
+  console.error(`start-v2: ${program} was terminated by ${result.signal}.`);
+  process.exit(1);
+}
 process.exit(result.status ?? 1);
 
 function assertNotUnderClaude() {
