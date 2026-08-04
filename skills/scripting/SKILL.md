@@ -48,9 +48,9 @@ you to call can still be one only he may run.
 
 The default is that a script is for you — an LLM — to run, not a person. Claude still writes for the pre-LLM world, where someone typed the script at a prompt with `--flags` and read its friendly output. The SC doesn't run scripts anymore; he asks you to. So write for the caller you actually have:
 
-- **Structured input.** Prefer JSON in over positional args — it composes without the quoting and string-splitting that break agent-driven calls, the same reason the good tools take structured input.
+- **Input is JSON on stdin, never argv.** One shape for every script, so a caller never has to work out whether a value is an argument or a field, and it composes without the quoting and string-splitting that break agent-driven calls. The harder reason: a long value sitting in the process argv trips endpoint security scanning (SentinelOne on the work machine), which SIGKILLs the process before it starts, in about 20ms, with no output — so it reads as the script being broken rather than as a scanner. Read fd 0: `readFileSync(0, "utf8")` in node (`readStdin` in `shared/stdin.mts` does it here), `INPUT=$(cat)` then `jq` in shell. Guard the no-pipe case or an interactive run blocks on the terminal forever.
 - **Output that fits the tool** — not JSON by default. Structured (JSON) when it returns data or a status a caller parses: `preflight` reporting identity, branch, and tree is this. Plain lines when the output is a stream to scan or pipe: a file search or a grep is naturally linewise, and wrapping it in JSON helps no one. Match the shape to what the output *is*.
-- **Exit non-zero on failure**, so a caller can branch on it.
+- **Exit codes say what the caller does next**, not how bad it was. `0` succeeded. `1` it ran and the answer is no: failed, rejected, refused. `2` no answer yet: timed out or still running, so retrying is meaningful. `64` the call itself is wrong, so only fixing the call helps — that's `EX_USAGE` from sysexits.h, and it sits far above the low codes so a script can add its own verdicts later without ever colliding with it. Negative codes don't exist: the status is 8 unsigned bits, so `-1` arrives as 255 and `-2` as 254, silently.
 - **Quiet on success.** No noise unless there's something to return.
 - **No interactive prompts** — you can't answer them; take every input up front.
 
