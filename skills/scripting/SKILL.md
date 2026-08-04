@@ -25,9 +25,15 @@ Ask before installing any other SDKs or software.
 ## Dry run by default
 
 A script that deletes, overwrites, or otherwise can't be undone defaults to a dry run.
+The shape is one computation, shown before it runs:
 
-- **Default action: print the plan, touch nothing.** Running the script with no flags
-  is always safe.
+- **No flags: print the plan, then exit.** Nothing is touched. Running the script with
+  no flags is always safe.
+- **`--apply`: print the same plan, wait 5 seconds, then carry it out.** The wait is the
+  abort window, not a prompt — it asks nothing and needs no answer, it just holds the
+  irreversible step open long enough for the SC to read it and Ctrl-C.
+- **Act on the plan you printed, not a fresh one.** Compute once, hold it, print from
+  it, execute from it. Recomputing after the wait reopens the gap this closes.
 - **One flag acts, `--apply`.** Every other flag only narrows *what's in the plan* —
   which items are considered. None of them cause anything to happen by itself.
 - **Never let a flag both select and execute.** The moment one does, running the
@@ -36,6 +42,13 @@ A script that deletes, overwrites, or otherwise can't be undone defaults to a dr
 For example, a branch-cleanup script: `--apply` is the only flag that deletes anything.
 Flags like `--rescue` or `--gone` just decide which branches show up in the plan — on
 their own they print, they don't touch a branch.
+
+Why `--apply` prints the plan itself, instead of trusting the dry run the SC already
+ran: two invocations are two readings of the world. The plan he approved was computed
+from the tree, the remote, the settings file as they stood; the second run computes
+again from whatever they are now. He approves one thing and executes another, and
+neither run is in a position to tell him they differed. One run removes the gap — what
+he saw is what happens, because it is the same plan.
 
 This is not a judgement call, and there is no question in it to ask. `safe-operations`
 holds why, along with the other half of it: the script is his to run, never yours, not
