@@ -75,22 +75,27 @@ const run = (input: unknown, bucket = BUCKET): Promise<{ status: number | null; 
   });
 
 const brief = "spawn.mts self-test brief. No recipient: this say is answered by check-spawn.mts.";
+const opener = "A word from the one commissioning this.";
 
 // Bad input: cwd is required, because a worker spawned into the wrong tree edits the
 // wrong repo.
-const missing = await run({ world: WORLD, owner: OWNER, name: "Selftest", message: brief });
+const missing = await run({ world: WORLD, owner: OWNER, name: "Selftest", opener, message: brief });
 check("missing cwd exits 64", missing.status === 64, `status=${missing.status}`);
+
+// And an opener, because a brief nobody is speaking is one a worker has to guess at.
+const unopened = await run({ world: WORLD, cwd: "/tmp", owner: OWNER, name: "Selftest", message: brief });
+check("missing opener exits 64", unopened.status === 64, `status=${unopened.status}`);
 
 // A rejected service stops everything: no line, no brief.
 serviceAnswer = { rejected: true, reason: "invalid_cwd" };
 lastSay = null;
-const rejected = await run({ world: WORLD, cwd: "/nowhere", owner: OWNER, name: "Selftest", message: brief, conv: CONV });
+const rejected = await run({ world: WORLD, cwd: "/nowhere", owner: OWNER, name: "Selftest", opener, message: brief, conv: CONV });
 check("rejected service exits 1", rejected.status === 1, `status=${rejected.status}`);
 check("rejected service prints the reason", rejected.stdout.includes("invalid_cwd"), rejected.stdout);
 check("rejected service sends no brief", lastSay === null);
 
 // No bridge at all is a different failure from a rejection, and must not be retried.
-const nobody = await run({ world: "spawn-selftest-nobody", cwd: "/tmp", owner: OWNER, name: "Selftest", message: brief, wait: 1 });
+const nobody = await run({ world: "spawn-selftest-nobody", cwd: "/tmp", owner: OWNER, name: "Selftest", opener, message: brief, wait: 1 });
 check("unserved world exits 1", nobody.status === 1, `status=${nobody.status}`);
 check("unserved world names the bridge", nobody.stderr.includes("no servicer replied"), nobody.stderr);
 
@@ -100,7 +105,7 @@ check("unserved world names the bridge", nobody.stderr.includes("no servicer rep
 serviceAnswer = { accepted: true };
 lastSay = null;
 await nc.jetstream().views.kv(TINY_BUCKET, { maxValueSize: 8 });
-const noLine = await run({ world: WORLD, cwd: "/tmp", owner: OWNER, name: "Selftest", message: brief, conv: CONV }, TINY_BUCKET);
+const noLine = await run({ world: WORLD, cwd: "/tmp", owner: OWNER, name: "Selftest", opener, message: brief, conv: CONV }, TINY_BUCKET);
 check("an unwritable line exits 1", noLine.status === 1, `status=${noLine.status}`);
 check("an unwritable line says the conversation is attached with none", noLine.stderr.includes("attached but has NO reporting line"), noLine.stderr);
 check("an unwritable line sends no brief", lastSay === null, JSON.stringify(lastSay));
@@ -108,7 +113,7 @@ check("an unwritable line sends no brief", lastSay === null, JSON.stringify(last
 // The whole path.
 serviceAnswer = { accepted: true };
 lastSay = null;
-const ok = await run({ world: WORLD, cwd: "/tmp", owner: OWNER, name: "Selftest", message: brief, conv: CONV, model: "claude-opus-5" });
+const ok = await run({ world: WORLD, cwd: "/tmp", owner: OWNER, name: "Selftest", opener, role: "handler", message: brief, conv: CONV, model: "claude-opus-5" });
 check("spawn exits 0", ok.status === 0, `status=${ok.status} stderr=${ok.stderr}`);
 
 const lastLine = ok.stdout.trim().split("\n").at(-1) ?? "";
@@ -123,7 +128,9 @@ check("result carries the query id", result.queryId === QUERY, lastLine);
 check("result carries the owner", result.owner === OWNER, lastLine);
 
 const sent: Say | null = lastSay;
-check("the brief was sent", sent?.text?.startsWith(brief) === true, JSON.stringify(sent));
+check("the brief was sent", (sent?.text ?? "").includes(brief), JSON.stringify(sent));
+check("the brief opens with the opener", sent?.text?.startsWith(opener) === true, JSON.stringify(sent?.text));
+check("the brief names who commissioned it", (sent?.text ?? "").includes("Sent by Selftest, handler"), JSON.stringify(sent?.text));
 check("the brief tells the worker its own conversation id", (sent?.text ?? "").includes(CONV), "the conversation id is missing");
 check("the brief carries no return address", !(sent?.text ?? "").includes(OWNER), sent?.text ?? "");
 check("the say is attributable to the owner", sent?.from?.conversationId === OWNER, JSON.stringify(sent?.from));

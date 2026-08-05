@@ -7,14 +7,16 @@
 // result JSON as the LAST line of stdout (the say prints its accepted query id on the
 // line before, the same as sendMessage.mts does).
 //
-//   echo '{"world":"local","cwd":"/path/to/worktree","owner":"<your uuid>","name":"<your cast name>","message":"the brief"}' | node spawn.mts
+//   echo '{"world":"local","cwd":"/path/to/worktree","owner":"<your uuid>","name":"<your cast name>","opener":"<who is speaking>","message":"the brief"}' | node spawn.mts
 //   node spawn.mts < payload.json
 //
 // owner is the caller's OWN conversation uuid and name is the cast name it gave
-// itself: the worker reports back to that conversation, and the reporting line
-// records that it does. conv is the worker's conversation uuid, minted here when it
-// is not given. cwd is the worktree the worker runs in, and is required: a worker
-// spawned into the wrong tree edits the wrong repo.
+// itself: the reporting line records that this worker reports to that conversation.
+// conv is the worker's conversation uuid, minted here when it is not given. cwd is the
+// worktree the worker runs in, and is required: a worker spawned into the wrong tree
+// edits the wrong repo. opener is required and opens the brief, so the worker knows who
+// is speaking before it acts; role is optional and rides beside the name in the
+// appendix. Neither is checked against the other.
 //
 // APPROVAL GATE: the brief is an original message, so it needs the SC's approval
 // before this runs. SKILL.md owns the rule.
@@ -42,7 +44,9 @@ type Input = {
   cwd: string;
   owner: string;
   name: string;
+  opener: string;
   message: string;
+  role?: string;
   conv?: string;
   model?: string;
   wait?: number;
@@ -59,10 +63,10 @@ const BUCKET = process.env.NATS_REPORTING_BUCKET ?? "reporting-lines";
 const url = process.env.NATS_URL ?? "nats://127.0.0.1:4222";
 
 const input = readStdin<Input>(
-  '{"world":"local","cwd":"/path/to/worktree","owner":"<your uuid>","name":"<your cast name>","message":"the brief"}',
+  '{"world":"local","cwd":"/path/to/worktree","owner":"<your uuid>","name":"<your cast name>","opener":"<who is speaking>","message":"the brief"}',
 );
-if (!input.world || !input.cwd || !input.owner || !input.name || typeof input.message !== "string") {
-  process.stderr.write("input needs { world, cwd, owner, name, message }\n");
+if (!input.world || !input.cwd || !input.owner || !input.name || !input.opener || typeof input.message !== "string") {
+  process.stderr.write("input needs { world, cwd, owner, name, opener, message }\n");
   process.exit(EXIT_BAD_INPUT);
 }
 
@@ -124,16 +128,18 @@ try {
 }
 
 // A spawn hands out work; it does not wait for an answer, so the say never follows the
-// query it opens. The worker's own conversation id rides along, which is the only way it
-// learns which conversation it is in.
+// query it opens. The appendix rides along, which is the only way the worker learns who
+// commissioned it and which conversation it is in.
 const queryId = await publishSay({
   conv,
   from: input.owner,
   name: input.name,
+  opener: input.opener,
+  ...(input.role === undefined ? {} : { role: input.role }),
   message: input.message,
   follow: false,
   waitSeconds: 0,
-  withConversationId: true,
+  withAppendix: true,
 });
 
 process.stdout.write(`${JSON.stringify({ conversationId: conv, queryId, owner: input.owner })}\n`);

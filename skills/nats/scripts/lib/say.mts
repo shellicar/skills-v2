@@ -28,26 +28,31 @@ export type Say = {
   from: string;
   name: string;
   message: string;
+  /** Who is speaking, placed above the message. Required on an original message. */
+  opener?: string;
+  /** The sender's role, rendered in the appendix beside its name when given. */
+  role?: string;
   /** Follow the change stream until the query closes, printing what lands. */
   follow: boolean;
   /** Seconds to follow for. Ignored unless `follow` is set. */
   waitSeconds: number;
-  /** Append the recipient's own conversation id. Always on for an original message. */
-  withConversationId: boolean;
+  /** Append the appendix. Always on for an original message. */
+  withAppendix: boolean;
 };
 
 /**
- * Which conversation the recipient is in. Nothing else tells it: the bridge no more
- * hands an agent its conversation id than it hands it its working directory, so the
- * sender is the only one who can. Rendered rather than hand-written, because every
- * hand-written copy went stale the moment the scripts changed shape.
+ * Who sent this, and which conversation the recipient is in. Nothing else tells it
+ * either fact: the bridge no more hands an agent its conversation id than it hands it
+ * its working directory, so the sender is the only one who can. Rendered rather than
+ * hand-written, because every hand-written copy went stale the moment the scripts
+ * changed shape.
  *
- * It is the id and nothing else. A recipient does not write back: it answers in its
- * own conversation, and whoever commissioned it watches that conversation with
- * status.mts and reads the answer where it sits.
+ * There is no route back in it. A recipient does not write to its sender: it answers in
+ * its own conversation, and whoever commissioned it reads the answer where it sits.
  */
-function conversationIdNote(conv: string): string {
-  return ["", "\u2500\u2500", `Your own conversation id is ${conv}.`].join("\n");
+function appendix(input: Say): string {
+  const sender = input.role === undefined ? input.name : `${input.name}, ${input.role}`;
+  return ["", "\u2500\u2500", `Sent by ${sender}.`, `Your own conversation id is ${input.conv}.`].join("\n");
 }
 
 const url = process.env.NATS_URL ?? "nats://127.0.0.1:4222";
@@ -81,10 +86,11 @@ export async function publishSay(input: Say): Promise<string | undefined> {
     // Subscribe to the change stream BEFORE sending, so the reply cannot be missed.
     const sub = nc.subscribe(watchSubject);
 
+    const body = input.opener === undefined ? input.message : `${input.opener}\n\n${input.message}`;
     const say = {
       ts: new Date().toISOString(),
       from: { kind: "agent", conversationId: input.from, name: input.name },
-      text: input.withConversationId ? input.message + conversationIdNote(input.conv) : input.message,
+      text: input.withAppendix ? body + appendix(input) : body,
       precondition: { tip },
     };
     process.stderr.write(`[debug] saySubject=${saySubject} watchSubject=${watchSubject} tip=${tip}\n`);

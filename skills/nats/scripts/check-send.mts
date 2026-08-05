@@ -32,6 +32,10 @@ const script = resolve(join(dirname(fileURLToPath(import.meta.url)), "sendMessag
 
 const FROM = "00000000-0000-4000-8000-00000000c0ff";
 const NAME = "Selftest";
+const ROLE = "handler";
+// Deliberately does not carry the cast name: an opener is a voice, not a form, and the
+// script must not check one against the other.
+const OPENER = "A word from the one who commissioned this.";
 const CONV = {
   accepted: "00000000-0000-4000-8000-00000000c001",
   rejected: "00000000-0000-4000-8000-00000000c002",
@@ -104,20 +108,27 @@ const run = (input: unknown): Promise<{ status: number | null; stdout: string; s
 
 const message = "check-send.mts self-test message. No recipient: this say is answered by check-send.mts.";
 
-// `from` and `name` are what make a say attributable, so neither is optional.
-const anonymous = await run({ conv: CONV.accepted, message, noWait: true });
+// `from` and `name` are what make a say attributable, and `opener` is what makes it
+// spoken by somebody, so none of the three is optional.
+const anonymous = await run({ conv: CONV.accepted, name: NAME, opener: OPENER, message, noWait: true });
 check("a say with no sender exits 64", anonymous.status === 64, `status=${anonymous.status}`);
-const unnamed = await run({ conv: CONV.accepted, from: FROM, message, noWait: true });
+const unnamed = await run({ conv: CONV.accepted, from: FROM, opener: OPENER, message, noWait: true });
 check("a say with no name exits 64", unnamed.status === 64, `status=${unnamed.status}`);
+const unopened = await run({ conv: CONV.accepted, from: FROM, name: NAME, message, noWait: true });
+check("a say with no opener exits 64", unopened.status === 64, `status=${unopened.status}`);
 
 // The whole point of the tool, and what the wire actually carries.
 serve(CONV.accepted, { accepted: true, id: "query-accepted" });
-const sent = await run({ conv: CONV.accepted, from: FROM, name: NAME, message, noWait: true });
+const sent = await run({ conv: CONV.accepted, from: FROM, name: NAME, role: ROLE, opener: OPENER, message, noWait: true });
 check("a dispatch exits 0", sent.status === 0, `status=${sent.status} stderr=${sent.stderr}`);
 check("a dispatch prints the query id", sent.stdout.includes("query-accepted"), sent.stdout);
 
 const wire = seen.get(CONV.accepted);
-check("the message goes out unaltered", wire?.text?.startsWith(message) === true, JSON.stringify(wire?.text));
+check("the opener is at the top", wire?.text?.startsWith(OPENER) === true, JSON.stringify(wire?.text));
+check("the message follows the opener unaltered", (wire?.text ?? "").includes(`${OPENER}\n\n${message}`), JSON.stringify(wire?.text));
+check("an opener that does not name the sender is still accepted", sent.status === 0 && !OPENER.includes(NAME), `opener=${OPENER}`);
+check("the appendix names the sender", (wire?.text ?? "").includes(`Sent by ${NAME}`), JSON.stringify(wire?.text));
+check("the appendix carries the sender's role", (wire?.text ?? "").includes(`Sent by ${NAME}, ${ROLE}`), JSON.stringify(wire?.text));
 check("the recipient is told its own conversation id", (wire?.text ?? "").includes(CONV.accepted), JSON.stringify(wire?.text));
 check("the recipient is given no route back", !(wire?.text ?? "").includes(FROM), JSON.stringify(wire?.text));
 check("the say is attributable to the sender", wire?.from?.conversationId === FROM, JSON.stringify(wire?.from));
@@ -127,18 +138,18 @@ check("the say carries the sender's name", wire?.from?.name === NAME, JSON.strin
 // while someone else was speaking a rejection rather than a message applied out of order.
 const tip = await commit(CONV.anchored, "query-anchored", "check-send: the tip");
 serve(CONV.anchored, { accepted: true, id: "query-anchored" });
-await run({ conv: CONV.anchored, from: FROM, name: NAME, message, noWait: true });
+await run({ conv: CONV.anchored, from: FROM, name: NAME, opener: OPENER, message, noWait: true });
 check("the say is anchored to the current tip", seen.get(CONV.anchored)?.precondition?.tip === tip, JSON.stringify(seen.get(CONV.anchored)?.precondition));
 
 // A rejection is someone else having spoken first, and it must not read as sent.
 serve(CONV.rejected, { rejected: true, reason: "stale_tip" });
-const rejected = await run({ conv: CONV.rejected, from: FROM, name: NAME, message, noWait: true });
+const rejected = await run({ conv: CONV.rejected, from: FROM, name: NAME, opener: OPENER, message, noWait: true });
 check("a rejected say exits 1", rejected.status === 1, `status=${rejected.status}`);
 check("a rejected say prints the reason", rejected.stderr.includes("stale_tip"), rejected.stderr);
 
 // Nobody answering means no agent is attached to that conversation, which service.mts
 // fixes; it is not a broker problem, so it has to read differently from a rejection.
-const unserved = await run({ conv: CONV.unserved, from: FROM, name: NAME, message, noWait: true });
+const unserved = await run({ conv: CONV.unserved, from: FROM, name: NAME, opener: OPENER, message, noWait: true });
 check("an unserved conversation exits 1", unserved.status === 1, `status=${unserved.status}`);
 check("an unserved conversation names the missing agent", unserved.stderr.includes("no servicer replied"), unserved.stderr);
 
@@ -147,7 +158,7 @@ serve(CONV.completed, { accepted: true, id: "query-completed" }, async (queryId)
   await commit(CONV.completed, queryId, "check-send: the answer");
   await closeQuery(CONV.completed, queryId, "completed");
 });
-const followed = await run({ conv: CONV.completed, from: FROM, name: NAME, message, wait: 10 });
+const followed = await run({ conv: CONV.completed, from: FROM, name: NAME, opener: OPENER, message, wait: 10 });
 check("a completed query exits 0", followed.status === 0, `status=${followed.status} stderr=${followed.stderr}`);
 check("a followed say prints the committed answer", followed.stdout.includes("check-send: the answer"), followed.stdout);
 check("a followed say prints the close reason", followed.stdout.includes("closed: completed"), followed.stdout);
@@ -155,13 +166,13 @@ check("a followed say prints the close reason", followed.stdout.includes("closed
 serve(CONV.aborted, { accepted: true, id: "query-aborted" }, async (queryId) => {
   await closeQuery(CONV.aborted, queryId, "aborted");
 });
-const aborted = await run({ conv: CONV.aborted, from: FROM, name: NAME, message, wait: 10 });
+const aborted = await run({ conv: CONV.aborted, from: FROM, name: NAME, opener: OPENER, message, wait: 10 });
 check("an aborted query exits 1", aborted.status === 1, `status=${aborted.status}`);
 check("an aborted query says so", aborted.stdout.includes("closed: aborted"), aborted.stdout);
 
 // The wait elapsing is not a verdict: the query is still running and is read later.
 serve(CONV.elapses, { accepted: true, id: "query-elapses" });
-const elapsed = await run({ conv: CONV.elapses, from: FROM, name: NAME, message, wait: 1 });
+const elapsed = await run({ conv: CONV.elapses, from: FROM, name: NAME, opener: OPENER, message, wait: 1 });
 check("an elapsed wait exits 2", elapsed.status === 2, `status=${elapsed.status}`);
 check("an elapsed wait says the query is still running", elapsed.stderr.includes("timed out"), elapsed.stderr);
 
