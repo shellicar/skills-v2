@@ -58,6 +58,9 @@ and its content. Tool calls show as `[tool_use: name] input`; tool results and
 other blocks show as a labelled placeholder (the full content vocabulary is not
 rendered yet). It reads only committed messages, never the in-flight stream.
 
+**Exits** `0` on success, and also on a conversation with no messages, which it reports
+on stderr. `64` if the input is not valid JSON or has no `conv`.
+
 ## query — say something and wait for the answer
 
 `echo '{"conv":"<uuid>","from":"<uuid>","text":"...","wait":180}' | query.mts`
@@ -81,6 +84,12 @@ mint its id, so pass that value to the child as the `from` it should use.
 - The query closes `completed`, `cancelled`, or `aborted`. Only `completed` is a
   real answer; the other two exit non-zero with the reason.
 
+**Exits** `0` when the query closes `completed`, or as soon as the say is accepted under
+`noWait`. `1` if the say is rejected, no servicer replies, or the query closes
+`cancelled`/`aborted`. `2` if `wait` elapses before the query closes, which is not a
+verdict: the query is still running, so read it later. `64` if the input is not valid
+JSON or is missing `conv`, `from` or `text`.
+
 ## service — ask a world to serve a conversation (spawn or adopt)
 
 `echo '{"world":"local","conv":"<uuid>","cwd":"/path"}' | service.mts` sends the agent
@@ -98,6 +107,10 @@ fresh uuid (the caller names the conversation; nothing is "returned").
 - No reply means no bridge is serving that world.
 - Accepted: the conversation exists on the wire — follow up with `query.mts`
   against the printed `conversationId`.
+
+**Exits** `0` when the request is accepted. `1` if it is rejected, or if no bridge
+replies within `wait` seconds (default 30). `64` if the input is not valid JSON or has
+no `world`.
 
 ## Configuration
 

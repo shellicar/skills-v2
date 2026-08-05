@@ -18,7 +18,7 @@
 
 import { randomUUID } from "node:crypto";
 import { JSONCodec, connect } from "nats";
-import { readStdin } from "../../../shared/stdin.mts";
+import { EXIT_BAD_INPUT, readStdin } from "../../../shared/stdin.mts";
 
 type Input = { world: string; conv?: string; cwd?: string; model?: string; wait?: number };
 type Reply = { accepted?: boolean; rejected?: boolean; reason?: string; detail?: string };
@@ -28,7 +28,7 @@ const url = process.env.NATS_URL ?? "nats://127.0.0.1:4222";
 const input = readStdin<Input>('{"world":"local","conv":"<uuid>","cwd":"..."}');
 if (!input.world) {
   process.stderr.write("input needs { world }\n");
-  process.exit(2);
+  process.exit(EXIT_BAD_INPUT);
 }
 // Minting here (not in the servicer) matches the wire's creation model: the
 // caller names the conversation and asks for it to be served.
