@@ -43,7 +43,7 @@ An original message commissions work in a conversation that did not ask for it. 
 you are a worker and find you need to send one, that is a thing to report upward,
 not to send outward.
 
-Five tools over the conversation bus (docs/spec in the tower repo). All take one
+Six tools over the conversation bus (docs/spec in the tower repo). All take one
 JSON object on stdin and are meant for you to run, not a person: stdout is the
 result, stderr is progress, a non-zero exit means it did not get what it asked for.
 
@@ -57,6 +57,8 @@ echo '{"conv":"<uuid>","from":"<uuid>","name":"<yours>","message":"...","wait":1
 echo '{"conv":"<uuid>","from":"<uuid>","name":"<yours>","message":"...","noWait":true}' | node ~/repos/shellicar/skills-v2/skills/nats/scripts/sendMessage.mts
 # report upward to whoever put you to work — never waits, needs no approval:
 echo '{"conv":"<uuid>","from":"<uuid>","name":"<yours>","message":"..."}' | node ~/repos/shellicar/skills-v2/skills/nats/scripts/replyToMessage.mts
+# commission a worker — serve it, record who it reports to, and send the brief:
+echo '{"world":"local","cwd":"/path","owner":"<uuid>","name":"<yours>","message":"..."}' | node ~/repos/shellicar/skills-v2/skills/nats/scripts/spawn.mts
 # a long message is easier to keep in a file:
 node ~/repos/shellicar/skills-v2/skills/nats/scripts/sendMessage.mts < payload.json
 ```
@@ -242,6 +244,8 @@ never invents a watcher for a conversation nobody commissioned.
 ### The reporting line
 
 - **Bucket** `reporting-lines`, KV, created by the script when it is absent.
+  `NATS_REPORTING_BUCKET` overrides the name, which is there for `check-spawn.mts`
+  and not for you.
 - **Key** the worker's conversation id.
 - **Value** `{"owner":"<conversation id>","ts":"<iso8601>"}`, and nothing else.
 
@@ -263,3 +267,5 @@ reaches a worker. Run it after touching `spawn.mts` or `lib/say.mts`.
 
 - `NATS_URL` — the broker (default `nats://127.0.0.1:4222`).
 - `NATS_STREAM` — the JetStream stream (default `conv-approval`).
+- `NATS_REPORTING_BUCKET` — the reporting-line KV bucket (default `reporting-lines`).
+  `check-spawn.mts` sets it so a test never writes into the bucket the fleet runs on.

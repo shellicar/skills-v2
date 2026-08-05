@@ -1,9 +1,13 @@
 // Self-test for spawn.mts, run against loopback responders rather than a live world:
 // this process answers the service request and the say itself, so no bridge is asked
 // for anything, no agent is attached, and no brief reaches a worker. `requests.say`
-// and `requests.service` are core NATS subjects captured by no stream, so the only
-// thing this leaves behind is the reporting line it writes, always on the same fixed
-// test conversation id so repeated runs overwrite rather than accumulate.
+// and `requests.service` are core NATS subjects captured by no stream, so nothing this
+// sends persists anywhere.
+//
+// It writes to its own reporting-line bucket, never the one the fleet runs on:
+// NATS_REPORTING_BUCKET, default `reporting-lines-selftest`, which spawn.mts reads too.
+// A second bucket, that name plus `-tiny`, is created with a value size no line can
+// fit in, which is how the "attached but no line" branch is forced.
 //
 // Needs a broker (NATS_URL, default nats://127.0.0.1:4222) and nothing else.
 //
@@ -23,7 +27,8 @@ const WORLD = "spawn-selftest";
 const CONV = "00000000-0000-4000-8000-000000000001";
 const OWNER = "00000000-0000-4000-8000-0000000000ff";
 const QUERY = "query-spawn-selftest";
-const BUCKET = "reporting-lines";
+const BUCKET = process.env.NATS_REPORTING_BUCKET ?? "reporting-lines-selftest";
+const TINY_BUCKET = `${BUCKET}-tiny`;
 
 type Say = { text?: string; from?: { conversationId?: string; name?: string } };
 
@@ -54,9 +59,13 @@ const check = (name: string, ok: boolean, detail = "") => {
 // Awaited rather than spawnSync: this process answers the child's requests itself, and
 // a synchronous child blocks the event loop that would serve them, so every spawn times
 // out waiting for a servicer that is sitting right here.
-const run = (input: unknown): Promise<{ status: number | null; stdout: string; stderr: string }> =>
+const run = (input: unknown, bucket = BUCKET): Promise<{ status: number | null; stdout: string; stderr: string }> =>
   new Promise((done) => {
-    const child = spawn(process.execPath, [script], { stdio: ["pipe", "pipe", "pipe"], timeout: 20000 });
+    const child = spawn(process.execPath, [script], {
+      stdio: ["pipe", "pipe", "pipe"],
+      timeout: 20000,
+      env: { ...process.env, NATS_REPORTING_BUCKET: bucket },
+    });
     let stdout = "";
     let stderr = "";
     child.stdout.on("data", (d) => (stdout += d));
@@ -84,6 +93,17 @@ check("rejected service sends no brief", lastSay === null);
 const nobody = await run({ world: "spawn-selftest-nobody", cwd: "/tmp", owner: OWNER, name: "Selftest", message: brief, wait: 1 });
 check("unserved world exits 1", nobody.status === 1, `status=${nobody.status}`);
 check("unserved world names the bridge", nobody.stderr.includes("no servicer replied"), nobody.stderr);
+
+// A line that cannot be written is not a spawn that half worked: the conversation is
+// served, so an agent is sitting in that worktree with nobody recorded as watching it.
+// The brief must not go, and it must not read as success.
+serviceAnswer = { accepted: true };
+lastSay = null;
+await nc.jetstream().views.kv(TINY_BUCKET, { maxValueSize: 8 });
+const noLine = await run({ world: WORLD, cwd: "/tmp", owner: OWNER, name: "Selftest", message: brief, conv: CONV }, TINY_BUCKET);
+check("an unwritable line exits 1", noLine.status === 1, `status=${noLine.status}`);
+check("an unwritable line says the conversation is attached with none", noLine.stderr.includes("attached but has NO reporting line"), noLine.stderr);
+check("an unwritable line sends no brief", lastSay === null, JSON.stringify(lastSay));
 
 // The whole path.
 serviceAnswer = { accepted: true };

@@ -29,6 +29,8 @@
 // Exits 0 when all four land. 1 when any of them is rejected, which includes a
 // service the world refused, a bridge that never replied, a reporting line that
 // would not read back, and a say no servicer took. 64 on bad input.
+//
+// NATS_URL is the broker and NATS_REPORTING_BUCKET is the reporting-line bucket.
 
 import { randomUUID } from "node:crypto";
 import { JSONCodec, connect } from "nats";
@@ -50,8 +52,9 @@ type Line = { owner: string; ts: string };
 
 /** A line records direction of reporting and nothing else: the worktree and the brief
  * belong to the spawn, not to the line. KV rather than a stream because a line is
- * deleted at teardown, which makes it a table rather than a history. */
-const BUCKET = "reporting-lines";
+ * deleted at teardown, which makes it a table rather than a history. The override is
+ * for check-spawn.mts, so a test never writes into the bucket the fleet runs on. */
+const BUCKET = process.env.NATS_REPORTING_BUCKET ?? "reporting-lines";
 
 const url = process.env.NATS_URL ?? "nats://127.0.0.1:4222";
 
