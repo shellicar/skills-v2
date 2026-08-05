@@ -46,6 +46,12 @@ Five tools over the conversation bus (docs/spec in the tower repo). All take one
 JSON object on stdin and are meant for you to run, not a person: stdout is the
 result, stderr is progress, a non-zero exit means it did not get what it asked for.
 
+**If you are a worker, one tool here is yours: `read.mts`, on a conversation your brief
+pointed you at.** That is the whole list. `spawn.mts`, `service.mts`, `status.mts` and
+`sendMessage.mts` all commission or watch work, which is what a handler does and not
+what you were put to work to do. Nothing stops you running them — a script cannot see
+who is calling it — so knowing which are yours is the whole of it.
+
 Run with Node 22+ (it runs `.mts` directly, no build):
 
 ```sh
@@ -79,6 +85,18 @@ nats stream subjects conv-approval "conv.v2.*.changes.message"
 ```
 
 ## status — which conversations are working, and which are waiting on you
+
+**This is a handler's tool, and a worker never calls it.** You watch the conversations
+you commissioned; a worker commissioned none, so there is nothing it could be watching.
+
+**Waiting is directional: a handler waits on its workers, and a worker waits on
+nobody.** Never on your handler, never on anything above you. Two waits pointing at each
+other is a deadlock, because a conversation that is waiting is mid-turn and so cannot go
+idle, which is the very thing the other one is waiting for. It has happened: a worker
+whose say was rejected as stale waited for its handler to go idle, while the handler was
+waiting on that worker, and the SC had to break it by hand. If you are blocked on
+something above you, say so in your own conversation and stop: your handler is watching
+that conversation, so you never have to wait to be read.
 
 `echo '{"convs":["<uuid>","<uuid>"]}' | status.mts` reports, for each conversation, when
 it last spoke and whether a turn is in progress. It answers the question you actually
