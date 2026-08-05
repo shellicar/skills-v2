@@ -193,6 +193,11 @@ conversation, and you watch that conversation with `status.mts`'s `wait`.
 verdict: the query is still running, so read it later. `64` if the input is not valid
 JSON or is missing `conv`, `from`, `name` or `message`.
 
+`check-send.mts` exercises all of it against loopback responders — it answers every say
+itself, so no bridge is asked for anything and no message reaches a real conversation.
+It reads what went on the wire, which is where the appended conversation id is checked.
+Run it after touching `sendMessage.mts` or `lib/say.mts`.
+
 ## service — ask a world to serve a conversation (spawn or adopt)
 
 `echo '{"world":"local","conv":"<uuid>","cwd":"/path"}' | service.mts` sends the agent
