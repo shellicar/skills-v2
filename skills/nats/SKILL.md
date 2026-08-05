@@ -43,13 +43,14 @@ An original message commissions work in a conversation that did not ask for it. 
 you are a worker and find you need to send one, that is a thing to report upward,
 not to send outward.
 
-Four tools over the conversation bus (docs/spec in the tower repo). All take one
+Five tools over the conversation bus (docs/spec in the tower repo). All take one
 JSON object on stdin and are meant for you to run, not a person: stdout is the
 result, stderr is progress, a non-zero exit means it did not get what it asked for.
 
 Run with Node 22+ (it runs `.mts` directly, no build):
 
 ```sh
+echo '{"convs":["<uuid>","<uuid>"]}' | node ~/repos/shellicar/skills-v2/skills/nats/scripts/status.mts
 echo '{"conv":"<uuid>","n":20}' | node ~/repos/shellicar/skills-v2/skills/nats/scripts/read.mts
 echo '{"conv":"<uuid>","from":"<uuid>","name":"<yours>","message":"...","wait":180}' | node ~/repos/shellicar/skills-v2/skills/nats/scripts/sendMessage.mts
 # dispatch without waiting for the reply — the query runs on regardless:
@@ -75,6 +76,28 @@ the tower UI, or list them:
 ```sh
 nats stream subjects conv-approval "conv.v2.*.changes.message"
 ```
+
+## status — which conversations are working, and which are waiting on you
+
+`echo '{"convs":["<uuid>","<uuid>"]}' | status.mts` reports, for each conversation, when
+it last spoke and whether a turn is in progress. It answers the question you actually
+have when several operators are running at once, at two cheap lookups per conversation
+instead of a whole `read.mts` each.
+
+`state` is derived from the last committed message and the last query close, so it is a
+reading rather than something the bus states:
+
+- `working` — a message landed after the last query close, so a turn is in progress.
+- `idle` — the newest event is a query close, so nothing is running.
+- `empty` — nothing has ever been committed.
+
+**Do not send into a conversation reading `working`.** The tip moves under you while it
+works, so the say is rejected as stale. Wait for `idle`.
+
+Each entry also carries the last message's role, timestamp and first line, the last
+query's id and close reason, and the current `tip`.
+
+**Exits** `0` with the report. `64` if the input is not valid JSON or has no `convs`.
 
 ## read — catch up on a conversation
 
@@ -122,7 +145,8 @@ which nothing else tells it.
   with `service.mts` on the same `conv`, then send again. It is not a broker
   problem and retrying the say alone will not help.
 - A `say` against a stale tip is **rejected** (someone else spoke first); it
-  prints the reason and exits non-zero. Re-`read` and try again.
+  prints the reason and exits non-zero. `status.mts` predicts this: a conversation
+  reading `working` will reject a say. Re-`read` and try again.
 - The query closes `completed`, `cancelled`, or `aborted`. Only `completed` is a
   real answer; the other two exit non-zero with the reason.
 
