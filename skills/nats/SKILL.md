@@ -51,6 +51,8 @@ Run with Node 22+ (it runs `.mts` directly, no build):
 
 ```sh
 echo '{"convs":["<uuid>","<uuid>"]}' | node ~/repos/shellicar/skills-v2/skills/nats/scripts/status.mts
+# block until the first of them finishes or goes quiet, instead of polling:
+echo '{"convs":["<uuid>","<uuid>"],"wait":900}' | node ~/repos/shellicar/skills-v2/skills/nats/scripts/status.mts
 echo '{"conv":"<uuid>","n":20}' | node ~/repos/shellicar/skills-v2/skills/nats/scripts/read.mts
 echo '{"conv":"<uuid>","from":"<uuid>","name":"<yours>","message":"...","wait":180}' | node ~/repos/shellicar/skills-v2/skills/nats/scripts/sendMessage.mts
 # dispatch without waiting for the reply — the query runs on regardless:
@@ -99,7 +101,43 @@ works, so the say is rejected as stale. Wait for `idle`.
 Each entry also carries the last message's role, timestamp and first line, the last
 query's id and close reason, and the current `tip`.
 
-**Exits** `0` with the report. `64` if the input is not valid JSON or has no `convs`.
+### wait — block until one of them finishes
+
+`wait` is seconds. Leave it out and nothing changes: the report is the same array, taken
+once. Pass it and the tool blocks until the first edge fires on any of the conversations,
+then returns immediately. That is what a handler wants when it has commissioned several
+workers: it is told which one is worth reading, rather than polling this tool by hand.
+The output becomes `{"edge":...,"status":[...]}` — the edge that fired, and the same
+report taken at that moment.
+
+Two edges, not one:
+
+- `idle` — a query closed, so a turn finished and there is something to read.
+- `quiet` — it still reads `working`, but has committed nothing for `quietAfter`
+  seconds. This is the edge that matters most: a worker that died mid-turn reads
+  `working` for ever and never goes idle, so a wait watching only for idle hangs
+  precisely when something has gone wrong. The edge carries `silentForSeconds`.
+
+`quietAfter` is seconds, default 600. That default is a reading of this fleet rather than
+a derived number: the longest legitimate silence seen here is a workspace build, and the
+real dead ones were silent for hours. Tune it when what you are watching behaves
+differently.
+
+A conversation already idle when the call is made returns straight away, and so does one
+already silent past `quietAfter`. The transition has happened; waiting for it again would
+wait for ever.
+
+It subscribes to each conversation's changes and runs a timer, rather than polling in a
+loop.
+
+**Exits** `0` with the report, and under `wait`, `0` when an edge fires. `2` if `wait`
+elapses with no edge, which is not a verdict: nothing has finished yet, so wait again.
+`64` if the input is not valid JSON, has no `convs`, or has a `wait` or `quietAfter` that
+is not a positive number.
+
+`check-status.mts` drives real conversations on the broker from its own process: it
+publishes the change events a live conversation would, so no bridge is asked for anything
+and no worker is involved. Run it after touching `status.mts`.
 
 ## read — catch up on a conversation
 
