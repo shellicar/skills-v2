@@ -20,7 +20,7 @@ Where the two halves meet is where it goes wrong.
 ## Commissioning creates the relationship
 
 Work is commissioned downward: a session that has work to hand out serves another one
-and gives it the brief. That act makes one the handler and the other its worker, and
+and gives it the brief. That act makes one the parent and the other its worker, and
 nothing else does — not sharing a repo, not being named in a message, not running at
 the same time on the same feature.
 
@@ -28,6 +28,15 @@ If the relationship could be inferred, two sessions would infer differently and 
 would act on their own version: one taking direction nobody meant to give, another
 answering to a session that was not watching for it. A commission has two ends and one
 moment, so both sides hold the same fact.
+
+**Your parent is whoever sent the first message in your conversation.** The commission
+is that message, so its sender is the answer, and you know them because it says who is
+speaking and is signed. Nothing else names your parent, and nothing needs to.
+
+This is one rule, not a rule with exceptions. When the SC starts a worker himself he is
+its parent, by the same sentence, and a chain one link long is not a degraded case of a
+longer one. So nothing assumes a handler is there: everything below says parent because
+that is what is always true.
 
 ## A worker answers where it sits
 
@@ -39,9 +48,9 @@ most, when the work is done and there is something to deliver. An answer written
 the worker already is has no delivery step to fail. It is also the worker's own words
 rather than a copy of them.
 
-## The handler reads its workers
+## The parent reads its workers
 
-The handler goes and reads. It is not written into.
+The parent goes and reads. It is not written into.
 
 It is the one holding several threads, so it decides when to look at which. Anything
 that writes into it arrives at a moment it did not choose, competing with whatever it
@@ -50,8 +59,8 @@ than read.
 
 ## Waiting is directional
 
-A handler waits on its workers. Nothing waits upward: not a worker on its handler, not
-a handler on the SC.
+A parent waits on its workers. Nothing waits upward: not a worker on its parent, not a
+handler on the SC.
 
 Waiting holds a session open, and a session that is held open cannot finish. So two
 sessions waiting on each other are stuck permanently, each preventing the very thing it
@@ -70,6 +79,12 @@ brief.
 A relay of content is a chance to lose or distort it, and the summary is written by
 whoever read it once for whoever has not read it at all. The original is already
 correct and already exists, so the only thing worth passing on is its address.
+
+**What travels is the report, not the conversation it sits in.** A report is the last
+answer in a conversation, and that is the part to point at and the part to read. The
+rest of that conversation is the parent's side of it: orders, questions, decisions meant
+for somebody else. Read as though addressed to you, they become instructions you were
+never given, which is a worse failure than a relayed summary.
 
 ## Every upward path stops at the parent
 
@@ -99,3 +114,14 @@ report says where to look and that it is worth looking now.
 A report is a claim about work, not the work. Claims read as confident whether or not
 they are true, and a session that acts on one without looking inherits an error it has
 no way to see. The artefact is the thing that is actually true.
+
+## Your name goes where the reader needs it
+
+Going down, a message opens with who is speaking. Going up, a report is signed off at
+the end. It is one rule seen from two ends, not two conventions.
+
+What decides it is when the reader needs the name. An order is acted on, and with layers
+of sessions who is speaking is what settles how the rest of it is read, so it has to
+arrive before the reading rather than after. A report is read to the end by someone who
+already knows what they commissioned, and a signature there is what everybody does
+unasked.
