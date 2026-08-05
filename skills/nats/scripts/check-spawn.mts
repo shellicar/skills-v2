@@ -131,6 +131,7 @@ const sent: Say | null = lastSay;
 check("the brief was sent", (sent?.text ?? "").includes(brief), JSON.stringify(sent));
 check("the brief opens with the opener", sent?.text?.startsWith(opener) === true, JSON.stringify(sent?.text));
 check("the brief names who commissioned it", (sent?.text ?? "").includes("Sent by Selftest, handler"), JSON.stringify(sent?.text));
+check("the brief points the worker at crew", (sent?.text ?? "").includes("load the `crew` skill"), JSON.stringify(sent?.text));
 check("the brief tells the worker its own conversation id", (sent?.text ?? "").includes(CONV), "the conversation id is missing");
 check("the brief carries no return address", !(sent?.text ?? "").includes(OWNER), sent?.text ?? "");
 check("the say is attributable to the owner", sent?.from?.conversationId === OWNER, JSON.stringify(sent?.from));

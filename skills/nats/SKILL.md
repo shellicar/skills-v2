@@ -257,6 +257,12 @@ Four steps in order, each worth doing only if the one before it landed:
 4. Send the brief, always `noWait`, opener at the top and appendix at the foot. A spawn
    hands out work; it does not wait for an answer.
 
+The brief's appendix also tells the worker it has been commissioned and to load `crew`,
+which `sendMessage.mts` never does: the commission is the one message where that becomes
+true of the recipient, and every later one goes to a session that has already loaded it.
+It points rather than quotes, because a skill loaded through the skill system is told
+when it changes and injected text is not.
+
 The result — `{"conversationId","queryId","owner"}` — is the **last** line of stdout.
 The line above it is the say's own `query <id> accepted`, exactly as `sendMessage.mts`
 prints it.

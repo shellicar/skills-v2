@@ -32,6 +32,8 @@ export type Say = {
   opener?: string;
   /** The sender's role, rendered in the appendix beside its name when given. */
   role?: string;
+  /** This say commissions the recipient, so the appendix points it at `crew`. */
+  commission?: boolean;
   /** Follow the change stream until the query closes, printing what lands. */
   follow: boolean;
   /** Seconds to follow for. Ignored unless `follow` is set. */
@@ -49,10 +51,17 @@ export type Say = {
  *
  * There is no route back in it. A recipient does not write to its sender: it answers in
  * its own conversation, and whoever commissioned it reads the answer where it sits.
+ *
+ * A commission adds a pointer to `crew`, and a pointer is all it adds. Injected text
+ * never learns that it moved, where a skill loaded through the skill system is notified
+ * when it changes, so a copy of the shape here would leave a long-running worker holding
+ * a stale one with no way to find out.
  */
 function appendix(input: Say): string {
   const sender = input.role === undefined ? input.name : `${input.name}, ${input.role}`;
-  return ["", "\u2500\u2500", `Sent by ${sender}.`, `Your own conversation id is ${input.conv}.`].join("\n");
+  const lines = ["", "\u2500\u2500", `Sent by ${sender}.`, `Your own conversation id is ${input.conv}.`];
+  if (input.commission === true) lines.push("You have been commissioned: load the `crew` skill.");
+  return lines.join("\n");
 }
 
 const url = process.env.NATS_URL ?? "nats://127.0.0.1:4222";

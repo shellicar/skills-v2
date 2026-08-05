@@ -129,7 +129,8 @@ try {
 
 // A spawn hands out work; it does not wait for an answer, so the say never follows the
 // query it opens. The appendix rides along, which is the only way the worker learns who
-// commissioned it and which conversation it is in.
+// commissioned it and which conversation it is in, and this is the one message that
+// commissions, so it is the one that points the worker at `crew`.
 const queryId = await publishSay({
   conv,
   from: input.owner,
@@ -140,6 +141,7 @@ const queryId = await publishSay({
   follow: false,
   waitSeconds: 0,
   withAppendix: true,
+  commission: true,
 });
 
 process.stdout.write(`${JSON.stringify({ conversationId: conv, queryId, owner: input.owner })}\n`);

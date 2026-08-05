@@ -130,6 +130,8 @@ check("an opener that does not name the sender is still accepted", sent.status =
 check("the appendix names the sender", (wire?.text ?? "").includes(`Sent by ${NAME}`), JSON.stringify(wire?.text));
 check("the appendix carries the sender's role", (wire?.text ?? "").includes(`Sent by ${NAME}, ${ROLE}`), JSON.stringify(wire?.text));
 check("the recipient is told its own conversation id", (wire?.text ?? "").includes(CONV.accepted), JSON.stringify(wire?.text));
+// Only a commission makes crew true of the recipient, and only spawn.mts commissions.
+check("a say does not point the recipient at crew", !(wire?.text ?? "").includes("crew"), JSON.stringify(wire?.text));
 check("the recipient is given no route back", !(wire?.text ?? "").includes(FROM), JSON.stringify(wire?.text));
 check("the say is attributable to the sender", wire?.from?.conversationId === FROM, JSON.stringify(wire?.from));
 check("the say carries the sender's name", wire?.from?.name === NAME, JSON.stringify(wire?.from));
