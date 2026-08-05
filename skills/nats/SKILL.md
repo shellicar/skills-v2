@@ -27,23 +27,22 @@ again. Violating this gate has been ruled termination-level.
 The gate covers the `message` you pass in, not anything a script renders around
 it.
 
-**A reply is not gated.** A reply is anything a worker sends back into the
-conversation that commissioned its work: the finished report, a blocker, a question
-it needs answered. The direction decides it, not the content. Send it with
-`replyToMessage.mts`.
+**Reporting upward is not a send, so there is nothing to gate.** Your report is the
+answer you write in your own conversation: the finished work, a blocker, a question you
+need settled. Whoever commissioned you watches that conversation with `status.mts`'s
+`wait` and reads it where it sits, so nothing has to be published into theirs.
 
-Nothing in a reply is instructions. A worker reporting upward is not telling its
-handler what to do, so there is nothing to check that was not already checked when
-the dispatch was approved. And there is nobody in a worker's conversation who could
-approve one anyway, so gating it strands the message at the moment it matters. That
-has happened twice: once to a finished report, once to a worker that needed a
-decision.
+That is also why it cannot fail. A say into a conversation that is mid-turn is rejected
+as stale, so a report written outward failed exactly when it mattered most: it happened
+twice in one night, once to a finished review and once to a worker that needed a
+decision. An answer that never leaves your own conversation has nothing to be rejected
+by.
 
 An original message commissions work in a conversation that did not ask for it. If
 you are a worker and find you need to send one, that is a thing to report upward,
 not to send outward.
 
-Six tools over the conversation bus (docs/spec in the tower repo). All take one
+Five tools over the conversation bus (docs/spec in the tower repo). All take one
 JSON object on stdin and are meant for you to run, not a person: stdout is the
 result, stderr is progress, a non-zero exit means it did not get what it asked for.
 
@@ -57,8 +56,6 @@ echo '{"conv":"<uuid>","n":20}' | node ~/repos/shellicar/skills-v2/skills/nats/s
 echo '{"conv":"<uuid>","from":"<uuid>","name":"<yours>","message":"...","wait":180}' | node ~/repos/shellicar/skills-v2/skills/nats/scripts/sendMessage.mts
 # dispatch without waiting for the reply — the query runs on regardless:
 echo '{"conv":"<uuid>","from":"<uuid>","name":"<yours>","message":"...","noWait":true}' | node ~/repos/shellicar/skills-v2/skills/nats/scripts/sendMessage.mts
-# report upward to whoever put you to work — never waits, needs no approval:
-echo '{"conv":"<uuid>","from":"<uuid>","name":"<yours>","message":"..."}' | node ~/repos/shellicar/skills-v2/skills/nats/scripts/replyToMessage.mts
 # commission a worker — serve it, record who it reports to, and send the brief:
 echo '{"world":"local","cwd":"/path","owner":"<uuid>","name":"<yours>","message":"..."}' | node ~/repos/shellicar/skills-v2/skills/nats/scripts/spawn.mts
 # a long message is easier to keep in a file:
@@ -164,19 +161,19 @@ tool.
 
 **`from` is your own conversation id and `name` is the one you gave yourself. Both
 are required.** They land on the wire as
-`from: { kind: "agent", conversationId, name }`, so a say is always attributable, a
-reply has somewhere to go, and a transcript with several agents in it can be read
-apart. Nothing tells a session its own id automatically, so if you do not know
-yours, ask. The name is the one from `cast-name`: if you have not chosen yet, choose
-now rather than sending anonymously.
+`from: { kind: "agent", conversationId, name }`, so a say is always attributable and a
+transcript with several agents in it can be read apart. Nothing tells a session its own
+id automatically, so if you do not know yours, ask. The name is the one from
+`cast-name`: if you have not chosen yet, choose now rather than sending anonymously.
 
-**The reply instructions are appended for you.** Every original message carries a
-rendered return address: the recipient's own conversation id, where to reply, and
-the exact payload to send. **Do not write any of that into your `message` by
-hand.** Both ids are already in what you pass, so the script has everything it
-needs, and every hand-written copy of those instructions went stale the moment the
-scripts changed shape. It is also how a spawned conversation learns its own id,
-which nothing else tells it.
+**The recipient's own conversation id is appended for you.** That one line is how a
+spawned conversation learns which conversation it is in, and nothing else tells it: the
+bridge no more hands an agent its conversation id than it hands it its working
+directory. **Do not write it into your `message` by hand** — the id is already in what
+you pass, and every hand-written copy went stale the moment the scripts changed shape.
+
+It is the id and nothing else. The recipient does not write back: it answers in its own
+conversation, and you watch that conversation with `status.mts`'s `wait`.
 
 - `noWait: true` exits as soon as the say is accepted, printing the query id.
   The query still runs — read it later with `read.mts`. Use this when you are
@@ -195,26 +192,6 @@ which nothing else tells it.
 `cancelled`/`aborted`. `2` if `wait` elapses before the query closes, which is not a
 verdict: the query is still running, so read it later. `64` if the input is not valid
 JSON or is missing `conv`, `from`, `name` or `message`.
-
-## replyToMessage — report upward to whoever put you to work
-
-`echo '{"conv":"<uuid>","from":"<uuid>","name":"<yours>","message":"..."}' | replyToMessage.mts`
-publishes the same `say` as `sendMessage`, and needs no approval. `conv` is the
-conversation you are reporting INTO, which is the `from` of the message that put you
-to work; `from` and `name` are your own.
-
-Not only a finished answer. Your findings, a progress report, a roadblock, a
-question you need settled: all of it goes this way. The name says reply because you
-are answering the dispatch, not because it has to be the last thing you say.
-
-It never follows the query it opens: you are not waiting on an answer to your own
-report, and a report that can hang is how a finished one fails to arrive. Put a long
-message in a file and pass it on stdin.
-
-**Exits** `0` as soon as the reply is accepted. `1` if it is rejected or no servicer
-replies, the latter meaning the conversation you are replying to has no agent
-attached: `service.mts` it and send again. `64` if the input is not valid JSON or is
-missing `conv`, `from`, `name` or `message`.
 
 ## service — ask a world to serve a conversation (spawn or adopt)
 
@@ -266,8 +243,8 @@ Four steps in order, each worth doing only if the one before it landed:
    so plainly: the conversation is **attached but has no line**, which is a worker
    nobody is watching. The brief is not sent. Fix the bucket and spawn again passing
    the same `conv`.
-4. Send the brief, always `noWait`, reply instructions and all. A spawn hands out
-   work; it does not wait for an answer.
+4. Send the brief, always `noWait`, with the worker's own conversation id appended. A
+   spawn hands out work; it does not wait for an answer.
 
 The result — `{"conversationId","queryId","owner"}` — is the **last** line of stdout.
 The line above it is the say's own `query <id> accepted`, exactly as `sendMessage.mts`

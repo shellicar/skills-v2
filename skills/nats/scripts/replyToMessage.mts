@@ -42,8 +42,7 @@ await publishSay({
   name: input.name,
   follow: false,
   waitSeconds: 0,
-  // No return address on a reply: whoever you are answering already knows both
-  // ids, and a further reply from them is a new original message, which carries
-  // its own.
-  withReplyInstructions: false,
+  // Whoever you are answering already knows which conversation it is in; only an
+  // original message lands somewhere that has to be told.
+  withConversationId: false,
 });

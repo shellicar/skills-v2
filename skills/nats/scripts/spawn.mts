@@ -124,8 +124,8 @@ try {
 }
 
 // A spawn hands out work; it does not wait for an answer, so the say never follows the
-// query it opens. Reply instructions ride along, which is how the worker learns its own
-// conversation id and where to report.
+// query it opens. The worker's own conversation id rides along, which is the only way it
+// learns which conversation it is in.
 const queryId = await publishSay({
   conv,
   from: input.owner,
@@ -133,7 +133,7 @@ const queryId = await publishSay({
   message: input.message,
   follow: false,
   waitSeconds: 0,
-  withReplyInstructions: true,
+  withConversationId: true,
 });
 
 process.stdout.write(`${JSON.stringify({ conversationId: conv, queryId, owner: input.owner })}\n`);

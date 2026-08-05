@@ -14,9 +14,9 @@
 //   echo '{"conv":"<uuid>","from":"<uuid>","name":"Bosun","message":"hi","noWait":true}' | node sendMessage.mts
 //   node sendMessage.mts < payload.json
 //
-// The reply instructions are appended for you, always: the recipient is told its
-// own conversation id, where to reply, and the exact payload to send. Never write
-// that by hand into the message — every hand-written copy has gone stale.
+// The recipient's own conversation id is appended for you, always: nothing else
+// tells a session which conversation it is in. Never write it by hand into the
+// message — every hand-written copy has gone stale.
 //
 // conv is the FULL conversation uuid being spoken INTO; from is your own and name is
 // the one you gave yourself, and lib/say.mts owns why both are required. wait is seconds, default 180. noWait exits
@@ -46,5 +46,5 @@ await publishSay({
   name: input.name,
   follow: !input.noWait,
   waitSeconds: input.wait ?? 180,
-  withReplyInstructions: true,
+  withConversationId: true,
 });

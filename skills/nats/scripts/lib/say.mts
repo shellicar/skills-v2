@@ -16,8 +16,6 @@
 //
 // NATS_URL and NATS_STREAM override the defaults below.
 
-import { dirname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
 import { JSONCodec, connect } from "nats";
 
 type Block = { type?: string; text?: string; name?: string; input?: unknown };
@@ -34,31 +32,22 @@ export type Say = {
   follow: boolean;
   /** Seconds to follow for. Ignored unless `follow` is set. */
   waitSeconds: number;
-  /** Append the rendered reply instructions. Always on for an original message. */
-  withReplyInstructions: boolean;
+  /** Append the recipient's own conversation id. Always on for an original message. */
+  withConversationId: boolean;
 };
 
-const replyScript = resolve(join(dirname(fileURLToPath(import.meta.url)), "..", "replyToMessage.mts"));
-
 /**
- * The return address, rendered rather than hand-written. Every hand-written copy
- * of this went stale the moment the scripts changed shape, and a recipient cannot
- * look up its own conversation id, so the sender has to supply it: `conv` is the
- * recipient's, `from` is where a reply goes. Getting those two the wrong way round
- * is the whole failure mode, so they are swapped in exactly one place.
+ * Which conversation the recipient is in. Nothing else tells it: the bridge no more
+ * hands an agent its conversation id than it hands it its working directory, so the
+ * sender is the only one who can. Rendered rather than hand-written, because every
+ * hand-written copy went stale the moment the scripts changed shape.
+ *
+ * It is the id and nothing else. A recipient does not write back: it answers in its
+ * own conversation, and whoever commissioned it watches that conversation with
+ * status.mts and reads the answer where it sits.
  */
-function replyInstructions(conv: string, from: string): string {
-  return [
-    "",
-    "\u2500\u2500",
-    `To reply, run this with the JSON below on stdin. Your own conversation id is ${conv}.`,
-    "Pass it on stdin and not on argv: a long message in argv is killed by endpoint",
-    "scanning before node starts.",
-    "",
-    `  node ${replyScript}`,
-    "",
-    `  {"conv":"${from}","from":"${conv}","name":"<your cast name>","message":"your reply"}`,
-  ].join("\n");
+function conversationIdNote(conv: string): string {
+  return ["", "\u2500\u2500", `Your own conversation id is ${conv}.`].join("\n");
 }
 
 const url = process.env.NATS_URL ?? "nats://127.0.0.1:4222";
@@ -95,9 +84,7 @@ export async function publishSay(input: Say): Promise<string | undefined> {
     const say = {
       ts: new Date().toISOString(),
       from: { kind: "agent", conversationId: input.from, name: input.name },
-      text: input.withReplyInstructions
-        ? input.message + replyInstructions(input.conv, input.from)
-        : input.message,
+      text: input.withConversationId ? input.message + conversationIdNote(input.conv) : input.message,
       precondition: { tip },
     };
     process.stderr.write(`[debug] saySubject=${saySubject} watchSubject=${watchSubject} tip=${tip}\n`);

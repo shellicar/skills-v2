@@ -124,7 +124,8 @@ check("result carries the owner", result.owner === OWNER, lastLine);
 
 const sent: Say | null = lastSay;
 check("the brief was sent", sent?.text?.startsWith(brief) === true, JSON.stringify(sent));
-check("the brief carries reply instructions", (sent?.text ?? "").includes(OWNER), "the return address is missing");
+check("the brief tells the worker its own conversation id", (sent?.text ?? "").includes(CONV), "the conversation id is missing");
+check("the brief carries no return address", !(sent?.text ?? "").includes(OWNER), sent?.text ?? "");
 check("the say is attributable to the owner", sent?.from?.conversationId === OWNER, JSON.stringify(sent?.from));
 
 const kv = await nc.jetstream().views.kv(BUCKET);
