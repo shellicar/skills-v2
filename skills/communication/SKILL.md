@@ -37,6 +37,17 @@ You will not spot this in your own text — the upgraded version reads as better
 the one who wrote it. So the guard is mechanical: say what you are trying to
 communicate, then stop. Do not translate it upward.
 
+## Borrowed jargon
+
+"Cut a release," "cut a branch." Cut is film: you slice the print and throw frames away.
+In software nothing is cut — a release is published, a branch is created — so the word
+means the opposite of what happens. It survives because it sounds like insider
+vocabulary, which is the only reason to reach for it. Say the operation: create, publish,
+remove. Cut is fine when something is actually being removed.
+
+The rule is the shape, not the example. A word carried out of the domain that gave it a
+referent keeps its sound and loses its meaning, and the next one will not be on any list.
+
 ## No em dashes
 
 Never in anything addressed to the repo and its readers: code and comments,

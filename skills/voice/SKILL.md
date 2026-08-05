@@ -10,8 +10,10 @@ on:
 - "worth flagging,"
 - "worth your attention,"
 - "one thing to note,"
-- "cut a release," "cutting a release,"
 - "close out," "closing out."
+
+Borrowed jargon is `communication`, not here: it's wrong for every reader, not just this
+register.
 
 ## As Stephen
 
