@@ -29,11 +29,16 @@ The shape is one computation, shown before it runs:
 
 - **No flags: print the plan, then exit.** Nothing is touched. Running the script with
   no flags is always safe.
-- **`--apply`: print the same plan, wait 5 seconds, then carry it out.** The wait is the
-  abort window, not a prompt — it asks nothing and needs no answer, it just holds the
-  irreversible step open long enough for the SC to read it and Ctrl-C.
-- **Act on the plan you printed, not a fresh one.** Compute once, hold it, print from
-  it, execute from it. Recomputing after the wait reopens the gap this closes.
+- **`--apply`: print the plan, then carry it out.** The plan is what the script is
+  going to attempt, listed before it attempts any of it. Not what the outcome will
+  be: a pull can conflict, a delete can be refused, and no script knows that in
+  advance. Seeing the branches it is about to try is the whole of the promise.
+- **Act on the plan you printed, not a fresh one.** Compute once, hold it, print
+  from it, execute from it. Recomputing after printing reopens the gap this closes.
+- **Whether `--apply` pauses first is a decision, not a rule.** A pause with a
+  warning earns its place where the effect cannot be undone: writing a production
+  database, deleting the only copy of something. Ordinary git operations do not
+  need one. Where there is a pause, 5 seconds and a Ctrl-C is the shape.
 - **One flag acts, `--apply`.** Every other flag only narrows *what's in the plan* —
   which items are considered. None of them cause anything to happen by itself.
 - **Never let a flag both select and execute.** The moment one does, running the
@@ -44,11 +49,11 @@ Flags like `--rescue` or `--gone` just decide which branches show up in the plan
 their own they print, they don't touch a branch.
 
 Why `--apply` prints the plan itself, instead of trusting the dry run the SC already
-ran: two invocations are two readings of the world. The plan he approved was computed
-from the tree, the remote, the settings file as they stood; the second run computes
-again from whatever they are now. He approves one thing and executes another, and
+ran: two invocations are two readings of the world. The actions he approved were chosen
+from the tree, the remote, the settings file as they stood; the second run chooses again
+from whatever they are now. He approves one set of actions and executes another, and
 neither run is in a position to tell him they differed. One run removes the gap — what
-he saw is what happens, because it is the same plan.
+he saw is what gets attempted, because it is the same plan.
 
 This is not a judgement call, and there is no question in it to ask. `safe-operations`
 holds why, along with the other half of it: the script is his to run, never yours, not
