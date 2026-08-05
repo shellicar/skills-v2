@@ -10,6 +10,22 @@ description: |
 
 Composes onto `azure-devops` for org/project detection.
 
+## Which level is yours
+
+The level you write at follows the role you are in.
+
+- **Handler or planner: PBIs and Bugs.** What is wanted and why, before anyone builds it.
+- **Operator: Tasks.** What you actually did, written as you do it, parented to the PBI
+  or Bug it belongs to.
+
+So an operator does not rewrite the PBI it was given, and a handler does not write the
+Tasks describing work it did not do. Each is the only one holding what its level
+records: the handler has the intent and the decisions behind it, and the operator has
+what the code turned out to need.
+
+The PR side of this is `azure-devops-pr`: the Task an operator creates is what gets
+linked to the PR, and the PBI is only ever mentioned.
+
 ## Creation sequence
 
 Query the parent first (for its area/iteration path), create the item with its
