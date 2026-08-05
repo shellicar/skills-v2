@@ -13,13 +13,15 @@ perfectly. The danger is the moment of *doing*: you pattern-match to the closest
 from the tutorial without checking the actual state in front of you. This skill is for
 that moment — use the knowledge you already have in the act, not just when questioned.
 
+## Knowledge
+
 - **`main` is not `origin/main`.** They drift apart, and conflating them gives a wrong
   diff or a wrong rebase that still reads coherent. Before you diff, rebase, or reason
   about a branch, name the exact ref you mean — `origin/main` or `main` — and resolve
   its SHA. "rebase main" reached for without knowing which is the reflex to catch.
 
 - **The reflex is `git rebase origin/main`; the right call is often
-  `git rebase <parent> --onto origin/main`.** When your branch wasn't cut from the
+  `git rebase <parent> --onto origin/main`.** When your branch wasn't branched from the
   target, plain rebase replays every commit since the merge-base — sweeping in commits
   that aren't yours. Naming the branch's actual parent as the base selects only your own
   commits (`<oldbase>..HEAD`) and lands them on `origin/main`. It's the same only when
@@ -42,6 +44,8 @@ that moment — use the knowledge you already have in the act, not just when que
 - **Unstaged and untracked files are inert.** They don't need dealing with before other
   operations; `git status` listing them is information, not a problem to solve.
 
+## Rules
+
 - **Never `git add -A` (or `git add .`).** A working tree holds files that aren't your
   change — someone else's in-progress work, stray artifacts. Stage what you changed, by
   name.
@@ -53,12 +57,19 @@ that moment — use the knowledge you already have in the act, not just when que
   config and the hook to that repo's own `.git/config` and `.git/hooks`, leaving global
   config untouched.
 
+- **New commits only.** No amend, no rebase, nothing that needs a force push — they trade
+  real risk for a tidiness the PR's squash-merge erases anyway. When histories diverge,
+  merge; don't rebase.
+
+- **The destructive commands aren't yours to run.** `reset`, `checkout` / `restore` for
+  state, `git rm`. Use `git switch` for branches. See `safe-operations`.
+
+## Convention
+
 Branch names are plain English describing the work, with one of these prefixes:
 `docs/`, `fix/`, `hotfix/`, `security/`, `feature/`, `epic/`.
 
-**New commits only.** No amend, no rebase, nothing that needs a force push — they trade
-real risk for a tidiness the PR's squash-merge erases anyway. When histories diverge,
-merge; don't rebase.
+## Banned
 
-The destructive git commands — `reset --hard`, `checkout` / `restore` for state,
-`clean`, `git rm` — aren't yours to run. See `safe-operations`.
+`git reset --hard` and `git clean -f` are contraband: never run, never suggested, never
+written down. See `safe-operations`.
