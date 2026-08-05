@@ -202,6 +202,63 @@ fresh uuid (the caller names the conversation; nothing is "returned").
 replies within `wait` seconds (default 30). `64` if the input is not valid JSON or has
 no `world`.
 
+## spawn — commission a worker: serve it, record who watches it, hand it the brief
+
+`echo '{"world":"local","cwd":"/path/to/worktree","owner":"<your uuid>","name":"<yours>","message":"the brief"}' | spawn.mts`
+does the three things a handler needs to happen together: it gets a conversation
+served in the world, it records that the worker reports to you, and it sends the
+brief. They are one tool because a registration step a handler has to remember
+separately is one that gets skipped or mistyped, and what that produces is a worker
+nobody is watching.
+
+`owner` is your own conversation id and `name` is your cast name, both required, both
+for the same reason `sendMessage.mts` needs them. `conv` is the worker's id, minted
+for you when you leave it out. `cwd` is required — a worker spawned into the wrong
+tree edits the wrong repo — and `model` is passed to the world when you name it.
+**This is a gated tool**: the brief is an original message.
+
+Four steps in order, each worth doing only if the one before it landed:
+
+1. Mint the conversation id.
+2. `service` the world with it, plus `cwd` and `model`. A rejection stops everything
+   and prints itself; nothing else has happened yet, so there is nothing to unwind.
+3. Write the reporting line, then read it back. Failing here stops the spawn and says
+   so plainly: the conversation is **attached but has no line**, which is a worker
+   nobody is watching. The brief is not sent. Fix the bucket and spawn again passing
+   the same `conv`.
+4. Send the brief, always `noWait`, reply instructions and all. A spawn hands out
+   work; it does not wait for an answer.
+
+The result — `{"conversationId","queryId","owner"}` — is the **last** line of stdout.
+The line above it is the say's own `query <id> accepted`, exactly as `sendMessage.mts`
+prints it.
+
+**spawn creates the reporting line, and `service` never does.** That is what makes
+re-serving safe: a takeover, or a bridge restarting and re-serving its whole fleet, is
+`service` over and over, and every line survives it untouched. Only a commission
+creates a line, so re-attaching a conversation never rewrites who is watching it and
+never invents a watcher for a conversation nobody commissioned.
+
+### The reporting line
+
+- **Bucket** `reporting-lines`, KV, created by the script when it is absent.
+- **Key** the worker's conversation id.
+- **Value** `{"owner":"<conversation id>","ts":"<iso8601>"}`, and nothing else.
+
+A line records direction of reporting and nothing more: who this worker reports to,
+and when that was decided. The worktree and the brief belong to the spawn, not to the
+line. KV rather than a stream because a line is deleted at teardown, which makes it a
+table rather than a history.
+
+**Exits** `0` when all four steps land. `1` when any of them is rejected: a service
+the world refused, no bridge replying at all, a reporting line that would not read
+back, or a say no servicer took. `64` if the input is not valid JSON or is missing
+`world`, `cwd`, `owner`, `name` or `message`.
+
+`check-spawn.mts` exercises all of it against loopback responders — it answers the
+service request and the say itself, so no bridge is asked for anything and no brief
+reaches a worker. Run it after touching `spawn.mts` or `lib/say.mts`.
+
 ## Configuration
 
 - `NATS_URL` — the broker (default `nats://127.0.0.1:4222`).

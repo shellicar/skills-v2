@@ -65,10 +65,11 @@ const url = process.env.NATS_URL ?? "nats://127.0.0.1:4222";
 const stream = process.env.NATS_STREAM ?? "conv-approval";
 
 /**
- * Owns the process outcome as well as the publish: both callers want the same
- * exit codes, and there is no in-process consumer of a result value.
+ * Owns the process outcome as well as the publish: every caller wants the same exit
+ * codes on the failure paths. It returns the accepted query id rather than exiting on
+ * success, because spawn.mts has more to do after the say lands.
  */
-export async function publishSay(input: Say): Promise<void> {
+export async function publishSay(input: Say): Promise<string | undefined> {
   const waitMs = input.waitSeconds * 1000;
   const tipSubject = `conv.v2.${input.conv}.changes.message`;
   const watchSubject = `conv.v2.${input.conv}.changes.>`;
@@ -121,8 +122,7 @@ export async function publishSay(input: Say): Promise<void> {
       // The say landed, which is all the caller wanted to know. The query runs
       // on server-side regardless — read.mts picks it up later.
       process.stdout.write(`query ${queryId} accepted\n`);
-      await nc.drain();
-      process.exit(0);
+      return queryId;
     }
     process.stderr.write(`query ${queryId} accepted; waiting up to ${input.waitSeconds}s for it to close...\n`);
 
@@ -151,6 +151,7 @@ export async function publishSay(input: Say): Promise<void> {
       process.stderr.write("timed out before the query closed\n");
       process.exitCode = 2;
     }
+    return queryId;
   } finally {
     await nc.drain();
   }
