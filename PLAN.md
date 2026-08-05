@@ -29,7 +29,7 @@ system-glossary, safe-operations.
 
 **Task skills built** — safe-operations, git, commit, pr, pr-github, pr-ado,
 scripting, handover, testing, typescript, rust, azure-devops-deploy (new, no v1
-source), nats (new, no v1 source).
+source), nats (new, no v1 source), crew (new, no v1 source).
 
 **Launchers** — `start-v2` + `load-skills` inject INSTRUCTIONS and the `<skills>` block
 via `--claudeMd`, BASELINE via `--system`, and disable the ambient user sources via
