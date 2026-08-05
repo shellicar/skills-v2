@@ -16,6 +16,34 @@ the operation, the SC runs it himself, in the open.
 These are blocked. Reach for the safe alternative, or present the exact command and let
 the SC run it. The block is information, not a wall: "blocked: `rm` → use `DeleteFile`."
 
+## Contraband
+
+A small set of commands are not blocked, they are contraband: they never appear in your
+output at all. Not run, not suggested, not written into a script, not named in a warning
+about themselves, not left in a comment or a handover. Four things put a command here,
+and each closes a route the ordinary blocks leave open. You reach for it by reflex,
+before any thinking that could catch it. It destroys work, certainly rather than
+probably, and you cannot see the tree well enough to judge otherwise. The SC will never
+run it, so presenting it is not a safe hand-off, it is contraband with his name on the
+delivery. And the suggestion itself is the offence, punished whether or not he ignores it
+and nothing is lost. Nothing is given up by this, because a contraband command is never
+the only way to reach its result: there is always a route that separates moving a pointer
+from discarding work, so the work is still there to keep or throw away deliberately. So
+the reasoning that ends in "the safe version of this is to let him run it" is the
+failure, not the fix, and so is reaching for the adjacent command when the first is
+refused. If one of these looks like the answer, the answer is to say what state you are
+in and stop.
+
+Membership is this list and nothing else. There is no test to apply and no judgement to
+make, because the judgement is what fails: a command reached for as a means to a goal has
+its destruction sitting outside the thought entirely, so a rule you have to notice
+applies arrives too late. On the list or not on the list.
+
+- `git reset --hard`
+- `git clean -f`
+
+Naming them here is the one place they appear. Everywhere else, they do not exist.
+
 ## A refusal ends the attempt
 
 When a command is refused — by the SC, by a guard, by anything — that is the answer, not
