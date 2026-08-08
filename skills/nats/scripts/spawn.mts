@@ -57,7 +57,7 @@ type Line = { owner: string; ts: string };
 /** A line records direction of reporting and nothing else: the worktree and the brief
  * belong to the spawn, not to the line. KV rather than a stream because a line is
  * deleted at teardown, which makes it a table rather than a history. The override is
- * for check-spawn.mts, so a test never writes into the bucket the fleet runs on. */
+ * for test-spawn.mts, so a test never writes into the bucket the fleet runs on. */
 const BUCKET = process.env.NATS_REPORTING_BUCKET ?? "reporting-lines";
 
 const url = process.env.NATS_URL ?? "nats://127.0.0.1:4222";

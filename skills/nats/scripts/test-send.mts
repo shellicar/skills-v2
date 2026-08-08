@@ -2,22 +2,16 @@
 // loopback responders: this process answers every say itself, so no bridge is asked for
 // anything, no agent is attached and no message reaches a real conversation.
 //
-// The conversation ids are fixed self-test uuids and each case owns one, so a case never
-// reads another's leftovers. The follow cases publish `changes.message` and
-// `changes.query` events, and those the stream does capture, for check-status.mts's
-// reason: the stream owns `conv.v2.*.changes.>` and JetStream refuses a second stream
-// overlapping it, so there is nowhere else to put them. They are inert, and fixed ids
-// keep the residue to a constant handful of subjects. `requests.say` is captured by no
-// stream, so the says themselves persist nowhere.
+// The conversation ids are fixed test uuids and each case owns one, so a case never
+// reads another's leftovers.
 //
 // What it is really pinning: the appended conversation id. It is the only thing that
 // tells a worker which conversation it is in, and a worker that does not know cannot be
 // commissioned properly, so it is worth a test that reads what actually went on the wire.
 //
-// Needs a broker (NATS_URL, default nats://127.0.0.1:4222) and the stream (NATS_STREAM,
-// default conv-approval).
+// Brings up its own broker and can never reach the fleet's; see lib/test-broker.mts.
 //
-//   node check-send.mts
+//   node test-send.mts
 //
 // Exits 0 when every case passes, 1 when any fails.
 
@@ -25,9 +19,9 @@ import { spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { JSONCodec, type Subscription, connect } from "nats";
+import { JSONCodec, type Subscription } from "nats";
+import { connectTestBroker } from "./lib/test-broker.mts";
 
-const url = process.env.NATS_URL ?? "nats://127.0.0.1:4222";
 const script = resolve(join(dirname(fileURLToPath(import.meta.url)), "sendMessage.mts"));
 
 const FROM = "00000000-0000-4000-8000-00000000c0ff";
@@ -50,7 +44,7 @@ type Say = { text?: string; from?: { conversationId?: string; name?: string }; p
 type Answer = { accepted?: boolean; id?: string; rejected?: boolean; reason?: string };
 
 const jc = JSONCodec<unknown>();
-const nc = await connect({ servers: url });
+const nc = await connectTestBroker();
 const js = nc.jetstream();
 
 const failures: string[] = [];
@@ -92,7 +86,7 @@ const closeQuery = async (conv: string, queryId: string, reason: string): Promis
   await js.publish(`conv.v2.${conv}.changes.query`, jc.encode(body));
 };
 
-// Awaited rather than spawnSync, for check-spawn.mts's reason: this process answers the
+// Awaited rather than spawnSync, for test-spawn.mts's reason: this process answers the
 // child's own requests, and a synchronous child blocks the event loop that would answer
 // them, so every say times out on a responder sitting right here.
 const run = (input: unknown): Promise<{ status: number | null; stdout: string; stderr: string }> =>
@@ -106,7 +100,7 @@ const run = (input: unknown): Promise<{ status: number | null; stdout: string; s
     child.stdin.end(JSON.stringify(input));
   });
 
-const message = "check-send.mts self-test message. No recipient: this say is answered by check-send.mts.";
+const message = "test-send.mts self-test message. No recipient: this say is answered by test-send.mts.";
 
 // `from` and `name` are what make a say attributable, and `opener` is what makes it
 // spoken by somebody, so none of the three is optional.
@@ -138,7 +132,7 @@ check("the say carries the sender's name", wire?.from?.name === NAME, JSON.strin
 
 // A say is anchored to the tip it was written against, which is what makes a say written
 // while someone else was speaking a rejection rather than a message applied out of order.
-const tip = await commit(CONV.anchored, "query-anchored", "check-send: the tip");
+const tip = await commit(CONV.anchored, "query-anchored", "test-send: the tip");
 serve(CONV.anchored, { accepted: true, id: "query-anchored" });
 await run({ conv: CONV.anchored, from: FROM, name: NAME, opener: OPENER, message, noWait: true });
 check("the say is anchored to the current tip", seen.get(CONV.anchored)?.precondition?.tip === tip, JSON.stringify(seen.get(CONV.anchored)?.precondition));
@@ -157,12 +151,12 @@ check("an unserved conversation names the missing agent", unserved.stderr.includ
 
 // Following: the answer is the query closing, and only `completed` is a real one.
 serve(CONV.completed, { accepted: true, id: "query-completed" }, async (queryId) => {
-  await commit(CONV.completed, queryId, "check-send: the answer");
+  await commit(CONV.completed, queryId, "test-send: the answer");
   await closeQuery(CONV.completed, queryId, "completed");
 });
 const followed = await run({ conv: CONV.completed, from: FROM, name: NAME, opener: OPENER, message, wait: 10 });
 check("a completed query exits 0", followed.status === 0, `status=${followed.status} stderr=${followed.stderr}`);
-check("a followed say prints the committed answer", followed.stdout.includes("check-send: the answer"), followed.stdout);
+check("a followed say prints the committed answer", followed.stdout.includes("test-send: the answer"), followed.stdout);
 check("a followed say prints the close reason", followed.stdout.includes("closed: completed"), followed.stdout);
 
 serve(CONV.aborted, { accepted: true, id: "query-aborted" }, async (queryId) => {
