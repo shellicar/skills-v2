@@ -125,3 +125,20 @@ conversation had no agent attached, and two more workers were still holding that
 as their handler.
 
 Conversation: d9046ffb-5236-4eed-9e06-78b02e3724c3
+
+## 2026-08-09
+
+### status reads the turn, the instance and the approval separately
+
+Find the last attached instance id and show that instance's last heartbeat. Look for the
+approval data and add a state for it. Carry when the conversation entered that state, and
+the freshest thing proving anything is still happening. `status.mts` in the nats skill,
+with its output documented in that skill.
+
+One word derived from the conversation stream reported `working` for a conversation that
+was attached, alive, and stopped dead on an approval raised hours earlier and never
+settled. A busy agent, a blocked one and a corpse all commit nothing, so the stream alone
+cannot tell them apart. The instance's own heartbeat says whether it is dead, and an
+approval raised and never settled says it is waiting.
+
+Conversation: fe17f556-d8b1-4d28-96fd-afee1eb469fc

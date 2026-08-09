@@ -68,23 +68,42 @@ nats stream subjects conv-approval "conv.v2.*.changes.message"
 
 ## status — which conversations are working, and which are waiting on you
 
-`echo '{"convs":["<uuid>","<uuid>"]}' | status.mts` reports, for each conversation, when
-it last spoke and whether a turn is in progress. It answers the question you actually
-have when several operators are running at once, at two cheap lookups per conversation
-instead of a whole `read.mts` each.
+`echo '{"convs":["<uuid>","<uuid>"]}' | status.mts` reports on each conversation. It
+answers the question you actually have when several operators are running at once,
+without a whole `read.mts` each.
 
-`state` is derived from the last committed message and the last query close, so it is a
-reading rather than something the bus states:
+**Three questions, three reads.** One word off the conversation stream cannot tell a
+busy agent from a blocked one from a corpse, because all three commit nothing:
 
-- `working` — a message landed after the last query close, so a turn is in progress.
-- `idle` — the newest event is a query close, so nothing is running.
+- **the turn** — `conv.v2.{conv}.changes.{message,query}`. Is a turn open?
+- **the instance** — `conv.v2.{conv}.attachment.{attached,detached}` for the instance
+  id, then `agent.v1.{world}.telemetry.pulse` for that instance. Is anything serving it?
+- **the block** — `approval.v1.*.lifecycle` correlated to this conversation, plus
+  `approval.v1.{id}.telemetry`. Is it waiting on a human?
+
+`state` is a reading of those three, ordered by what you have to act on:
+
 - `empty` — nothing has ever been committed.
+- `idle` — the newest event is a query close, so nothing is running.
+- `released` — the instance holding it detached.
+- `stranded` — the instance stopped pulsing inside its own promised interval.
+- `awaiting-approval` — an approval was raised against this conversation and never
+  settled. Nothing moves until someone answers it.
+- `unknown` — a read did not complete. It is never reported as `working` to fill the
+  gap, because `working` is a claim.
+- `working` — a turn is open and nothing above explains the quiet.
+
+**Liveness is only ever positive proof.** A pulse inside its promised interval says
+alive. Silence says only that nothing was heard, so `stranded` is a reading of silence
+and never a claim that a process is gone.
 
 **Do not send into a conversation reading `working`.** The tip moves under you while it
 works, so the say is rejected as stale. Wait for `idle`.
 
-Each entry also carries the last message's role, timestamp and first line, the last
-query's id and close reason, and the current `tip`.
+Each entry also carries `since`, the freshest activity proving anything is still
+happening, the instance with its pulse age, the approval with its heartbeat age, the
+last message's role, timestamp and first line, the last query's id and close reason, and
+the current `tip`.
 
 ### wait — block until one of them finishes
 
@@ -283,4 +302,7 @@ back, or a say no servicer took. `64` if the input is not valid JSON or is missi
 
 - `NATS_URL` — the broker (default `nats://127.0.0.1:4222`).
 - `NATS_STREAM` — the JetStream stream (default `conv-approval`).
+- `NATS_EPHEMERAL_STREAM` — where pulses and approval heartbeats live (default
+  `conv-ephemeral`). The same subjects exist in both streams, so every read names the
+  stream it means rather than letting the subject choose.
 - `NATS_REPORTING_BUCKET` — the reporting-line KV bucket (default `reporting-lines`).
