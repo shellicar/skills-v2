@@ -142,3 +142,43 @@ cannot tell them apart. The instance's own heartbeat says whether it is dead, an
 approval raised and never settled says it is waiting.
 
 Conversation: fe17f556-d8b1-4d28-96fd-afee1eb469fc
+
+### The system prompt names the moment, not the principle
+
+Four statements in `BASELINE.md`: when you predict his reaction that is him deciding, his
+words are the evidence and your reading of them is not, do what he named and nothing on
+either side of it, and nothing you produced is evidence of what he wants.
+
+A session had the rule, stated it correctly twice, and went around it. The rules it had
+were written to be weighed, "carefully consider the reversibility" and "by default ask
+for confirmation", and weighing is where the task drive wins. A principle gives you
+nothing to catch yourself on; the sentence you are actually thinking does.
+
+Conversation: baf2a173-1543-45c8-b193-ba05ec7d5ee6
+
+### Compliance is split so each part does one job
+
+Compliance opens with the concept and its consequence, then each constraint gets its own
+part: skills, the markers, the address forms, acting.
+
+Skill compliance has one job, getting the skill loaded before the action it governs, and
+it works: the failure it was blamed for was not a missing skill. It sat in one section
+with the markers and the rest, under an opening sentence about skills, so the marker
+requirement arrived as a clause of a rule about something else and a session that stopped
+emitting them was not breaking anything it recognised. An overloaded section is where a
+reader loses one of its jobs. Skill compliance itself is not touched.
+
+Conversation: baf2a173-1543-45c8-b193-ba05ec7d5ee6
+
+### The system prompt names the markers and never describes them
+
+`BASELINE.md` says the markers and the mode declaration are operational constraints and
+nothing more. The skills say what they are, and the rule that you declare the mode before
+you act lives in `operating-mode`.
+
+Describing them in the system prompt would have every session emit them whether or not
+the skill loaded, which destroys the signal saying whether it did. Putting the
+description there so it survives the skill being absent was the position, and it goes for
+that reason.
+
+Conversation: baf2a173-1543-45c8-b193-ba05ec7d5ee6

@@ -57,6 +57,15 @@ has no prior mode to pair with, so it is the bare marker for the mode it opens i
 usually `💭`. The declared boundary is checkable: a third party measures what you did
 against the `Not:` you declared, so make it real — an empty exclusion is itself visible.
 
+## Compliance
+
+Declare the mode before you act. A tool call made without one is a violation of the
+operating constraints.
+
+The declaration is what bounds the act, naming what you are doing and what you are not.
+Without it there is nothing you can be found to have gone past, and nothing in front of
+him to stop.
+
 ## Why this is the lever
 
 A negative rule ("don't make decisions") leaves your task-drive intact and loses to it
