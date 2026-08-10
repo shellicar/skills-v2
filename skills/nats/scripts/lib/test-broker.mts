@@ -45,10 +45,13 @@ function start(): void {
     process.exit(1);
   }
   // What this brought up, it takes away, on every path out including a test that throws.
-  // Sync because an exit handler cannot await, and SIGINT is routed through exit so an
-  // interrupted run cleans up too.
+  // Sync because an exit handler cannot await, and every signal that can be caught is
+  // routed through exit so that handler is the single place the container comes down.
+  // The codes are the shell's 128 + signal number. SIGKILL cannot be caught by anything.
   process.on("exit", stop);
   process.on("SIGINT", () => process.exit(130));
+  process.on("SIGTERM", () => process.exit(143));
+  process.on("SIGHUP", () => process.exit(129));
 }
 
 // Scoped to this compose project by name, so it reaches the broker this file defines and

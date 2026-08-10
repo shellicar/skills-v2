@@ -18,8 +18,9 @@
 // voice, and attribution is already guaranteed on the wire and in the appendix.
 //
 // The appendix is appended for you, always: who sent this, and the recipient's own
-// conversation id, which nothing else tells it. role is optional and rides beside the
-// name. Never write any of it by hand — every hand-written copy has gone stale.
+// conversation id, which nothing else tells it. callerRole is your own role, optional,
+// and rides beside the name. Never write any of it by hand — every hand-written copy has
+// gone stale.
 //
 // conv is the FULL conversation uuid being spoken INTO; from is your own and name is
 // the one you gave yourself, and lib/say.mts owns why both are required. wait is seconds, default 180. noWait exits
@@ -32,13 +33,17 @@
 // query is still running, so read it later. 64 on bad input.
 
 import { EXIT_BAD_INPUT, readStdin } from "../../../shared/stdin.mts";
-import { publishSay } from "./lib/say.mts";
+import { CALLER_ROLES, isCallerRole, publishSay } from "./lib/say.mts";
 
-type Input = { conv: string; from: string; name: string; opener: string; message: string; role?: string; wait?: number; noWait?: boolean };
+type Input = { conv: string; from: string; name: string; opener: string; message: string; callerRole?: string; wait?: number; noWait?: boolean };
 
 const input = readStdin<Input>('{"conv":"<uuid>","from":"<uuid>","name":"<your cast name>","opener":"<who is speaking>","message":"hello"}');
 if (!input.conv || !input.from || !input.name || !input.opener || typeof input.message !== "string") {
   process.stderr.write("input needs { conv, from, name, opener, message }\n");
+  process.exit(EXIT_BAD_INPUT);
+}
+if (input.callerRole !== undefined && !isCallerRole(input.callerRole)) {
+  process.stderr.write(`callerRole must be one of: ${CALLER_ROLES.join(", ")}\n`);
   process.exit(EXIT_BAD_INPUT);
 }
 
@@ -48,7 +53,7 @@ await publishSay({
   message: input.message,
   name: input.name,
   opener: input.opener,
-  ...(input.role === undefined ? {} : { role: input.role }),
+  ...(input.callerRole === undefined ? {} : { callerRole: input.callerRole }),
   follow: !input.noWait,
   waitSeconds: input.wait ?? 180,
   withAppendix: true,

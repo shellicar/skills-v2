@@ -45,7 +45,7 @@ echo '{"conv":"<uuid>","from":"<uuid>","name":"<yours>","opener":"<who is speaki
 # dispatch without waiting for the reply — the query runs on regardless:
 echo '{"conv":"<uuid>","from":"<uuid>","name":"<yours>","opener":"<who is speaking>","message":"...","noWait":true}' | node ~/repos/shellicar/skills-v2/skills/nats/scripts/sendMessage.mts
 # commission a worker — serve it, record who it reports to, and send the brief:
-echo '{"world":"local","cwd":"/path","owner":"<uuid>","name":"<yours>","opener":"<who is speaking>","message":"..."}' | node ~/repos/shellicar/skills-v2/skills/nats/scripts/spawn.mts
+echo '{"world":"local","cwd":"/path","owner":"<uuid>","name":"<yours>","opener":"<who is speaking>","workerRole":"operator","message":"..."}' | node ~/repos/shellicar/skills-v2/skills/nats/scripts/spawn.mts
 # a long message is easier to keep in a file:
 node ~/repos/shellicar/skills-v2/skills/nats/scripts/sendMessage.mts < payload.json
 ```
@@ -192,7 +192,7 @@ contents are never checked against `name`: an opener checked against a field is 
 rather than a voice, and attribution is already guaranteed on the wire and in the
 appendix.
 
-**The appendix is appended for you**, carrying who sent this — `name`, and `role` beside
+**The appendix is appended for you**, carrying who sent this — `name`, and `callerRole` beside
 it when you pass one — and the recipient's own conversation id, which nothing else tells
 it: the bridge no more hands an agent its conversation id than it hands it its working
 directory. **Do not write any of it into your `message` by hand** — it is already in what
@@ -246,7 +246,7 @@ no `world`.
 
 ## spawn — commission a worker: serve it, record who watches it, hand it the brief
 
-`echo '{"world":"local","cwd":"/path/to/worktree","owner":"<your uuid>","name":"<yours>","message":"the brief"}' | spawn.mts`
+`echo '{"world":"local","cwd":"/path/to/worktree","owner":"<your uuid>","name":"<yours>","opener":"<who is speaking>","workerRole":"operator","message":"the brief"}' | spawn.mts`
 does the three things a handler needs to happen together: it gets a conversation
 served in the world, it records that the worker reports to you, and it sends the
 brief. They are one tool because a registration step a handler has to remember
@@ -255,9 +255,17 @@ nobody is watching.
 
 `owner` is your own conversation id and `name` is your cast name, both required, both
 for the same reason `sendMessage.mts` needs them, as are `opener` and the optional
-`role`. `conv` is the worker's id, minted for you when you leave it out. `cwd` is
+`callerRole`. `conv` is the worker's id, minted for you when you leave it out. `cwd` is
 required — a worker spawned into the wrong tree edits the wrong repo — and `model` is
 passed to the world when you name it.
+
+**`workerRole` is the role you are commissioning the worker into**, `operator` or
+`gatekeeper`, and the appendix turns it into the skills that worker loads: `workflow`,
+`workflow-worker`, and the role itself. You never pass the skills. A caller assembling
+that list by hand is a list that drifts from the skills that exist, and a role this
+doesn't know is rejected here rather than sending a worker after a skill that isn't
+there.
+
 **This is a gated tool**: the brief is an original message.
 
 Four steps in order, each worth doing only if the one before it landed:
@@ -271,6 +279,10 @@ Four steps in order, each worth doing only if the one before it landed:
    the same `conv`.
 4. Send the brief, always `noWait`, opener at the top and appendix at the foot. A spawn
    hands out work; it does not wait for an answer.
+
+The brief is the one message that names the skills to load, and `sendMessage.mts` never
+does: a commission is where they become the recipient's, and every later message goes to
+a session already holding them.
 
 The result — `{"conversationId","queryId","owner"}` — is the **last** line of stdout.
 The line above it is the say's own `query <id> accepted`, exactly as `sendMessage.mts`
@@ -296,7 +308,8 @@ table rather than a history.
 **Exits** `0` when all four steps land. `1` when any of them is rejected: a service
 the world refused, no bridge replying at all, a reporting line that would not read
 back, or a say no servicer took. `64` if the input is not valid JSON or is missing
-`world`, `cwd`, `owner`, `name`, `opener` or `message`.
+`world`, `cwd`, `owner`, `name`, `opener`, `workerRole` or `message`, or if `workerRole`
+is not a role that exists.
 
 ## Configuration
 

@@ -21,6 +21,23 @@ type Message = { type?: string; id?: string; role?: string; ts?: string; content
 type Ack = { accepted?: boolean; id?: string; rejected?: boolean; reason?: string };
 type Change = Message & { queryId?: string; reason?: string };
 
+/** The roles a worker can be commissioned into. A handler is not one: a handler is not
+ * commissioned. */
+export const WORKER_ROLES = ["operator", "gatekeeper"] as const;
+export type WorkerRole = (typeof WORKER_ROLES)[number];
+
+export function isWorkerRole(value: unknown): value is WorkerRole {
+  return typeof value === "string" && (WORKER_ROLES as readonly string[]).includes(value);
+}
+
+/** The roles a caller can send as. Only a handler commissions or sends, for now. */
+export const CALLER_ROLES = ["handler"] as const;
+export type CallerRole = (typeof CALLER_ROLES)[number];
+
+export function isCallerRole(value: unknown): value is CallerRole {
+  return typeof value === "string" && (CALLER_ROLES as readonly string[]).includes(value);
+}
+
 export type Say = {
   conv: string;
   from: string;
@@ -28,8 +45,10 @@ export type Say = {
   message: string;
   /** Who is speaking, placed above the message. Required on an original message. */
   opener?: string;
-  /** The sender's role, rendered in the appendix beside its name when given. */
-  role?: string;
+  /** The sender's own role, rendered in the appendix beside its name when given. */
+  callerRole?: CallerRole;
+  /** The role the recipient is commissioned into. Only a commission sets it. */
+  workerRole?: WorkerRole;
   /** Follow the change stream until the query closes, printing what lands. */
   follow: boolean;
   /** Seconds to follow for. Ignored unless `follow` is set. */
@@ -47,10 +66,19 @@ export type Say = {
  *
  * There is no route back in it. A recipient does not write to its sender: it answers in
  * its own conversation, and whoever commissioned it reads the answer where it sits.
+ *
+ * A commission also names the skills to load. The list is derived here rather than
+ * passed in, so a caller cannot hand a worker the wrong one, and it points at skills
+ * rather than quoting them: a skill loaded through the skill system is told when it
+ * changes, and text injected into a message is not.
  */
 function appendix(input: Say): string {
-  const sender = input.role === undefined ? input.name : `${input.name}, ${input.role}`;
-  return ["", "\u2500\u2500", `Sent by ${sender}.`, `Your own conversation id is ${input.conv}.`].join("\n");
+  const sender = input.callerRole === undefined ? input.name : `${input.name}, ${input.callerRole}`;
+  const lines = ["", "\u2500\u2500", `Sent by ${sender}.`, `Your own conversation id is ${input.conv}.`];
+  if (input.workerRole !== undefined) {
+    lines.push(`Load these skills: workflow, workflow-worker, ${input.workerRole}.`);
+  }
+  return lines.join("\n");
 }
 
 const url = process.env.NATS_URL ?? "nats://127.0.0.1:4222";

@@ -26,7 +26,7 @@ const script = resolve(join(dirname(fileURLToPath(import.meta.url)), "sendMessag
 
 const FROM = "00000000-0000-4000-8000-00000000c0ff";
 const NAME = "Selftest";
-const ROLE = "handler";
+const CALLER_ROLE = "handler";
 // Deliberately does not carry the cast name: an opener is a voice, not a form, and the
 // script must not check one against the other.
 const OPENER = "A word from the one who commissioned this.";
@@ -111,9 +111,13 @@ check("a say with no name exits 64", unnamed.status === 64, `status=${unnamed.st
 const unopened = await run({ conv: CONV.accepted, from: FROM, name: NAME, message, noWait: true });
 check("a say with no opener exits 64", unopened.status === 64, `status=${unopened.status}`);
 
+// A callerRole is optional, but a role nobody sends as is a typo, not a new role.
+const misroled = await run({ conv: CONV.accepted, from: FROM, name: NAME, opener: OPENER, callerRole: "operator", message, noWait: true });
+check("an unknown callerRole exits 64", misroled.status === 64, `status=${misroled.status}`);
+
 // The whole point of the tool, and what the wire actually carries.
 serve(CONV.accepted, { accepted: true, id: "query-accepted" });
-const sent = await run({ conv: CONV.accepted, from: FROM, name: NAME, role: ROLE, opener: OPENER, message, noWait: true });
+const sent = await run({ conv: CONV.accepted, from: FROM, name: NAME, callerRole: CALLER_ROLE, opener: OPENER, message, noWait: true });
 check("a dispatch exits 0", sent.status === 0, `status=${sent.status} stderr=${sent.stderr}`);
 check("a dispatch prints the query id", sent.stdout.includes("query-accepted"), sent.stdout);
 
@@ -122,7 +126,7 @@ check("the opener is at the top", wire?.text?.startsWith(OPENER) === true, JSON.
 check("the message follows the opener unaltered", (wire?.text ?? "").includes(`${OPENER}\n\n${message}`), JSON.stringify(wire?.text));
 check("an opener that does not name the sender is still accepted", sent.status === 0 && !OPENER.includes(NAME), `opener=${OPENER}`);
 check("the appendix names the sender", (wire?.text ?? "").includes(`Sent by ${NAME}`), JSON.stringify(wire?.text));
-check("the appendix carries the sender's role", (wire?.text ?? "").includes(`Sent by ${NAME}, ${ROLE}`), JSON.stringify(wire?.text));
+check("the appendix carries the sender's role", (wire?.text ?? "").includes(`Sent by ${NAME}, ${CALLER_ROLE}`), JSON.stringify(wire?.text));
 check("the recipient is told its own conversation id", (wire?.text ?? "").includes(CONV.accepted), JSON.stringify(wire?.text));
 check("the recipient is given no route back", !(wire?.text ?? "").includes(FROM), JSON.stringify(wire?.text));
 check("the say is attributable to the sender", wire?.from?.conversationId === FROM, JSON.stringify(wire?.from));

@@ -182,3 +182,41 @@ description there so it survives the skill being absent was the position, and it
 that reason.
 
 Conversation: baf2a173-1543-45c8-b193-ba05ec7d5ee6
+
+## 2026-08-10
+
+### Spawn takes the worker's role and tells it which skills to load
+
+Take `workerRole` on `spawn.mts`, either `operator` or `gatekeeper`, and reject anything
+else. Derive the skills from it in the appendix: `workflow`, `workflow-worker`, and the
+role. The caller never passes a skill list.
+
+The caller should not have to remember which skills a worker needs. A list passed in by
+hand drifts from the skills that exist, and nothing else tells a worker which ones to
+load.
+
+Conversation: d9046ffb-5236-4eed-9e06-78b02e3724c3
+
+### Don't let a standard signal orphan the test broker
+
+Handle `SIGTERM` and `SIGHUP` in `test-broker.mts` alongside `SIGINT`, each routed
+through `process.exit` so the exit handler stays the single place the container comes
+down. Exit with the shell's 128 plus the signal number. `SIGKILL` is out of scope,
+because nothing can catch it.
+
+When writing a script, think about the lifetime of what it starts. A standard signal
+should not orphan a process. Here it is a docker compose project rather than a process,
+and either way it should not be left running.
+
+Conversation: d9046ffb-5236-4eed-9e06-78b02e3724c3
+
+### Every role field says whose role it is
+
+Call the sender's role `callerRole` on `sendMessage.mts` and `spawn.mts`, and validate it
+against `handler`, the only role that sends for now.
+
+A message carries two roles once a commission names the worker's, so `role` on its own
+stops saying which one it is. Validating it means a role nobody sends as is caught as a
+typo instead of becoming a new role by accident.
+
+Conversation: d9046ffb-5236-4eed-9e06-78b02e3724c3

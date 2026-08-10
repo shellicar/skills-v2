@@ -7,7 +7,7 @@
 // result JSON as the LAST line of stdout (the say prints its accepted query id on the
 // line before, the same as sendMessage.mts does).
 //
-//   echo '{"world":"local","cwd":"/path/to/worktree","owner":"<your uuid>","name":"<your cast name>","opener":"<who is speaking>","message":"the brief"}' | node spawn.mts
+//   echo '{"world":"local","cwd":"/path/to/worktree","owner":"<your uuid>","name":"<your cast name>","opener":"<who is speaking>","workerRole":"operator","message":"the brief"}' | node spawn.mts
 //   node spawn.mts < payload.json
 //
 // owner is the caller's OWN conversation uuid and name is the cast name it gave
@@ -15,8 +15,10 @@
 // conv is the worker's conversation uuid, minted here when it is not given. cwd is the
 // worktree the worker runs in, and is required: a worker spawned into the wrong tree
 // edits the wrong repo. opener is required and opens the brief, so the worker knows who
-// is speaking before it acts; role is optional and rides beside the name in the
-// appendix. Neither is checked against the other.
+// is speaking before it acts; callerRole is optional, is the sender's own role, and
+// rides beside the name in the appendix. Neither is checked against the other.
+// workerRole is the role the worker is commissioned into, and the appendix turns it into
+// the list of skills to load.
 //
 // APPROVAL GATE: the brief is an original message, so it needs the SC's approval
 // before this runs. SKILL.md owns the rule.
@@ -37,7 +39,7 @@
 import { randomUUID } from "node:crypto";
 import { JSONCodec, connect } from "nats";
 import { EXIT_BAD_INPUT, readStdin } from "../../../shared/stdin.mts";
-import { publishSay } from "./lib/say.mts";
+import { CALLER_ROLES, WORKER_ROLES, isCallerRole, isWorkerRole, publishSay } from "./lib/say.mts";
 
 type Input = {
   world: string;
@@ -45,8 +47,9 @@ type Input = {
   owner: string;
   name: string;
   opener: string;
+  workerRole: string;
   message: string;
-  role?: string;
+  callerRole?: string;
   conv?: string;
   model?: string;
   wait?: number;
@@ -63,10 +66,18 @@ const BUCKET = process.env.NATS_REPORTING_BUCKET ?? "reporting-lines";
 const url = process.env.NATS_URL ?? "nats://127.0.0.1:4222";
 
 const input = readStdin<Input>(
-  '{"world":"local","cwd":"/path/to/worktree","owner":"<your uuid>","name":"<your cast name>","opener":"<who is speaking>","message":"the brief"}',
+  '{"world":"local","cwd":"/path/to/worktree","owner":"<your uuid>","name":"<your cast name>","opener":"<who is speaking>","workerRole":"operator","message":"the brief"}',
 );
 if (!input.world || !input.cwd || !input.owner || !input.name || !input.opener || typeof input.message !== "string") {
-  process.stderr.write("input needs { world, cwd, owner, name, opener, message }\n");
+  process.stderr.write("input needs { world, cwd, owner, name, opener, workerRole, message }\n");
+  process.exit(EXIT_BAD_INPUT);
+}
+if (!isWorkerRole(input.workerRole)) {
+  process.stderr.write(`workerRole must be one of: ${WORKER_ROLES.join(", ")}\n`);
+  process.exit(EXIT_BAD_INPUT);
+}
+if (input.callerRole !== undefined && !isCallerRole(input.callerRole)) {
+  process.stderr.write(`callerRole must be one of: ${CALLER_ROLES.join(", ")}\n`);
   process.exit(EXIT_BAD_INPUT);
 }
 
@@ -135,7 +146,8 @@ const queryId = await publishSay({
   from: input.owner,
   name: input.name,
   opener: input.opener,
-  ...(input.role === undefined ? {} : { role: input.role }),
+  ...(input.callerRole === undefined ? {} : { callerRole: input.callerRole }),
+  workerRole: input.workerRole,
   message: input.message,
   follow: false,
   waitSeconds: 0,
