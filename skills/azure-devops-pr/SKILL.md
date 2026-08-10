@@ -13,6 +13,16 @@ didn't trigger or ran against the wrong paths, see `azure-devops-pipelines-confi
 
 ## What a PR links, and what it only mentions
 
+| Work item | In the description | Linked to the PR |
+|---|---|---|
+| PBI | mentioned as `#1234` | never |
+| Bug | mentioned as `#1234` | never |
+| Task | never | always |
+
+Both columns are exclusive. A Task is linked and never written in the body; a PBI or Bug
+is written in the body and never linked. Naming the same item both ways is the mistake
+this table exists to prevent.
+
 - **A Task is linked.** You create it yourself, with a description of what you did,
   parented to the PBI or Bug the work belongs to. Then you link it to the PR: pass its
   id in `workItems` on `AzureDevOps_PullRequest_Create`, or add it afterwards with the
@@ -52,16 +62,16 @@ the description format.
 
 #1234
 
-#5678
-
 ## Changes
 
 - <bullet>
 - <bullet>
 ```
 
-Each Related Work Items entry needs a blank line between it and the next, or they run
-together as one line instead of reading as separate items.
+Related Work Items carries the PBIs or Bugs this PR contributes to and nothing else. The
+Task is linked, so it never appears there. Where a PR genuinely serves two PBIs, put a
+blank line between the entries or they run together as one line instead of reading as
+separate items.
 
 ## Linking the Task to an already-created PR
 

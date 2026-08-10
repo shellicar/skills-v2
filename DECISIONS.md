@@ -28,3 +28,15 @@ Every change should trace back to a decision the SC actually made. This is for c
 so it's possible to know why a change was made, and so changes aren't made without one.
 
 Conversation: d9046ffb-5236-4eed-9e06-78b02e3724c3
+
+### Link a PR to its Task, and mention the PBI or Bug in the body
+
+Link a PR to its Task, and never to a PBI or Bug. Mention the PBI or Bug in the body, and
+never the Task. Put it in azure-devops-pr as a table.
+
+Merging a PR completes the work items linked to it. A Task should complete on merge; a
+PBI shouldn't, because there may be more work in it. The PBI is mentioned in the body to
+show what work the PR relates to, and the Task isn't mentioned because it is already
+linked. This was ambiguous before, so the table makes exactly what's wanted clear.
+
+Conversation: d9046ffb-5236-4eed-9e06-78b02e3724c3
