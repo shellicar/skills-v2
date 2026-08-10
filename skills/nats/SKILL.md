@@ -27,30 +27,12 @@ again. Violating this gate has been ruled termination-level.
 The gate covers the `message` you pass in, not anything a script renders around
 it.
 
-**Reporting upward is not a send, so there is nothing to gate.** Your report is the
-answer you write in your own conversation: the finished work, a blocker, a question you
-need settled. Whoever commissioned you watches that conversation with `status.mts`'s
-`wait` and reads it where it sits, so nothing has to be published into theirs.
-
-That is also why it cannot fail. A say into a conversation that is mid-turn is rejected
-as stale, so a report written outward failed exactly when it mattered most: it happened
-twice in one night, once to a finished review and once to a worker that needed a
-decision. An answer that never leaves your own conversation has nothing to be rejected
-by.
-
-An original message commissions work in a conversation that did not ask for it. If
-you are a worker and find you need to send one, that is a thing to report upward,
-not to send outward.
+A report is not an original message and does not pass through this gate, because a
+report is not sent at all: a worker answers in its own conversation (`workflow`).
 
 Five tools over the conversation bus (docs/spec in the tower repo). All take one
 JSON object on stdin and are meant for you to run, not a person: stdout is the
 result, stderr is progress, a non-zero exit means it did not get what it asked for.
-
-**If you are a worker, one tool here is yours: `read.mts`, on a conversation your brief
-pointed you at.** That is the whole list. `spawn.mts`, `service.mts`, `status.mts` and
-`sendMessage.mts` all commission or watch work, which is what a handler does and not
-what you were put to work to do. Nothing stops you running them — a script cannot see
-who is calling it — so knowing which are yours is the whole of it.
 
 Run with Node 22+ (it runs `.mts` directly, no build):
 
@@ -85,18 +67,6 @@ nats stream subjects conv-approval "conv.v2.*.changes.message"
 ```
 
 ## status — which conversations are working, and which are waiting on you
-
-**This is a handler's tool, and a worker never calls it.** You watch the conversations
-you commissioned; a worker commissioned none, so there is nothing it could be watching.
-
-**Waiting is directional: a handler waits on its workers, and a worker waits on
-nobody.** Never on your handler, never on anything above you. Two waits pointing at each
-other is a deadlock, because a conversation that is waiting is mid-turn and so cannot go
-idle, which is the very thing the other one is waiting for. It has happened: a worker
-whose say was rejected as stale waited for its handler to go idle, while the handler was
-waiting on that worker, and the SC had to break it by hand. If you are blocked on
-something above you, say so in your own conversation and stop: your handler is watching
-that conversation, so you never have to wait to be read.
 
 `echo '{"convs":["<uuid>","<uuid>"]}' | status.mts` reports, for each conversation, when
 it last spoke and whether a turn is in progress. It answers the question you actually
@@ -190,8 +160,7 @@ bridge no more hands an agent its conversation id than it hands it its working
 directory. **Do not write it into your `message` by hand** — the id is already in what
 you pass, and every hand-written copy went stale the moment the scripts changed shape.
 
-It is the id and nothing else. The recipient does not write back: it answers in its own
-conversation, and you watch that conversation with `status.mts`'s `wait`.
+It is the id and nothing else.
 
 - `noWait: true` exits as soon as the say is accepted, printing the query id.
   The query still runs — read it later with `read.mts`. Use this when you are
