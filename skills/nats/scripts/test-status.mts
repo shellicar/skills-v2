@@ -2,17 +2,13 @@
 // the change events a live conversation would publish, so no bridge is asked for
 // anything, no agent is attached and no worker is involved.
 //
-// Unlike check-spawn.mts these events do persist. status.mts reads its seed with
-// last_by_subj on the conversation stream, so the events have to be captured by it, and
-// the stream owns `conv.v2.*.changes.>` — there is nowhere else to put them. The
-// conversation ids below are fixed rather than minted per run, which keeps the junk in
-// the stream to a constant handful of subjects nobody ever reads; every case publishes
-// whatever it depends on, so a previous run's leftovers cannot change a verdict.
+// The conversation ids below are fixed rather than minted per run, and every case
+// publishes whatever it depends on, so a previous run's leftovers cannot change a
+// verdict.
 //
-// Needs a broker (NATS_URL, default nats://127.0.0.1:4222) and the stream (NATS_STREAM,
-// default conv-approval).
+// Brings up its own broker and can never reach the fleet's; see lib/test-broker.mts.
 //
-//   node check-status.mts
+//   node test-status.mts
 //
 // Exits 0 when every case passes, 1 when any fails.
 
@@ -20,9 +16,9 @@ import { spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { JSONCodec, connect } from "nats";
+import { JSONCodec } from "nats";
+import { connectTestBroker } from "./lib/test-broker.mts";
 
-const url = process.env.NATS_URL ?? "nats://127.0.0.1:4222";
 const script = resolve(join(dirname(fileURLToPath(import.meta.url)), "status.mts"));
 
 const CONV = {
@@ -42,7 +38,7 @@ type Status = { conv?: string; state?: string };
 type Waited = { edge?: Edge | null; status?: Status[] };
 
 const jc = JSONCodec<unknown>();
-const nc = await connect({ servers: url });
+const nc = await connectTestBroker();
 const js = nc.jetstream();
 
 const failures: string[] = [];
@@ -66,7 +62,7 @@ const closeQuery = async (conv: string): Promise<void> => {
 type Result = { status: number | null; stdout: string; stderr: string; elapsedMs: number };
 type Run = { result: Promise<Result>; watching: Promise<void> };
 
-// Awaited rather than spawnSync, for check-spawn.mts's reason: this process publishes
+// Awaited rather than spawnSync, for test-spawn.mts's reason: this process publishes
 // the events the child is waiting on, and a synchronous child blocks the event loop
 // that would publish them, so every wait times out on edges sitting right here.
 const run = (input: unknown): Run => {
@@ -104,9 +100,9 @@ const parse = <T>(stdout: string): T | null => {
 };
 
 // Without `wait`, nothing changes: the report is the bare array it has always been.
-await commit(CONV.reportIdle, "check-status: a turn that finished");
+await commit(CONV.reportIdle, "test-status: a turn that finished");
 await closeQuery(CONV.reportIdle);
-await commit(CONV.reportWorking, "check-status: a turn in progress");
+await commit(CONV.reportWorking, "test-status: a turn in progress");
 const plain = await run({ convs: [CONV.reportIdle, CONV.reportWorking, CONV.untouched] }).result;
 check("without wait it exits 0", plain.status === 0, `status=${plain.status} stderr=${plain.stderr}`);
 const report = parse<Status[]>(plain.stdout);
@@ -116,7 +112,7 @@ check("a message after the last close reads working", report?.[1]?.state === "wo
 check("a conversation never spoken into reads empty", report?.[2]?.state === "empty", JSON.stringify(report?.[2]));
 
 // Already idle: the transition has happened, so waiting for it again would wait for ever.
-await commit(CONV.seededIdle, "check-status: finished before the wait began");
+await commit(CONV.seededIdle, "test-status: finished before the wait began");
 await closeQuery(CONV.seededIdle);
 const seeded = await run({ convs: [CONV.seededIdle], wait: 10 }).result;
 const seededOut = parse<Waited>(seeded.stdout);
@@ -127,8 +123,8 @@ check("an already idle conversation returns without waiting", seeded.elapsedMs <
 check("the wait shape carries the status of every conversation", seededOut?.status?.length === 1, JSON.stringify(seededOut?.status));
 
 // A query closing while the wait is running is the edge a handler is actually waiting for.
-await commit(CONV.goesIdle, "check-status: about to finish");
-await commit(CONV.staysWorking, "check-status: still going");
+await commit(CONV.goesIdle, "test-status: about to finish");
+await commit(CONV.staysWorking, "test-status: still going");
 const live = run({ convs: [CONV.goesIdle, CONV.staysWorking], wait: 20 });
 await live.watching;
 await closeQuery(CONV.goesIdle);
@@ -140,7 +136,7 @@ check("the edge names the conversation that finished", liveEdge?.conv === CONV.g
 
 // The case that matters: a worker that died mid-turn reads `working` for ever and never
 // closes a query, so only the timer can end the wait.
-await commit(CONV.goesQuiet, "check-status: the last thing it ever said");
+await commit(CONV.goesQuiet, "test-status: the last thing it ever said");
 const quiet = await run({ convs: [CONV.goesQuiet], wait: 20, quietAfter: 1 }).result;
 const quietEdge = parse<Waited>(quiet.stdout)?.edge;
 check("silence past quietAfter exits 0", quiet.status === 0, `status=${quiet.status} stderr=${quiet.stderr}`);
@@ -150,12 +146,12 @@ check("the quiet edge says how long it has been silent", typeof quietEdge?.silen
 
 // A conversation still committing is not quiet, however long the wait runs: each commit
 // restarts the clock, so the edge lands quietAfter after the LAST one.
-await commit(CONV.keepsTalking, "check-status: first of two");
+await commit(CONV.keepsTalking, "test-status: first of two");
 const firstCommitAt = Date.now();
 const talking = run({ convs: [CONV.keepsTalking], wait: 20, quietAfter: 3 });
 await talking.watching;
 await sleep(Math.max(0, firstCommitAt + 1000 - Date.now()));
-await commit(CONV.keepsTalking, "check-status: second of two");
+await commit(CONV.keepsTalking, "test-status: second of two");
 const talkingOut = await talking.result;
 const talkingEdge = parse<Waited>(talkingOut.stdout)?.edge;
 const firedAfterMs = Date.now() - firstCommitAt;

@@ -1,9 +1,9 @@
 ---
 name: nats
 description: |
-  WHAT: reading, messaging, and spawning/adopting conversations on the bus.
+  WHAT: reading, messaging, and spawning/servicing conversations on the bus.
   WHY: to catch up on, poke, or start a conversation without a UI.
-  TRIGGER WHEN: COMPLIANCE — told to use nats on a conversation, or to spawn/adopt one in a world.
+  TRIGGER WHEN: COMPLIANCE — told to use nats on a conversation, or to spawn or service one in a world.
 ---
 
 # NATS
@@ -120,17 +120,29 @@ elapses with no edge, which is not a verdict: nothing has finished yet, so wait 
 `64` if the input is not valid JSON, has no `convs`, or has a `wait` or `quietAfter` that
 is not a positive number.
 
-`check-status.mts` drives real conversations on the broker from its own process: it
-publishes the change events a live conversation would, so no bridge is asked for anything
-and no worker is involved. Run it after touching `status.mts`.
-
 ## read — catch up on a conversation
 
 `echo '{"conv":"<uuid>","n":20}' | read.mts` prints the last `n` committed messages
-(default 20), oldest first, as a transcript: each message a `role · ts` header
-and its content. Tool calls show as `[tool_use: name] input`; tool results and
-other blocks show as a labelled placeholder (the full content vocabulary is not
-rendered yet). It reads only committed messages, never the in-flight stream.
+(default 20), oldest first, as a transcript: each message a `role · ts` header and its
+content. It reads only committed messages, never the in-flight stream.
+
+**`include` names what to show, and the default is a conversation rather than a
+recording of one.** Left out, you get `user.text`, `assistant.text` and `thinking`, and
+none of the machinery: reading a worker is reading its answer, which is the last thing
+it said in its own words (`workflow`). Naming any type replaces that default rather than
+adding to it, so asking for one thing alone is one word:
+
+```sh
+# the report, and nothing else around it
+echo '{"conv":"<uuid>","n":1,"include":["assistant.text"]}' | node read.mts
+# only what it went and did
+echo '{"conv":"<uuid>","include":["tool_use"]}' | node read.mts
+```
+
+Any block type on the wire can be named, not just those five. Thinking renders in full
+under a `[thinking]` header, tool calls as `[tool_use: name] input`, everything else as
+its label. A message left with nothing to show is dropped rather than printed as an
+empty header, and `n` counts what survives the filter, so `n: 1` is the last thing said.
 
 An empty read means the conversation has no committed messages, not that the read
 failed. Check the `conv` is the full uuid before concluding anything is wrong.
@@ -187,12 +199,7 @@ There is no route back in it.
 verdict: the query is still running, so read it later. `64` if the input is not valid
 JSON or is missing `conv`, `from`, `name`, `opener` or `message`.
 
-`check-send.mts` exercises all of it against loopback responders — it answers every say
-itself, so no bridge is asked for anything and no message reaches a real conversation.
-It reads what went on the wire, which is where the appended conversation id is checked.
-Run it after touching `sendMessage.mts` or `lib/say.mts`.
-
-## service — ask a world to serve a conversation (spawn or adopt)
+## service — ask a world to serve a conversation
 
 `echo '{"world":"local","conv":"<uuid>","cwd":"/path"}' | service.mts` sends the agent
 concern's `service` request (`agent.v1.{world}.requests.service`) and prints the
@@ -259,8 +266,6 @@ never invents a watcher for a conversation nobody commissioned.
 ### The reporting line
 
 - **Bucket** `reporting-lines`, KV, created by the script when it is absent.
-  `NATS_REPORTING_BUCKET` overrides the name, which is there for `check-spawn.mts`
-  and not for you.
 - **Key** the worker's conversation id.
 - **Value** `{"owner":"<conversation id>","ts":"<iso8601>"}`, and nothing else.
 
@@ -274,13 +279,8 @@ the world refused, no bridge replying at all, a reporting line that would not re
 back, or a say no servicer took. `64` if the input is not valid JSON or is missing
 `world`, `cwd`, `owner`, `name`, `opener` or `message`.
 
-`check-spawn.mts` exercises all of it against loopback responders — it answers the
-service request and the say itself, so no bridge is asked for anything and no brief
-reaches a worker. Run it after touching `spawn.mts` or `lib/say.mts`.
-
 ## Configuration
 
 - `NATS_URL` — the broker (default `nats://127.0.0.1:4222`).
 - `NATS_STREAM` — the JetStream stream (default `conv-approval`).
 - `NATS_REPORTING_BUCKET` — the reporting-line KV bucket (default `reporting-lines`).
-  `check-spawn.mts` sets it so a test never writes into the bucket the fleet runs on.

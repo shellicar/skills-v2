@@ -1,0 +1,17 @@
+# The broker the tests run against, on 31415 so no slip of the finger reaches the
+# fleet's on 4222. Below 49152 deliberately: macOS hands out 49152 and up as ephemeral
+# ports, so a port up there is taken out from under this at random. The tests bring it
+# up themselves and take it down again. Nothing is persisted: the container is the whole
+# of its state.
+#
+# The project is named so a teardown is provably this and nothing else, rather than
+# whatever compose infers from the directory.
+name: skills-nats-test
+
+services:
+  nats-test:
+    container_name: nats-skills-test
+    image: nats:alpine
+    command: ["--jetstream", "--store_dir", "/tmp/jetstream"]
+    ports:
+      - "31415:4222"

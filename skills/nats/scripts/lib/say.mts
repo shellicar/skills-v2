@@ -1,7 +1,5 @@
 // Publishing a `say` into a conversation, and optionally following the query it
-// opens. Shared by sendMessage.mts and replyToMessage.mts, which differ in
-// authorisation and defaults rather than in mechanism: both publish the same
-// request.
+// opens.
 //
 // `from` is the sender's own conversation uuid, and `name` is the cast name it gave
 // itself. Both are required. They land on the wire as

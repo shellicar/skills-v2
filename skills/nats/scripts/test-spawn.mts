@@ -9,18 +9,18 @@
 // A second bucket, that name plus `-tiny`, is created with a value size no line can
 // fit in, which is how the "attached but no line" branch is forced.
 //
-// Needs a broker (NATS_URL, default nats://127.0.0.1:4222) and nothing else.
+// Brings up its own broker and can never reach the fleet's; see lib/test-broker.mts.
 //
-//   node check-spawn.mts
+//   node test-spawn.mts
 //
 // Exits 0 when every case passes, 1 when any fails.
 
 import { spawn } from "node:child_process";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { JSONCodec, connect } from "nats";
+import { JSONCodec } from "nats";
+import { connectTestBroker } from "./lib/test-broker.mts";
 
-const url = process.env.NATS_URL ?? "nats://127.0.0.1:4222";
 const script = resolve(join(dirname(fileURLToPath(import.meta.url)), "spawn.mts"));
 
 const WORLD = "spawn-selftest";
@@ -33,7 +33,7 @@ const TINY_BUCKET = `${BUCKET}-tiny`;
 type Say = { text?: string; from?: { conversationId?: string; name?: string } };
 
 const jc = JSONCodec<unknown>();
-const nc = await connect({ servers: url });
+const nc = await connectTestBroker();
 
 let serviceAnswer: unknown = { accepted: true };
 let lastSay: Say | null = null;
@@ -74,7 +74,7 @@ const run = (input: unknown, bucket = BUCKET): Promise<{ status: number | null; 
     child.stdin.end(JSON.stringify(input));
   });
 
-const brief = "spawn.mts self-test brief. No recipient: this say is answered by check-spawn.mts.";
+const brief = "spawn.mts self-test brief. No recipient: this say is answered by test-spawn.mts.";
 const opener = "A word from the one commissioning this.";
 
 // Bad input: cwd is required, because a worker spawned into the wrong tree edits the

@@ -54,3 +54,41 @@ is more interesting to work with than an anonymous one. It is not there so the r
 can reply.
 
 Conversation: d9046ffb-5236-4eed-9e06-78b02e3724c3
+
+### Show thinking by default in nats read, and let the caller override what's returned
+
+Show thinking by default when reading a conversation with `read.mts`, rendered in full.
+Add `include` to override what comes back: left out, return `user.text`, `assistant.text`
+and `thinking` and none of the machinery; naming any type replaces that default rather
+than adding to it.
+
+Thinking is sometimes the most important piece for understanding what a session has done,
+so reading a conversation without it means reading what a session said and never what it
+decided. read was printing a thinking block as a bare `[thinking]`, and a label reads as
+a deliberate placeholder rather than as a bug, so nobody caught it. The default follows
+from the same point: reading a worker is reading its answer.
+
+Conversation: d9046ffb-5236-4eed-9e06-78b02e3724c3
+
+### Stop the tests polluting the live broker
+
+Keep the self-tests off the broker the fleet runs on. Bring up a broker for them and take
+it down again afterwards. Rename `check-send`, `check-spawn` and `check-status` to
+`test-send`, `test-spawn` and `test-status`.
+
+The tests had been publishing change events into `conv-approval`, the stream the fleet
+runs on, because a second stream cannot overlap it and there was nowhere else to put
+them. `check` doesn't say a script is testing anything, which made them confusing to
+read.
+
+Conversation: d9046ffb-5236-4eed-9e06-78b02e3724c3
+
+### Operators don't reply to handlers directly
+
+Operators don't reply to their handler. Delete `replyToMessage.mts`, so there is no tool
+for it.
+
+Direct replies are a bottleneck, and connecting every operator to every handler is N x M
+connections.
+
+Conversation: d9046ffb-5236-4eed-9e06-78b02e3724c3

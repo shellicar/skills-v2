@@ -4,8 +4,6 @@
 //
 // APPROVAL GATE: an original message commissions work in the SC's name, so the
 // `message` needs his approval before this runs. SKILL.md owns the rule.
-// replyToMessage.mts is the ungated counterpart, for answering a conversation
-// that asked you to.
 //
 // Run by an LLM, not a person: one JSON object on stdin, transcript to stdout,
 // progress to stderr.
