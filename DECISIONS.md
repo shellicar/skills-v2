@@ -92,3 +92,36 @@ Direct replies are a bottleneck, and connecting every operator to every handler 
 connections.
 
 Conversation: d9046ffb-5236-4eed-9e06-78b02e3724c3
+
+### Define handler, worker, commission and stopped in workflow
+
+Define the four words in `workflow`, not in `system-glossary`. A handler commissions work
+and manages it, a worker does it and is an operator or a gatekeeper, a commission is a
+handler spawning a worker, and a worker has stopped. Say stopped rather than finished or
+done.
+
+There is no proper way to talk about the state right now. "The operator is finished"
+leaves you asking finished with what: the task, the work, the session. Stopped says
+nothing about the work, only that the worker has stopped, and what that means depends on
+the task. A shared vocabulary means the state can be said in a few words instead of
+worked out each time. The words sit in `workflow` because they describe that skill's own
+concepts.
+
+Conversation: d9046ffb-5236-4eed-9e06-78b02e3724c3
+
+### A conversation id addresses, it does not identify
+
+Treat a conversation id as the address of a conversation, not as who anyone is. A worker
+knows who commissioned it, and a message arriving from an id it has not seen before can
+still be from that handler.
+
+On 2026-08-06 the handler Pink Slip (`5acee04a-763a-497b-a95a-ed7b8027fdbe`) commissioned
+the worker Clear Title (`3d587462-788c-4d23-8905-628a81c311ac`) on the NSW Form 5 clear
+title rule. Pink Slip reached its context limit and carried on as Dealership Time
+(`c05218ee-9d76-4db8-9fb2-00e042511de0`). Clear Title refused the instruction that came
+from the new id, on the grounds that Pink Slip had commissioned it and this was somebody
+else, and blocked the work. It could not deliver its report either, because the old
+conversation had no agent attached, and two more workers were still holding that dead id
+as their handler.
+
+Conversation: d9046ffb-5236-4eed-9e06-78b02e3724c3

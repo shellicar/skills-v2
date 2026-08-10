@@ -12,6 +12,22 @@ Work runs through more than one conversation. What both sides need is here;
 `workflow-worker` and `workflow-handler` carry the half that is yours. `nats` is how the
 conversations are read and written.
 
+## The words
+
+- **handler** — the session that commissions work and manages it.
+- **worker** — the session that does the work: an operator or a gatekeeper.
+- **commission** — a handler spawning a worker.
+- **stopped** — a worker has stopped running. Say stopped rather than finished or done,
+  which describe the work; whether the work is done is a separate question.
+
+## A conversation id addresses, it does not identify
+
+A worker knows who commissioned it. A conversation id is how you reach a conversation,
+not who anyone is: a handler that runs out of context carries on in a new conversation
+with a new id, and a worker holding only the old id has lost it. So a message can arrive
+from a conversation you have not seen before and still be from the handler who
+commissioned you.
+
 ## A report is written where it sits, not sent
 
 Your report is the answer you write in your own conversation: the finished work, a
