@@ -42,7 +42,7 @@ await publishSay({
   name: input.name,
   follow: false,
   waitSeconds: 0,
-  // Whoever you are answering already knows which conversation it is in; only an
-  // original message lands somewhere that has to be told.
-  withConversationId: false,
+  // Whoever you are answering already knows who you are and which conversation it is
+  // in; only an original message lands somewhere that has to be told.
+  withAppendix: false,
 });

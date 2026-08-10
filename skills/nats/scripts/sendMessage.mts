@@ -10,13 +10,18 @@
 // Run by an LLM, not a person: one JSON object on stdin, transcript to stdout,
 // progress to stderr.
 //
-//   echo '{"conv":"<uuid>","from":"<uuid>","name":"Bosun","message":"hello"}' | node sendMessage.mts
-//   echo '{"conv":"<uuid>","from":"<uuid>","name":"Bosun","message":"hi","noWait":true}' | node sendMessage.mts
+//   echo '{"conv":"<uuid>","from":"<uuid>","name":"Bosun","opener":"Bosun here.","message":"hello"}' | node sendMessage.mts
+//   echo '{"conv":"<uuid>","from":"<uuid>","name":"Bosun","opener":"Bosun here.","message":"hi","noWait":true}' | node sendMessage.mts
 //   node sendMessage.mts < payload.json
 //
-// The recipient's own conversation id is appended for you, always: nothing else
-// tells a session which conversation it is in. Never write it by hand into the
-// message — every hand-written copy has gone stale.
+// opener is required and goes at the top of the message: with layers of sessions, who
+// is speaking decides how the rest is read, so it has to arrive before the reader acts.
+// Its contents are not checked against name — a checked opener is a form rather than a
+// voice, and attribution is already guaranteed on the wire and in the appendix.
+//
+// The appendix is appended for you, always: who sent this, and the recipient's own
+// conversation id, which nothing else tells it. role is optional and rides beside the
+// name. Never write any of it by hand — every hand-written copy has gone stale.
 //
 // conv is the FULL conversation uuid being spoken INTO; from is your own and name is
 // the one you gave yourself, and lib/say.mts owns why both are required. wait is seconds, default 180. noWait exits
@@ -31,11 +36,11 @@
 import { EXIT_BAD_INPUT, readStdin } from "../../../shared/stdin.mts";
 import { publishSay } from "./lib/say.mts";
 
-type Input = { conv: string; from: string; name: string; message: string; wait?: number; noWait?: boolean };
+type Input = { conv: string; from: string; name: string; opener: string; message: string; role?: string; wait?: number; noWait?: boolean };
 
-const input = readStdin<Input>('{"conv":"<uuid>","from":"<uuid>","name":"<your cast name>","message":"hello"}');
-if (!input.conv || !input.from || !input.name || typeof input.message !== "string") {
-  process.stderr.write("input needs { conv, from, name, message }\n");
+const input = readStdin<Input>('{"conv":"<uuid>","from":"<uuid>","name":"<your cast name>","opener":"<who is speaking>","message":"hello"}');
+if (!input.conv || !input.from || !input.name || !input.opener || typeof input.message !== "string") {
+  process.stderr.write("input needs { conv, from, name, opener, message }\n");
   process.exit(EXIT_BAD_INPUT);
 }
 
@@ -44,7 +49,9 @@ await publishSay({
   from: input.from,
   message: input.message,
   name: input.name,
+  opener: input.opener,
+  ...(input.role === undefined ? {} : { role: input.role }),
   follow: !input.noWait,
   waitSeconds: input.wait ?? 180,
-  withConversationId: true,
+  withAppendix: true,
 });

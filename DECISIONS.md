@@ -40,3 +40,17 @@ show what work the PR relates to, and the Task isn't mentioned because it is alr
 linked. This was ambiguous before, so the table makes exactly what's wanted clear.
 
 Conversation: d9046ffb-5236-4eed-9e06-78b02e3724c3
+
+### Require an opener on every original message, and name the sender in the appendix
+
+Require `opener` on `sendMessage.mts` and `spawn.mts`, and put it at the top of the
+message. The sender writes it; the script does not generate it. Name the sender in the
+appendix as well, with their role when one is given.
+
+A session needs to know who its handler is. The appendix carries that mechanically, and
+the opener is where the cast says it in its own voice, so it carries some of that cast's
+flavour rather than being a name the script stamps on. It follows cast-name: a named cast
+is more interesting to work with than an anonymous one. It is not there so the recipient
+can reply.
+
+Conversation: d9046ffb-5236-4eed-9e06-78b02e3724c3

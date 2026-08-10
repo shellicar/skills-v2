@@ -41,11 +41,11 @@ echo '{"convs":["<uuid>","<uuid>"]}' | node ~/repos/shellicar/skills-v2/skills/n
 # block until the first of them finishes or goes quiet, instead of polling:
 echo '{"convs":["<uuid>","<uuid>"],"wait":900}' | node ~/repos/shellicar/skills-v2/skills/nats/scripts/status.mts
 echo '{"conv":"<uuid>","n":20}' | node ~/repos/shellicar/skills-v2/skills/nats/scripts/read.mts
-echo '{"conv":"<uuid>","from":"<uuid>","name":"<yours>","message":"...","wait":180}' | node ~/repos/shellicar/skills-v2/skills/nats/scripts/sendMessage.mts
+echo '{"conv":"<uuid>","from":"<uuid>","name":"<yours>","opener":"<who is speaking>","message":"...","wait":180}' | node ~/repos/shellicar/skills-v2/skills/nats/scripts/sendMessage.mts
 # dispatch without waiting for the reply — the query runs on regardless:
-echo '{"conv":"<uuid>","from":"<uuid>","name":"<yours>","message":"...","noWait":true}' | node ~/repos/shellicar/skills-v2/skills/nats/scripts/sendMessage.mts
+echo '{"conv":"<uuid>","from":"<uuid>","name":"<yours>","opener":"<who is speaking>","message":"...","noWait":true}' | node ~/repos/shellicar/skills-v2/skills/nats/scripts/sendMessage.mts
 # commission a worker — serve it, record who it reports to, and send the brief:
-echo '{"world":"local","cwd":"/path","owner":"<uuid>","name":"<yours>","message":"..."}' | node ~/repos/shellicar/skills-v2/skills/nats/scripts/spawn.mts
+echo '{"world":"local","cwd":"/path","owner":"<uuid>","name":"<yours>","opener":"<who is speaking>","message":"..."}' | node ~/repos/shellicar/skills-v2/skills/nats/scripts/spawn.mts
 # a long message is easier to keep in a file:
 node ~/repos/shellicar/skills-v2/skills/nats/scripts/sendMessage.mts < payload.json
 ```
@@ -154,13 +154,20 @@ transcript with several agents in it can be read apart. Nothing tells a session 
 id automatically, so if you do not know yours, ask. The name is the one from
 `cast-name`: if you have not chosen yet, choose now rather than sending anonymously.
 
-**The recipient's own conversation id is appended for you.** That one line is how a
-spawned conversation learns which conversation it is in, and nothing else tells it: the
-bridge no more hands an agent its conversation id than it hands it its working
-directory. **Do not write it into your `message` by hand** — the id is already in what
+**`opener` is required, and the script puts it at the top of the message.** It says who
+is speaking, which with layers of sessions is what decides how the rest is read, so it
+has to arrive before the reader acts rather than after. Its
+contents are never checked against `name`: an opener checked against a field is a form
+rather than a voice, and attribution is already guaranteed on the wire and in the
+appendix.
+
+**The appendix is appended for you**, carrying who sent this — `name`, and `role` beside
+it when you pass one — and the recipient's own conversation id, which nothing else tells
+it: the bridge no more hands an agent its conversation id than it hands it its working
+directory. **Do not write any of it into your `message` by hand** — it is already in what
 you pass, and every hand-written copy went stale the moment the scripts changed shape.
 
-It is the id and nothing else.
+There is no route back in it.
 
 - `noWait: true` exits as soon as the say is accepted, printing the query id.
   The query still runs — read it later with `read.mts`. Use this when you are
@@ -178,7 +185,7 @@ It is the id and nothing else.
 `noWait`. `1` if the say is rejected, no servicer replies, or the query closes
 `cancelled`/`aborted`. `2` if `wait` elapses before the query closes, which is not a
 verdict: the query is still running, so read it later. `64` if the input is not valid
-JSON or is missing `conv`, `from`, `name` or `message`.
+JSON or is missing `conv`, `from`, `name`, `opener` or `message`.
 
 `check-send.mts` exercises all of it against loopback responders — it answers every say
 itself, so no bridge is asked for anything and no message reaches a real conversation.
@@ -221,9 +228,10 @@ separately is one that gets skipped or mistyped, and what that produces is a wor
 nobody is watching.
 
 `owner` is your own conversation id and `name` is your cast name, both required, both
-for the same reason `sendMessage.mts` needs them. `conv` is the worker's id, minted
-for you when you leave it out. `cwd` is required — a worker spawned into the wrong
-tree edits the wrong repo — and `model` is passed to the world when you name it.
+for the same reason `sendMessage.mts` needs them, as are `opener` and the optional
+`role`. `conv` is the worker's id, minted for you when you leave it out. `cwd` is
+required — a worker spawned into the wrong tree edits the wrong repo — and `model` is
+passed to the world when you name it.
 **This is a gated tool**: the brief is an original message.
 
 Four steps in order, each worth doing only if the one before it landed:
@@ -235,8 +243,8 @@ Four steps in order, each worth doing only if the one before it landed:
    so plainly: the conversation is **attached but has no line**, which is a worker
    nobody is watching. The brief is not sent. Fix the bucket and spawn again passing
    the same `conv`.
-4. Send the brief, always `noWait`, with the worker's own conversation id appended. A
-   spawn hands out work; it does not wait for an answer.
+4. Send the brief, always `noWait`, opener at the top and appendix at the foot. A spawn
+   hands out work; it does not wait for an answer.
 
 The result — `{"conversationId","queryId","owner"}` — is the **last** line of stdout.
 The line above it is the say's own `query <id> accepted`, exactly as `sendMessage.mts`
@@ -264,7 +272,7 @@ table rather than a history.
 **Exits** `0` when all four steps land. `1` when any of them is rejected: a service
 the world refused, no bridge replying at all, a reporting line that would not read
 back, or a say no servicer took. `64` if the input is not valid JSON or is missing
-`world`, `cwd`, `owner`, `name` or `message`.
+`world`, `cwd`, `owner`, `name`, `opener` or `message`.
 
 `check-spawn.mts` exercises all of it against loopback responders — it answers the
 service request and the say itself, so no bridge is asked for anything and no brief
