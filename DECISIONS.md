@@ -220,3 +220,18 @@ stops saying which one it is. Validating it means a role nobody sends as is caug
 typo instead of becoming a new role by accident.
 
 Conversation: d9046ffb-5236-4eed-9e06-78b02e3724c3
+
+## 2026-08-11
+
+### Put how `git switch` works in the git skill
+
+Document `git switch` in the git skill, including what `-c`, `-C` and `-m` do, and that
+`git switch -C <branch> <commit>` is the safe way to move a branch. Until git's
+parameters are parsed by position, present a `-c` or `-C` command to the SC to run
+rather than running it.
+
+Moving a branch is an ordinary thing to need, and the safe way to do it is not common
+knowledge. A session that does not know it reaches for a destructive command instead,
+because that is the one it has heard of.
+
+Conversation: 414dfb6c-45aa-40aa-b8e8-56286ed76e98

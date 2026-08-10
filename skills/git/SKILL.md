@@ -44,6 +44,27 @@ that moment — use the knowledge you already have in the act, not just when que
 - **Unstaged and untracked files are inert.** They don't need dealing with before other
   operations; `git status` listing them is information, not a problem to solve.
 
+- **`git switch` is how a branch is created or moved, and its flags aren't guessable.**
+  `-c <branch>` creates it at the start point and switches to it; `-C <branch>` does the
+  same but resets the branch when it already exists. So moving a branch onto another
+  commit is `git switch -C <branch> <commit>`, and that is the safe way to do it:
+  uncommitted work is preserved rather than thrown away, and both forms are
+  transactional, so the branch is not created or moved unless the switch succeeds. A
+  branch checked out in another worktree leaves everything where it was rather than
+  half-moved. `-m` is for a dirty tree — local changes that differ between here and there
+  normally refuse the switch, and `-m` stashes them, switches, then reapplies them on the
+  other side.
+
+- **`git switch -C` gives identical output whether it fast-forwards or discards
+  commits.** Both cases end `Switched to and reset branch`, so nothing git prints tells
+  you which happened. `git merge-base --is-ancestor refs/heads/<branch> <start-point>` is
+  what separates them: it succeeds when the branch is merely behind, and that is the only
+  case where the move loses nothing. Tag the old tip first if you want the reset anyway.
+
+- **`git switch -m` exits 0 even when reapplying the stash conflicts.** You land on the
+  target branch with conflict markers, an unmerged index and the stash entry still in the
+  list, while the exit status says success — so a script can't catch it with `|| exit 1`.
+
 ## Rules
 
 - **Never `git add -A` (or `git add .`).** A working tree holds files that aren't your
@@ -63,6 +84,12 @@ that moment — use the knowledge you already have in the act, not just when que
 
 - **The destructive commands aren't yours to run.** `reset`, `checkout` / `restore` for
   state, `git rm`. Use `git switch` for branches. See `safe-operations`.
+
+- **`git switch -c` and `-C` are yours to write, not to run.** The `no-git-C` guard
+  matches `-c` and `-C` anywhere in the arguments, and what it exists for is git's own
+  pre-subcommand `git -c <key>=<value>` and `git -C <path>`, which switch's flags merely
+  share a spelling with. The command is refused whichever one you meant, so write it out
+  in full and let the SC run it.
 
 ## Convention
 
