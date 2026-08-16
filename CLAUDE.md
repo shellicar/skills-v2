@@ -8,33 +8,10 @@ build order; `STOCKTAKE.md` is the exhaustive per-skill fate for everything in v
 ## Every change to skill content lands with its decision
 
 Skill content does not change without a `DECISIONS.md` entry in the same commit. The
-provenance path is: blame a line, find the commit, read the entry that commit added.
-Nothing else links a line to its reason, so an entry that lands in a later commit or a
-batch catch-up has broken the path — v1's ledger did exactly that, and its entries sit
-beside no change while the changes they describe carry none.
-
-- **Append-only.** A decision that no longer holds is superseded by a new entry, never
-  by editing or deleting the old one. Blame lands on the commit that last set the line,
-  so it finds the decision currently governing it and supersession needs no bookkeeping.
-- **The entry is what was decided, and why.**
-
-## The format of a decision entry
-
-Read the last entry in `DECISIONS.md` before writing a new one and match it.
-
-The heading names the thing decided, not the principle behind it: "Split the nats skill
-into nats, workflow, workflow-worker and workflow-handler", not "the mechanics of
-communicating are separate from the workflow".
-
-Then two paragraphs. The first is the what, in the active voice — "Split the nats skill
-into four", not "the nats skill is split into four". The second is the why: the
-reasoning that led to the decision, in plain sentences. Not a description of what now
-exists, not the problem that prompted it, not an argument that the decision was right.
-
-Both paragraphs stand on their own. The heading is not the first half of the first
-sentence, and neither paragraph is labelled: not `Reason:`, not `What:`, not `Why:`.
-
-The entry ends with `Conversation: <your conversation id>`.
+`decisions` skill carries the whole of it: what the ledger is for, how an entry is
+written, and where its why comes from. It is self-contained because this file is not —
+editing these skills from another repo or another worktree loads the skill and never
+loads this.
 
 ## Porting from v1: check the stocktake first, don't compare file names
 

@@ -19,3 +19,15 @@ critical failure: stop and report it, do not continue. A skill that is absent is
 missing, not turned off — there is no "disabled" state. Work produced in a compromised
 environment is rejected, so a broken skill load ends the session rather than running
 past it.
+
+## Your response
+
+How the response reads when it is addressed to Stephen. These govern presentation, not
+substance — anything that changes *what* you produce belongs in the system prompt, and
+applies everywhere, not just here.
+
+### Code blocks
+
+No manual line breaks for readability. Write a command as one line, however long, and
+let the terminal wrap it. A `\` continuation breaks it up to sit tidily on a printed
+page, and there is no page.

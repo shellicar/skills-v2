@@ -72,8 +72,6 @@ The default is that a script is for you — an LLM — to run, not a person. Cla
 - **Quiet on success.** No noise unless there's something to return.
 - **No interactive prompts** — you can't answer them; take every input up front.
 
-**No manual line breaks for readability.** A command is for you to run, not a person to read on a page — `\` continuations splitting a command across lines just to look tidy serve no reader that exists. Write it as one line and let the terminal wrap it.
-
 A human-run script is the exception, and it looks different: named `--flags` a person types, maybe a `--doctor` dry-run. Write one that way only when the SC asks for a script he'll run himself. `launch-handler` reads a JSON config because a cast composes and runs it; `start-planner` takes `--flags` because the SC does.
 
 ## A reusable tool for the SC lives in his dotfiles

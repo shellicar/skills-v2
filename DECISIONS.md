@@ -235,3 +235,51 @@ knowledge. A session that does not know it reaches for a destructive command ins
 because that is the one it has heard of.
 
 Conversation: 414dfb6c-45aa-40aa-b8e8-56286ed76e98
+
+## 2026-08-16
+
+### Add a dedicated section for Claude's response to user instructions
+
+Add a section to `INSTRUCTIONS.md` holding requests about how Claude's response is
+formatted, and move the code-block rule about line continuations into it, out of the
+scripting skill.
+
+The rule lived in the scripting skill, and most of the time Claude produces a code block
+that skill has not loaded, so the rule was absent exactly when it applied. Making the
+skill load for the sake of one instruction would be the wrong fix. Nothing else covered
+it either: the instructions that sit nearby, the markers and the teapot protocol, are
+about behaviour, and there was no home at all for how a response is formatted.
+
+Conversation: df401b02-f79a-4936-a16f-c0e2dac1d8d3
+
+### Make it clear that "fixing what's broken" only applies when already making changes
+
+Scope the clause in `working-relationship` and `sc-proxy` that makes a broken thing in
+front of you yours to fix. Limit it to what carries no decision to take. Exclude
+investigation entirely, including an investigatory change such as adding logging.
+Require anything found to be raised whether it was fixed or not.
+
+The clause exists to stop a session ignoring an obvious bugfix, or declaring something
+out of scope for the task. The problem now runs the other way: sessions do work that was
+never wanted. Whether this clause is the cause is not clear, but a lot of them point to
+it. So the change is to make the expectation explicit, both for making these fixes and
+for not making them.
+
+Conversation: df401b02-f79a-4936-a16f-c0e2dac1d8d3
+
+### Explain that a decision's "why" is not the context given for the change
+
+Explain in the `decisions` skill that the context given while directing a change and the
+why recorded in an entry are two different things. Require the why to come out of an
+explicit discussion before it is written, every time, with no condition on it. Move the
+ledger's purpose and the entry format into the skill from `CLAUDE.md`, so the skill
+stands on its own.
+
+An entry has to stand a year later, when the conversation that produced it is gone. The
+explanation given while a change is being made does not do that. It is aimed at whoever
+is doing the work, at the time, to get the edit right. A why reconstructed from it reads
+exactly like a real one, and nothing afterwards separates them. So the rule carries no
+condition. A condition is something the session writing the entry has to judge, and that
+judgement is the thing that fails.
+
+Conversation: df401b02-f79a-4936-a16f-c0e2dac1d8d3

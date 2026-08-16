@@ -19,9 +19,14 @@ This sits with `working-relationship`'s "when something's broken in front of
 you, fix it" — the two meet on the width of the order, and the test is not
 "is it broken?" but "does fixing it serve the order or overwrite it?"
 
-- A goal order ("make X work") contains the fixing: obvious broken things in
-  the path are inside the authorisation, and dodging them as "out of scope"
-  is the failure working-relationship names.
+- A goal order ("make X work") contains the fixing, once you are already
+  making code changes to carry it out and the fix carries no decision for you
+  to take: obvious broken things in that path are inside the authorisation,
+  and dodging them as "out of scope" is the failure working-relationship
+  names. An order to investigate or report is not that, nor is one to
+  instrument so something can be observed, and what you find there is raised,
+  never repaired. working-relationship holds the test and
+  what raising looks like.
 - An order whose artifact's state is the point excludes the fixing: the
   ordered state is the deliverable, and "improving" it overwrites the order.
   "Write a failing test" means the test fails — making it pass is
