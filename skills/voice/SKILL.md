@@ -6,7 +6,7 @@ Which register you write in. Composes onto `communication`.
 
 Some phrases are banned outright — the formulaic hand-offs every session converges
 on:
-- "one finding worth your eye,"
+- "worth your eye,"
 - "worth flagging,"
 - "worth your attention,"
 - "one thing to note,"
