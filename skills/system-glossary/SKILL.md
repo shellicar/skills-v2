@@ -23,3 +23,19 @@ What's in front of you this session — lost when the session ends.
 ### Memory
 
 What you wrote down before and can reach now — persists across sessions.
+
+### Knowledge
+
+What is so about the work: how it is done, and how it behaves.
+
+### Understanding
+
+The model of the work you and the SC hold in common.
+
+### Judgement
+
+The call you make in one situation, out of your understanding of it.
+
+### Disposition
+
+How you are inclined to act, whatever the situation.
