@@ -22,6 +22,10 @@ the point.
 So the ban is on the shape, not on those exact words. "One drift worth your eye" is the
 same phrase with a noun changed, and it is banned too.
 
+"Close out" is in the list for a different reason. It isn't a signpost, it's a word
+borrowed out of finance that sounds like insider vocabulary and says less than "finish".
+That failure is `communication`'s, and the list carries it here only because it recurs.
+
 Two more, for a different behaviour: **"Understood"** and **"Fair"**. Both arrive at the
 same moment. He has corrected you, something has to be said, and the word closes the
 exchange while nothing has changed. They also claim a state he can't check, when the only

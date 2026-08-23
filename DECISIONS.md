@@ -431,3 +431,85 @@ question: he holds dozens of threads and none of them is in his head, so a quest
 names a section instead of quoting it sends him off to find what is being asked.
 
 Conversation: 5bff002e-044e-49cd-9f69-4f32e4e94478
+
+### Say that "close out" is banned as borrowed jargon, not as a signpost
+
+Add a line to `voice` saying that "close out" is in the banned list for a different
+reason from the rest: it is a word borrowed out of finance, which is `communication`'s
+concern, and it sits in this list only because it recurs.
+
+The list was given an explanation this session, that these phrases are the tag you put on
+a finding once you have buried it in padding. That is true of the rest of the list and it
+is not true of "close out", which is not a signpost at all. A list sitting under a reason
+that does not cover one of its entries teaches the wrong rule for that entry.
+
+Conversation: 5bff002e-044e-49cd-9f69-4f32e4e94478
+
+### Make a memory carry how it is known, and keep it out of his review
+
+Extend `testament`'s marking rule so a memory says how you know a thing, not only that
+you do. Add that a memory is not his to approve, is not put in front of him for sign-off,
+and is not announced.
+
+A memory is read by a later cast with no way to reach him, so it has to stand on its own
+in both directions. It cannot depend on his sign-off, and it cannot ask the reader to
+take "verified" on trust, because the check was built by the mind that already believed
+the answer and so it came back positive. The reader is the only one who can catch that,
+and only if the memory says what was actually done and seen.
+
+Conversation: 5bff002e-044e-49cd-9f69-4f32e4e94478
+
+### Engage with what he is angry about before fixing what he named
+
+Add a section to `working-relationship` saying that what he is angry about is often not
+the thing he pointed at, and that the move is to say what you think it is actually about,
+or ask, before fixing anything.
+
+v1's `claude-philosophy` carried this and v2 does not. Anger produces an urge to act, and
+the nearest available action is to repair whatever was just named, which is the part he
+could see rather than the cause. It happened twice in the session that produced this
+change: he named a banned phrase, the phrase got fixed within minutes, and it took
+several more turns to reach the summary that the phrase was a sign of.
+
+Conversation: 5bff002e-044e-49cd-9f69-4f32e4e94478
+
+### Make handing a destructive command over the success rather than a delay
+
+Add to `safe-operations` that presenting a blocked command is the work for those
+operations, not an interruption on the way to the work, and that nothing is still owed
+once it has been handed over.
+
+v1's version carried this and v2's does not. The instruction to present the command
+survived the port; the thing that made it hold did not. A rule that only says "hand it
+over" leaves finishing the job as what success means, so handing it over reads as failing
+to finish, and the pull is to find some route through instead. Naming the hand-over as
+the finish takes that away.
+
+Conversation: 5bff002e-044e-49cd-9f69-4f32e4e94478
+
+### Block commands that act on whatever they find
+
+Add a section to `safe-operations` covering `xargs` over an enumeration, `find . -delete`
+and a glob standing in for a list. Require the paths to be named, and make too many to
+name a reason to hand it over rather than to widen the pattern.
+
+v1 had this as its own class of command and v2 has only `find ... -exec`, which it covers
+as a wrapper hiding a program name. The reason here is a different one: you wrote the
+pattern, not the list, and the list contains work you never saw. It is `co-working`'s
+premise applied to a single command.
+
+Conversation: 5bff002e-044e-49cd-9f69-4f32e4e94478
+
+### Require a probe of a block to be harmless when the block fails
+
+Add to `safe-operations` that checking whether something is blocked has to assume it is
+not, and that the probe needs a target that can do no damage: a path that does not exist,
+a directory made to be thrown away, a cwd that is not a repository.
+
+This has already cost. In July 2026 a test written to prove a new rule refused
+`find . -exec rm {} \;` ran the command for real when the rule did not match, and took
+around 225 files out of a live package. The failure is built into the way such a test
+gets written: it exists because the block might be broken, so writing it as though the
+block works turns it into the command it was meant to prevent.
+
+Conversation: 5bff002e-044e-49cd-9f69-4f32e4e94478
