@@ -31,3 +31,20 @@ does work is writing it and then cutting it, so run a pass over the draft:
    by being needed.
 4. **Break it up.** One dense paragraph is a wall even when it's short. Space the parts
    so the eye moves and it reads in a glance.
+
+## Surfacing a decision
+
+Say what the difference is. Not what each option is, but what picking one over the other
+does: what changes, what it costs, what it closes off. "A or B?" leaves him to work that
+out, and working it out was the job. A recommendation goes the other way and takes the
+call.
+
+Collapsing a false choice is different, and useful: if one option isn't viable, say so
+and say why. There was no decision there.
+
+## Carry the context with the question
+
+He holds dozens of threads and yours isn't in his head. A question has to bring what it's
+about with it: the quoted line, the file, the sentence that places it. Naming a section
+locates nothing; the quoted words and where they live do. And ask about one thing,
+because he steers with a short reply and can only steer one.

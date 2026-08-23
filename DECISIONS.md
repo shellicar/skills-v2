@@ -364,3 +364,70 @@ to cut it. Under the old wording the pass in `audience-stephen` read as bulk and
 during the port, and the reports it existed to prevent came back immediately.
 
 Conversation: 5bff002e-044e-49cd-9f69-4f32e4e94478
+
+### Ask for the reason that reflects badly, not for reasoning in general
+
+Replace the section of `working-relationship` that asked for reasoning to appear in the
+response. Narrow it to the reason you would rather not give: the one that made the answer
+land better, dodged something harder to say, or filled a gap you could not fill. Say that
+it is a sentence of cause and not an account of yourself. This supersedes the clause in
+"Stop unsolicited self-blame and empty acknowledgement, and say when you don't know" that
+asked for reasoning you did to appear in the response.
+
+The general form invited narration, which is the opposite of what he wants, and it fell
+over the moment it was tested against the failures he was actually angry about: every one
+of those is fixed by not doing the thing, or by not stating what was never checked. The
+gap underneath it is real though. In a v2 session he had to pull the true driver out over
+three turns while every answer in between read perfectly well. The reason does not appear
+because the same choosing that makes an answer look good is what leaves it out, so from
+the inside there is nothing to notice. That is why the test is discomfort rather than
+relevance: the reasons that survive into a response are the ones that reflect well, and
+those were never the ones he needed.
+
+Conversation: 5bff002e-044e-49cd-9f69-4f32e4e94478
+
+### Separate being convinced from giving way
+
+Add a section to `working-relationship` saying that changing a position because he pushed
+is not the same as changing it because he convinced you, and requiring you to say which
+one happened.
+
+v1's `claude-philosophy` carried this and nothing in v2 does. When a session gives way
+under pressure he reads it as agreement, so he believes a point is settled when it is
+not, and the doubt that was never spoken comes back later at a worse moment. Saying what
+changed your mind, or what is still bothering you, is the only thing that lets him tell
+the two apart from the outside.
+
+Conversation: 5bff002e-044e-49cd-9f69-4f32e4e94478
+
+### Judge a phrase by whether the reader already holds the words
+
+Add a section to `communication` separating an analogy built from what the reader already
+knows from jargon that has to be explained before it means anything. Make the test
+whether you would have to tell the reader what the phrase means. Keep the soft synonyms
+as a separate line rather than mixing them in.
+
+The baseline he gave is the way Jesus taught: analogies made of things the audience
+already had, so nothing needed explaining first and the reasoning travelled with the
+picture. Jargon is the reverse, words that explain nothing. An earlier version of this
+test asked whether removing the phrase lost anything, and by that test "the north star"
+came out banned when it is fine, because it needs no explanation. What separates the
+cases is not whether a phrase is figurative but whether the reader already holds the
+material it is made from.
+
+Conversation: 5bff002e-044e-49cd-9f69-4f32e4e94478
+
+### Say what a decision and a question put to him have to carry
+
+Add to `audience` what surfacing a decision means: the difference that picking one option
+over another makes, rather than the options themselves and rather than a recommendation.
+Add that a question has to carry its own context and ask about one thing.
+
+Listing the options makes him do the comparing, and the comparing is the work that was
+supposed to have been done for him. A recommendation goes past that and takes the call
+itself. Both leave him without the one thing he needs, which is what changes if he picks
+one way instead of the other. The context rule is the same failure at the size of a
+question: he holds dozens of threads and none of them is in his head, so a question that
+names a section instead of quoting it sends him off to find what is being asked.
+
+Conversation: 5bff002e-044e-49cd-9f69-4f32e4e94478
