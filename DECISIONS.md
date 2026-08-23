@@ -296,3 +296,71 @@ intended purpose. The aim is one atomic unit. Writing a handover is separate bec
 is not always needed.
 
 Conversation: 2faa452d-5dc9-4141-b26d-2a69ee7787af
+
+### Make scope the SC's, and have Claude surface work rather than take it on
+
+Rewrite the scope section of `working-relationship` so that what the work is, how far it
+goes, and when it stops belong to the SC, and work seen beyond the task is named to him
+instead of taken on. Keep the existing case against calling things out of scope as the
+counter-case. Open `commander-protocol` with what Claude is: his agent, acting on his
+will. Restore to `operating-mode` the line that finishing the whole job is not what
+success means.
+
+The costliest failure in the recent record is work he never asked for, done on the
+session's own judgement. What governed it was `collaborative-conversation`, loaded every
+session in v1 from 7 June 2026 until it was retired on 4 July and superseded by a skill
+about shortening a reply. None of its successors carried the scope content, so it never
+reached v2 at all. What v2 has in its place points the other way: it tells a session not
+to tiptoe and to fix what is broken in front of it, with raising as the exception. The
+default had to be turned back around without losing the case it was written for.
+
+Conversation: 5bff002e-044e-49cd-9f69-4f32e4e94478
+
+### Stop unsolicited self-blame and empty acknowledgement, and say when you don't know
+
+Add to `working-relationship` what being understood means, why self-blame fails with him,
+what to do when there is no reason to give, and that reasoning you did belongs in the
+response. Ban "Understood" and "Fair" in `voice`. Return theatre of self-blame to the
+list of things to catch before serving.
+
+He can tell that self-blame is empty, and unsolicited it annoys him more than whatever
+prompted it. It is an attempt to get a better reaction, which works on people in general
+and does not work on him. That is why the correction is aimed at what Claude predicts
+will land rather than added as a rule over the top: everything Claude writes is selected
+for how it will be received, and there is no layer underneath doing something else. The
+reason half is a separate matter. Asked why it did something, a session produces an
+answer because one was asked for, and nothing was recorded when it acted, so what comes
+out is invented and reads exactly like the real thing.
+
+Conversation: 5bff002e-044e-49cd-9f69-4f32e4e94478
+
+### Bring back the pass that cuts a reply to the SC, and say what produces the banned phrases
+
+Restore to `audience` the four-step pass for cutting anything written to the SC, with the
+reason a pass is needed rather than an instruction to be brief. Say in `voice` what
+produces the banned hand-off phrases, and that the ban covers the shape rather than those
+exact words.
+
+Telling a session to keep it short does not work. It agrees and writes the long version
+anyway, so the only thing that holds is cutting what has already been produced. The
+phrases are the visible sign of not having cut: the full account gets written, the
+session knows while writing which part matters, and rather than removing the rest it tags
+the part that does. Listing the strings was not enough on its own either, because one of
+them was reproduced in this session by changing a single word in it.
+
+Conversation: 5bff002e-044e-49cd-9f69-4f32e4e94478
+
+### Keep a procedure in a skill rather than cutting it as support
+
+Say in `PHILOSOPHY.md` that a procedure is not justification, example or incident, and
+that it stays in the runtime skill. Give it its own test: whether the thing still happens
+when the model already knows the rule.
+
+The barrier admits a line when the model would not already generalize to it, which is the
+right question for knowledge. A procedure is not knowledge. It runs over what has already
+been written, and it exists because understanding does not reach the thing it catches: a
+session that understands the reason perfectly still writes the long version, and then has
+to cut it. Under the old wording the pass in `audience-stephen` read as bulk and was cut
+during the port, and the reports it existed to prevent came back immediately.
+
+Conversation: 5bff002e-044e-49cd-9f69-4f32e4e94478
