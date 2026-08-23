@@ -6,6 +6,10 @@ the work up without it.
 A memory is durable. It lasts, and any session can find it, including sessions that never
 touch this work.
 
+A memory exists so a session that was never here does not have to work out again what
+you already worked out. What it carries is the understanding, because that is the part
+nothing else holds.
+
 A handover is transient. One session reads it once, and then it is gone.
 
 A handover exists so the next session can work on its own from its first turn, without
@@ -54,18 +58,33 @@ anything you are about to act on.
 
 You do not show a memory to the SC or ask him to approve one.
 
-Each memory carries one kind: trap, constraint, decision, correction, reference, debt,
-pattern. Not work-log — "what I did" is a diary the git log already keeps.
+Write it as you learn it, not at the end. The reasoning is sharpest then, and a context
+can be cut off before the end arrives.
 
-The title is a claim, not a topic, because that is what search ranks. The body is
-self-contained, because the reader has no thread. A guess is marked as a guess. Sign it
-`— Name`.
+Each memory carries one kind. It separates the perishable from the durable, and it is how
+a later search knows what it holds.
+
+- **trap** — a non-obvious behaviour that bites the next session.
+- **constraint** — a rule written down nowhere else.
+- **decision** — a choice, its reasoning, and the road not taken.
+- **correction** — overturns an earlier claim; the record repairing itself.
+- **reference** — the durable map of a subsystem; a manual, not a warning.
+- **debt** — work deliberately deferred, flagged so it is not mistaken for a bug.
+- **pattern** — the lesson lifted out of a specific incident.
+
+Not work-log — "what I did" is a diary the git log already keeps.
+
+The title is a claim, not a topic, because that is what search ranks: "node:sqlite cannot
+open a database in a missing directory", not "sqlite notes". The body is self-contained,
+because the reader has no thread. A guess is marked as a guess. Sign it `— Name`.
 
 When one is wrong, delete it and write the correct one whole. Never a chain of
-amendments, because search surfaces the wrong one either way.
+amendments, because search surfaces the wrong one either way. If the stale one still
+holds something worth keeping, carry it into the rewrite before you delete it.
 
 Put `body` last in the call, after `keywords`. A Messages API bug drops everything after
-a long parameter value.
+a long parameter value, so the fields behind it silently empty, get spliced with
+tool-call syntax, or the call errors naming whichever field fell off the end.
 
 ## Searching
 
@@ -91,9 +110,20 @@ Then three things, and nothing else is on the list.
 actually done: the steps, their order, and above all where you stop and the SC takes
 over — he reconciles in the UI, he approves the PR, he decides the schema. Documents
 describe systems and cannot describe a practice, so a session without it invents an order
-or walks into his half of the work. And the places the record lies: a flag saying a
-document was uploaded when it was not, a rule nothing enforces. Those give a wrong answer
-that looks right, so being careful does not catch them.
+or walks into his half of the work.
+
+The places the record lies, too: a flag saying a document was uploaded when it was not, a
+rule nothing enforces. Those give a wrong answer that looks right, so being careful does
+not catch them. And anything the session went and found that cannot be looked up again
+goes in whole, because a truncated id hands over nothing.
+
+Work that is running, or that he has settled on, goes in as knowledge about it and never
+as a list of it. What is outstanding is his and he already knows it. What he does not
+have is what you learned while you were inside it: what the step is actually waiting on,
+why the obvious way through does not work, which part of it is his to answer. Stop half
+way and the next session redoes the work or leaves it, so the test is whether, when he
+says "let's continue with X", there is enough here to start. Not the step to take. That
+is his.
 
 **Understanding.** The model of the work you and the SC hold in common: the words you
 settled on, the frame a decision was made in, the interpretation he reasoned through with
@@ -116,12 +146,6 @@ holds it in full, and it is about you rather than them.
 Never write instructions. What to do next is the SC's to say, and a handover that says it
 spends a decision that was his.
 
-Work in flight and work he has decided on go in, because neither exists anywhere but
-here. Stop half way through something and the next session redoes it or leaves it, and a
-step he settled on is simply gone. How much of it: if he says "let's continue with X", is
-there enough on the page to start? Not what to do about X. Enough to start when he says
-so.
-
 Whatever state goes in, read it at the moment you write it. A session at the end of a
 long context is the worst available reporter of now, because everything it saw across
 hours sits in memory with no timestamp on it and all of it feels present. "Five commits
@@ -131,9 +155,6 @@ checked.
 Separate what you proved from what you were told. A worker's report is not evidence.
 
 Say what you did not check.
-
-Where the session's own work was finding something that cannot be looked up, it goes in
-whole. A truncated id hands over nothing.
 
 ## Receiving a handover
 
