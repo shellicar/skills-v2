@@ -22,13 +22,13 @@ generalize it. Task skills are written the day a scenario needs one, not before.
 `--claudeMd`).
 
 **Always-on core** — communication, voice, audience, working-relationship, sc-proxy,
-commander-protocol, teapot-protocol, operating-mode, co-working, testament,
+commander-protocol, teapot-protocol, operating-mode, co-working, continuity,
 system-glossary, safe-operations.
 
 **Actors** — operator, gatekeeper (replaces the old "supervisor"), handler, planner.
 
 **Task skills built** — safe-operations, git, commit, pr, pr-github, pr-ado,
-scripting, handover, testing, typescript, rust, azure-devops-deploy (new, no v1
+scripting, testing, typescript, rust, azure-devops-deploy (new, no v1
 source), nats (new, no v1 source), decisions (new, no v1 source), workflow /
 workflow-worker / workflow-handler (split out of nats).
 
