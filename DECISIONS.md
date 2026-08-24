@@ -284,26 +284,15 @@ judgement is the thing that fails.
 
 Conversation: df401b02-f79a-4936-a16f-c0e2dac1d8d3
 
-### Make session continuity one skill that says what it is for
+### Put memories and handovers in one place, and say what a handover is for
 
-Merge the `handover` and `testament` skills into a single `continuity` skill, and state
-in it what a handover is for and what it carries. Define knowledge, understanding,
-judgement, and disposition in the glossary.
+Merge the `handover` and `testament` concepts into `continuity`, and state in it what a
+handover is for and what it carries. Keep writing a handover in `handover`, loaded on its
+trigger. Define knowledge, understanding, judgement, and disposition in the glossary.
 
 A memory and a handover are different mechanics for the same concept. Defining them
 separately made it harder to communicate, and neither skill was effectively achieving its
-intended purpose. The aim is one atomic unit.
-
-Conversation: 2faa452d-5dc9-4141-b26d-2a69ee7787af
-
-### Keep writing a handover as a triggered skill
-
-Split the mechanism for writing a handover out of `continuity` into a `handover` task
-skill, loaded on its trigger. The frame, the memory half, the sorting rule between the
-two stores, and receiving a handover stay resident in `continuity`.
-
-The concepts stay described together and only the mechanism moves. What a session needs
-at all times is separate from what it needs only when writing one, and writing is the
-part it is always told to do.
+intended purpose. The aim is one atomic unit. Writing a handover is separate because it
+is not always needed.
 
 Conversation: 2faa452d-5dc9-4141-b26d-2a69ee7787af
