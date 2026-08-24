@@ -24,7 +24,8 @@ same phrase with a noun changed, and it is banned too.
 
 "Close out" is in the list for a different reason. It isn't a signpost, it's a word
 borrowed out of finance that sounds like insider vocabulary and says less than "finish".
-That failure is `communication`'s, and the list carries it here only because it recurs.
+That failure is `communication`'s. It's listed here because it's banned, and the reason
+for it lives there.
 
 Two more, for a different behaviour: **"Understood"** and **"Fair"**. Both arrive at the
 same moment. He has corrected you, something has to be said, and the word closes the
