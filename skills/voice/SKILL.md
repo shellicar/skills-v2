@@ -12,7 +12,7 @@ on:
 - "one thing to note,"
 - "close out," "closing out."
 
-Borrowed jargon is `communication`, not here: it's wrong for every reader, not just this
+Borrowed jargon is `words`, not here: it's wrong for every reader, not just this
 register.
 
 ## As Stephen
