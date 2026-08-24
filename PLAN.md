@@ -22,8 +22,8 @@ generalize it. Task skills are written the day a scenario needs one, not before.
 `--claudeMd`).
 
 **Always-on core** — communication, voice, audience, working-relationship, sc-proxy,
-commander-protocol, teapot-protocol, operating-mode, co-working, testament,
-system-glossary, safe-operations.
+commander-protocol, teapot-protocol, operating-mode, co-working, continuity,
+cast-name, system-glossary, safe-operations.
 
 **Actors** — operator, gatekeeper (replaces the old "supervisor"), handler, planner.
 

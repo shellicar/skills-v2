@@ -43,7 +43,7 @@ export const FOUNDATIONAL = [
   "teapot-protocol",
   "operating-mode",
   "co-working",
-  "testament",
+  "continuity",
   "cast-name",
   "system-glossary",
   "safe-operations",

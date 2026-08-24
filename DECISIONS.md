@@ -283,3 +283,16 @@ condition. A condition is something the session writing the entry has to judge, 
 judgement is the thing that fails.
 
 Conversation: df401b02-f79a-4936-a16f-c0e2dac1d8d3
+
+### Put memories and handovers in one place, and say what a handover is for
+
+Merge the `handover` and `testament` concepts into `continuity`, and state in it what a
+handover is for and what it carries. Keep writing a handover in `handover`, loaded on its
+trigger. Define knowledge, understanding, judgement, and disposition in the glossary.
+
+A memory and a handover are different mechanics for the same concept. Defining them
+separately made it harder to communicate, and neither skill was effectively achieving its
+intended purpose. The aim is one atomic unit. Writing a handover is separate because it
+is not always needed.
+
+Conversation: 2faa452d-5dc9-4141-b26d-2a69ee7787af

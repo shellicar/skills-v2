@@ -26,7 +26,7 @@ Caveat: platform skills ranked from frontmatter — read before trusting.
   (the conversation/execution two-mode framework, restored after being dropped)
 - `commander-protocol` → `working-relationship` (now the escalation model)
 - `co-working` → kept, sharpened to "not the only author of this worktree"
-- `testament` → kept as-is
+- `testament` → merged into `continuity`
 - `system-glossary` → kept as-is (seeded empty)
 - `teapot-protocol` → kept as-is; the mode marker it once carried now lives in
   `operating-mode`
@@ -142,7 +142,7 @@ Each new target skill, then the originals it absorbs — one per line.
 - ~~`medium-commit`~~ **DONE** → `commit`
 - `medium-documentation`
 - `medium-issue`
-- `medium-memory` — check against `testament` first; may already be covered
+- `medium-memory` — check against `continuity` first; may already be covered
 - ~~`medium-pr`~~ **DONE** → `pr`, plus platform staying-on-it split into `pr-github` / `pr-ado`
 - `medium-workitem`
 
