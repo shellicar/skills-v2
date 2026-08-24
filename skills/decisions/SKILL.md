@@ -32,17 +32,17 @@ set the line, so it finds the decision currently governing it and supersession n
 bookkeeping. Superseding is the ledger working, not failing: an entry records what was
 chosen on the day, and being overturned later is expected.
 
-## It becomes an entry when it merges
+## An entry exists once it is on main
 
-Until the merge, what is in `DECISIONS.md` on your branch is pencil: a local
-modification to a file, rewritten or discarded as the work moves. Pushing does not
-settle it, and neither does opening a PR. The branch squashes into one commit on main,
-and that commit carries both the entry and the change it explains.
+Until the merge, what your branch adds to `DECISIONS.md` is pencil: a local modification
+to a file, rewritten or discarded as the work moves. Pushing does not settle it, and
+neither does opening a PR. The branch squashes into one commit on main, and that commit
+carries both the entry and the change it explains.
 
-So one merge lands one decision. When the work changes shape while the branch is open,
-that goes into the entry you are holding rather than a second entry beside it: both
-would arrive in the same commit, and whoever blames the line finds two with nothing
-telling them which governs.
+When the work changes shape while the branch is open, the entry changes with it. It is
+the same decision, so it stays one entry: a second one beside it would arrive in the
+same merge, and whoever blames the line finds two with nothing telling them which
+governs. Separate decisions in one merge are separate entries.
 
 ## The format of an entry
 
