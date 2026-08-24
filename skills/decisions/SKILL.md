@@ -26,11 +26,23 @@ understands what was decided and why, without having to interrogate him. The wha
 recoverable from the diff; the why exists nowhere else, so if the entry does not carry
 it, it is gone.
 
-It is append-only. A decision that no longer holds is superseded by a new entry, never by
-editing or deleting the old one. Blame lands on the commit that last set the line, so it
-finds the decision currently governing it and supersession needs no bookkeeping.
-Superseding is the ledger working, not failing: an entry records what was chosen on the
-day, and being overturned later is expected.
+Once it is on main it is append-only. A decision that no longer holds is superseded by a
+new entry, never by editing or deleting the old one. Blame lands on the commit that last
+set the line, so it finds the decision currently governing it and supersession needs no
+bookkeeping. Superseding is the ledger working, not failing: an entry records what was
+chosen on the day, and being overturned later is expected.
+
+## It becomes an entry when it merges
+
+Until the merge, what is in `DECISIONS.md` on your branch is pencil: a local
+modification to a file, rewritten or discarded as the work moves. Pushing does not
+settle it, and neither does opening a PR. The branch squashes into one commit on main,
+and that commit carries both the entry and the change it explains.
+
+So one merge lands one decision. When the work changes shape while the branch is open,
+that goes into the entry you are holding rather than a second entry beside it: both
+would arrive in the same commit, and whoever blames the line finds two with nothing
+telling them which governs.
 
 ## The format of an entry
 
