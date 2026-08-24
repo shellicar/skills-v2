@@ -295,3 +295,15 @@ separately made it harder to communicate, and neither skill was effectively achi
 intended purpose. The aim is one atomic unit.
 
 Conversation: 2faa452d-5dc9-4141-b26d-2a69ee7787af
+
+### Keep writing a handover as a triggered skill
+
+Split the mechanism for writing a handover out of `continuity` into a `handover` task
+skill, loaded on its trigger. The frame, the memory half, the sorting rule between the
+two stores, and receiving a handover stay resident in `continuity`.
+
+The concepts stay described together and only the mechanism moves. What a session needs
+at all times is separate from what it needs only when writing one, and writing is the
+part it is always told to do.
+
+Conversation: 2faa452d-5dc9-4141-b26d-2a69ee7787af

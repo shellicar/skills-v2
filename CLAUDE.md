@@ -18,7 +18,7 @@ loads this.
 `STOCKTAKE.md` already maps every v1 skill to a fate (done/retired/cut/tool/keep/
 reassess) and, where kept, a target v2 name. Several v1 skills collapse into one v2
 skill — seven ADO skills into `azure-devops`, six `medium-*` skills absorbed into
-`audience`/`commit`/`pr`/`continuity`/etc. Compare against those target names, not v1's
+`audience`/`commit`/`pr`/`handover`/etc. Compare against those target names, not v1's
 file names one-for-one; a v1 skill with no v2 namesake is not automatically a gap.
 
 ## Keep `PLAN.md` and `STOCKTAKE.md` current as skills land

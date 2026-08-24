@@ -148,8 +148,8 @@ Each new target skill, then the originals it absorbs — one per line.
 
 **`handover`** — the continuity note.
 
-- ~~`handover`~~ **DONE** → `continuity`
-- ~~`medium-handover`~~ folded into `continuity`
+- ~~`handover`~~ **DONE**
+- ~~`medium-handover`~~ folded into `handover`
 
 House craft:
 

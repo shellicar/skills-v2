@@ -28,7 +28,7 @@ cast-name, system-glossary, safe-operations.
 **Actors** — operator, gatekeeper (replaces the old "supervisor"), handler, planner.
 
 **Task skills built** — safe-operations, git, commit, pr, pr-github, pr-ado,
-scripting, testing, typescript, rust, azure-devops-deploy (new, no v1
+scripting, handover, testing, typescript, rust, azure-devops-deploy (new, no v1
 source), nats (new, no v1 source), decisions (new, no v1 source), workflow /
 workflow-worker / workflow-handler (split out of nats).
 
