@@ -32,6 +32,22 @@
 // the same subject exists in both — so every read binds its stream explicitly rather
 // than letting the subject choose.
 //
+// `wait` (seconds) blocks until the first edge fires on any of the conversations, so a
+// handler that commissioned several workers is told when one is worth looking at instead
+// of polling. Three edges, because the two ways a worker stops are not the same as the
+// one way it finishes:
+//
+//   idle              a query closed, so a turn finished and there is something to read
+//   quiet             still working, but has committed nothing for `quietAfter`
+//   awaiting-approval an approval has sat unanswered for `approvalAfter`
+//
+// The last is debounced on purpose. A raise is not worth waking anyone for, because most
+// are answered in seconds and firing on each would make the tool useless. One still
+// pending after `approvalAfter` is a worker that has stopped and will not start again by
+// itself, which is the state a handler most needs and the one an earlier version of this
+// script reported as nothing at all: it fired no edge for an approval, so a wait sat out
+// its full term and said a worker was fine while it had been stopped for hours.
+//
 // Exits 0 with the report, 2 if `wait` elapses with no edge (not a verdict: nothing has
 // finished yet), 64 if the input is not valid JSON or has no convs.
 
@@ -86,7 +102,14 @@ type Status = {
   tip: string | null;
 };
 
-type Edge = { conv: string; edge: "idle" | "quiet"; ts: string; silentForSeconds?: number };
+type Edge = {
+  conv: string;
+  edge: "idle" | "quiet" | "awaiting-approval";
+  ts: string;
+  silentForSeconds?: number;
+  approvalId?: string;
+  pendingForSeconds?: number;
+};
 
 const url = process.env.NATS_URL ?? "nats://127.0.0.1:4222";
 const stream = process.env.NATS_STREAM ?? "conv-approval";
@@ -96,6 +119,12 @@ const ephemeralStream = process.env.NATS_EPHEMERAL_STREAM ?? "conv-ephemeral";
 // were silent for hours. It is a reading of that fleet rather than a derived number, so
 // tune it when yours behaves differently.
 const DEFAULT_QUIET_AFTER_SECONDS = 600;
+
+// How long an approval must sit unanswered before it is worth waking anyone for. An
+// approval that is answered in seconds is a blip and firing on it would turn every
+// routine tool call into an interruption; one that is still pending after this is a
+// worker that has stopped and will not start again on its own.
+const DEFAULT_APPROVAL_AFTER_SECONDS = 60;
 
 // An attachment or pulse that never carried intervalS made no promise, so it gets this
 // rather than being presumed alive for ever.
@@ -110,7 +139,9 @@ const MISSED_PULSES_BEFORE_STRANDED = 2;
 // asking until a fetch comes back empty, so this never bounds what it reads.
 const FETCH_BATCH = 512;
 
-const input = readStdin<{ convs?: string[]; wait?: number; quietAfter?: number }>('{"convs":["<uuid>","<uuid>"],"wait":900}');
+const input = readStdin<{ convs?: string[]; wait?: number; quietAfter?: number; approvalAfter?: number }>(
+  '{"convs":["<uuid>","<uuid>"],"wait":900}',
+);
 if (!Array.isArray(input.convs) || input.convs.length === 0 || input.convs.some((c) => typeof c !== "string" || c.length === 0)) {
   process.stderr.write("input needs { convs: [uuid, ...] }\n");
   process.exit(EXIT_BAD_INPUT);
@@ -124,9 +155,14 @@ if (input.quietAfter !== undefined && !seconds(input.quietAfter)) {
   process.stderr.write("quietAfter is seconds of silence, a positive number\n");
   process.exit(EXIT_BAD_INPUT);
 }
+if (input.approvalAfter !== undefined && !seconds(input.approvalAfter)) {
+  process.stderr.write("approvalAfter is seconds an approval may sit before it fires, a positive number\n");
+  process.exit(EXIT_BAD_INPUT);
+}
 
 const convs = input.convs;
 const quietAfterMs = (input.quietAfter ?? DEFAULT_QUIET_AFTER_SECONDS) * 1000;
+const approvalAfterMs = (input.approvalAfter ?? DEFAULT_APPROVAL_AFTER_SECONDS) * 1000;
 
 const nc = await connect({ servers: url });
 const jc = JSONCodec<unknown>();
@@ -381,6 +417,7 @@ try {
   async function waitForEdge(connection: NatsConnection, waitSeconds: number): Promise<Edge | null> {
     const subs = new Map<string, Subscription>();
     const timers = new Map<string, ReturnType<typeof setTimeout>>();
+    const approvalTimers = new Map<string, ReturnType<typeof setTimeout>>();
     let deadline: ReturnType<typeof setTimeout> | undefined;
     let settled = false;
     let resolveEdge!: (edge: Edge | null) => void;
@@ -392,6 +429,7 @@ try {
       if (settled) return;
       settled = true;
       for (const timer of timers.values()) clearTimeout(timer);
+      for (const timer of approvalTimers.values()) clearTimeout(timer);
       if (deadline !== undefined) clearTimeout(deadline);
       for (const sub of subs.values()) sub.unsubscribe();
       resolveEdge(found);
@@ -405,6 +443,25 @@ try {
         fire({ conv, edge: "quiet", ts: new Date().toISOString(), silentForSeconds: Math.round((Date.now() - lastCommitMs) / 1000) });
       }, dueInMs);
       timers.set(conv, timer);
+    };
+
+    // An approval is not an edge when it is raised, only when it is still there. So it
+    // arms a timer the settlement cancels, and a tool call answered in seconds never
+    // reaches anyone.
+    const armApproval = (conv: string, approvalId: string, raisedAtMs: number): void => {
+      const existing = approvalTimers.get(approvalId);
+      if (existing !== undefined) clearTimeout(existing);
+      const dueInMs = Math.max(0, raisedAtMs + approvalAfterMs - Date.now());
+      const timer = setTimeout(() => {
+        fire({
+          conv,
+          edge: "awaiting-approval",
+          ts: new Date().toISOString(),
+          approvalId,
+          pendingForSeconds: Math.round((Date.now() - raisedAtMs) / 1000),
+        });
+      }, dueInMs);
+      approvalTimers.set(approvalId, timer);
     };
 
     const consume = async (conv: string, sub: Subscription): Promise<void> => {
@@ -430,6 +487,34 @@ try {
       subs.set(conv, sub);
       void consume(conv, sub);
     }
+
+    // Approvals are keyed by their own id on their own tree, so they cannot be watched
+    // per conversation the way changes can. One fleet-wide subscription, filtered by the
+    // conversation the raise correlates to.
+    const approvals = connection.subscribe("approval.v1.*.lifecycle");
+    subs.set("approvals", approvals);
+    void (async () => {
+      try {
+        for await (const m of approvals) {
+          const approvalId = m.subject.split(".")[2];
+          if (approvalId === undefined) continue;
+          const body = jc.decode(m.data) as Lifecycle;
+          if (body.type === "settled") {
+            const timer = approvalTimers.get(approvalId);
+            if (timer !== undefined) clearTimeout(timer);
+            approvalTimers.delete(approvalId);
+            continue;
+          }
+          const conv = body.correlation?.conversationId;
+          if (body.type !== "raised" || conv === undefined || !convs.includes(conv)) continue;
+          const raisedAt = body.ts === undefined ? Date.now() : Date.parse(body.ts);
+          armApproval(conv, approvalId, Number.isNaN(raisedAt) ? Date.now() : raisedAt);
+        }
+      } catch {
+        // Ends with the edge or the wait, same as the per-conversation loops.
+      }
+    })();
+
     await connection.flush();
 
     const seed = await survey();
@@ -440,12 +525,21 @@ try {
       return edge;
     }
     for (const status of seed) {
+      // An approval already sitting when the wait begins is seeded from its raise, so one
+      // that is past its patience fires straight away rather than after another full term.
+      if (status.approval !== null) {
+        const raisedAt = Date.parse(status.approval.raisedAt);
+        armApproval(status.conv, status.approval.approvalId, Number.isNaN(raisedAt) ? Date.now() : raisedAt);
+        continue;
+      }
       if (status.state !== "working" || status.lastMessage === null) continue;
       const at = Date.parse(status.lastMessage.ts);
       armQuiet(status.conv, Number.isNaN(at) ? Date.now() : at);
     }
     deadline = setTimeout(() => fire(null), waitSeconds * 1000);
-    process.stderr.write(`watching ${convs.length} conversation(s) for up to ${waitSeconds}s; quiet after ${quietAfterMs / 1000}s of silence...\n`);
+    process.stderr.write(
+      `watching ${convs.length} conversation(s) for up to ${waitSeconds}s; quiet after ${quietAfterMs / 1000}s of silence, approvals after ${approvalAfterMs / 1000}s...\n`,
+    );
     return edge;
   }
 

@@ -37,6 +37,39 @@ that instead.
 - **Defensive union types** (`T | null | undefined` when it's never null) — forces
   null checks at every call site for a case that can't occur.
 
+## Check the hazard before you guard against it
+
+The cast rule above is one instance of a wider habit: guarding against a hazard nobody
+verified. At the value level it arrives as an expression rather than a statement.
+
+```ts
+...(value.cause === undefined ? {} : { cause: serialise(value.cause) })
+```
+
+That defends against `cause: undefined` reaching the output. `JSON.stringify` drops
+undefined, and the function was already total, so it defended against nothing. The plain
+form is `cause: serialise(value.cause)`.
+
+Two tells. The first is a spread carrying a single known key. Spread is for arity you
+cannot know at authoring time, so `{ ...error }` earns it — which of `code`, `errno` or
+`status` an error carries isn't knowable there. `...(cond ? { cause: x } : {})` doesn't:
+the key is known, there is exactly one, and the spread is doing an `if`'s job while the
+empty object does "don't". The second tell is that the construct produces nothing. Ask
+what the line makes happen, and if the answer is "it prevents a case", that case is the
+thing to go and check.
+
+The costs are asymmetric in time, which is why this outlives the moment it was written.
+Checking is paid once, by you. The guard is paid by every later reader, and once it is
+there it looks intentional, so nobody can reason about it any more — removing it means
+redoing the check you skipped, so it never goes.
+
+A comment does not fix this. A stated reason carries more authority than bare code, so a
+vacuous one is more durable and spreads further: it closes the question and reads as a
+precedent to imitate. If a guard survives a real check, record what you observed, not
+what you feared. "Guards against undefined" is untestable and will outlive everyone.
+"`JSON.stringify` emits `cause: undefined` and the audit parser rejects it" can be re-run
+by anyone, and deleted the day it stops being true.
+
 ## `satisfies`, not `as`
 
 `satisfies` checks a value's shape while keeping its literal type; `as` skips the check,
