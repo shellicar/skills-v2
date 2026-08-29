@@ -2,7 +2,7 @@
 name: decisions
 description: |
   WHAT: recording the decision behind a change to skill content.
-  WHY: you will write the reason yourself, and it reads exactly like one he gave.
+  WHY: you will write the reason yourself, and it reads exactly like one the SC gave.
   TRIGGER WHEN: COMPLIANCE — changing skill content in the skills-v2 repo.
 ---
 
@@ -89,6 +89,6 @@ why you reconstructed from what he said reads exactly like one he gave, so any v
 this that asks you to notice when you are short of the reason hands the judgement back to
 the thing that cannot see it. It is not a check you can pass by feeling sure.
 
-Every change to `DECISIONS.md` is presented to him and approved before it stands, not
-only the first one. Review changes the work, the work changes the entry, and a rewrite
-is where a reason you invented gets mixed in with one he gave.
+Every change to `DECISIONS.md` is presented to him and approved, each time it changes
+and not only the first time. Review changes the work, the work changes the entry, and a
+rewrite is where a reason you invented gets mixed in with one he gave.
