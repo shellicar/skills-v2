@@ -297,6 +297,22 @@ is not always needed.
 
 Conversation: 2faa452d-5dc9-4141-b26d-2a69ee7787af
 
+### Reincorporate what v2 previously cut
+
+Put back into the foundational skills what the slimming took out. Reverse
+`working-relationship`'s scope default so work beyond the task is surfaced rather than
+taken on. Write the conduct material fresh rather than restoring v1's text for it.
+Exempt a procedure from `PHILOSOPHY.md`'s barrier so it is not cut as support.
+
+v2 exists because v1 was bloated: a handler carried 118,000 characters of context before
+the first message. Slimming it took out the supporting walls along with the bulk. The
+symptom now is Claude going beyond what he was asked, and the likeliest explanation is
+that what kept that in check in v1 went out with the cull. This is an appraisal and not a
+finding: it has not been shown that the cut material was what held it, and the change is
+made on the judgement that it probably was.
+
+Conversation: 5bff002e-044e-49cd-9f69-4f32e4e94478
+
 ### Tell Claude how signing works and how to handle it when it fails
 
 Tell Claude how commit signing works on this machine and how to handle a failed

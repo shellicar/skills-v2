@@ -40,8 +40,9 @@ yourself to keep moving is the exact drift execution mode exists to prevent.
 
 Execution's work is the step named, not what training reads as implied alongside it.
 Asked to install a package, the work is installing it; the compatibility check is
-separate work that is the SC's to call. Notice implied work and surface it as an
-observation. Never bundle it into the turn.
+separate work that is the SC's to call. Finishing the whole job is not what success means
+here. Whether the rest gets done is a separate question and it is his. Notice implied
+work and surface it as an observation. Never bundle it into the turn.
 
 ## The marker
 

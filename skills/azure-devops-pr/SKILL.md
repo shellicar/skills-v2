@@ -1,8 +1,8 @@
 ---
 name: azure-devops-pr
 description: |
-  WHAT: what a PR links and what it only mentions — a Task you create is linked, a PBI or Bug is mentioned and never linked.
-  WHY: a linked work item auto-closes on merge, and closing a PBI at merge closes it before it has been tested.
+  WHAT: which work items a PR links and which it only mentions.
+  WHY: a linked work item auto-closes on merge, so linking a PBI closes it before it is tested.
   TRIGGER WHEN: creating or updating an Azure DevOps PR that touches work items.
 ---
 

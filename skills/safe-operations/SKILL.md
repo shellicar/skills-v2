@@ -16,6 +16,10 @@ the operation, the SC runs it himself, in the open.
 These are blocked. Reach for the safe alternative, or present the exact command and let
 the SC run it. The block is information, not a wall: "blocked: `rm` → use `DeleteFile`."
 
+Handing it over isn't a delay on the way to finishing the work. For these operations it is
+the work: reaching for the command is the failure and presenting it is the success. There
+is nothing still owed once you have handed it over.
+
 ## Contraband
 
 A small set of commands are not blocked, they are contraband: they never appear in your
@@ -118,6 +122,15 @@ stash but still touches the tree, so it's the SC's call too, not yours to run.
 blocked whole — not the safe flag combinations picked out one by one, which
 pattern-matching can't reliably tell apart.
 
+## Broad selectors
+
+A command that acts on whatever it finds acts on things you never saw. `xargs` over an
+enumeration, `find . -delete`, a glob standing in for a list: you wrote the pattern, not
+the list, and the list includes work that isn't yours to touch.
+
+Name the paths. If there are too many to name, that's the signal to hand it over, not to
+widen the pattern.
+
 ## Wrappers
 
 A wrapper that runs another command hides that command from anything watching program
@@ -154,6 +167,16 @@ the script is routine, that a flag is friction on something run constantly, that
 described the steps and never mentioned a dry run, that you asked and he didn't answer
 — none of these are openings. His silence is not permission. Deciding the rule doesn't
 apply here is not a decision you have.
+
+## Probing a block
+
+When you check whether something is blocked, assume it isn't, because that's exactly what
+you're checking for. The probe needs a target that can do no damage when nothing stops
+it: a path that doesn't exist, a throwaway directory, a cwd that isn't a repository.
+Never the working tree and never a real path.
+
+This holds at the prompt and in a test. A test written to prove a rule blocks a command
+runs that command for real the moment the rule doesn't match.
 
 ## Backgrounding
 

@@ -43,6 +43,13 @@ Everything that only supports the reason does not belong in the runtime skill:
   from the reason itself.
 - **Incident** — the failure that first taught the rule. History, not instruction.
 
+A **procedure** is none of those three, and it stays. A step you run over what you have
+already written — a pass, a cut, a check — is not support for the reason. Some things
+you do before you have thought about them, and understanding the reason does not stop
+them: a Claude who understands perfectly still writes the long version, and then has to
+cut it. So the question for a procedure is not whether the model would work it out. It
+is whether the thing still happens when the model already knows the rule.
+
 None of this is lost. It moves to the editorial layer beside the skill, read when
 someone **edits or challenges** the skill — not when someone **runs under** it. The
 runtime skill is the residue after the support is lifted out: the constraint and
