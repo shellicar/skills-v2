@@ -351,3 +351,18 @@ because it was true, and a third role made statements that had been correct plai
 wrong. A role has to be enumerated and a position does not.
 
 Conversation: 08c5ce78-d8a5-4d3f-909a-fd67384e665f
+
+## 2026-08-30
+
+### The ledger rule holds at main, not at every commit
+
+State the rule in terms of main, in the skill, in CLAUDE.md and in the ledger's preamble:
+skill content reaches main in the same commit as its entry, and what a branch adds before
+then is a draft, rewritten as the work changes rather than added to. Present every change
+to `DECISIONS.md` to the SC for approval.
+
+The entry only has to be right when the work reaches main. Requiring one in every local
+commit made iterating harder and recorded nothing more, and skills-v2 works through
+branches and pull requests now.
+
+Conversation: 13b872ca-8577-43b9-bfff-5cd945ce9db1
