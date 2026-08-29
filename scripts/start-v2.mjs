@@ -11,6 +11,7 @@
  *   start-v2.mjs --no-resume --message "..."   # send a first message
  *   start-v2.mjs --actor gatekeeper       # also load one actor's body whole
  *   start-v2.mjs --model claude-...        # override the default model
+ *   start-v2.mjs --config '{"...":...}'    # keys merged over the script's own config
  *   start-v2.mjs --doctor                 # print what would be sent, then exit
  *   start-v2.mjs --verbose                # print the exact command, then launch
  *
@@ -69,6 +70,25 @@ if (vi >= 0) {
   passthrough.splice(vi, 1);
 }
 
+// --config <json>: folded into the script's own override below and re-emitted as a
+// single flag. Forwarding it would put two --config flags on the command line, and the
+// script's own always landed last, so a passed one never took effect.
+const userConfig = {};
+for (let ci = passthrough.indexOf("--config"); ci >= 0; ci = passthrough.indexOf("--config")) {
+  const raw = passthrough[ci + 1];
+  passthrough.splice(ci, 2);
+  if (!raw) {
+    console.error("start-v2: --config requires a JSON value.");
+    process.exit(2);
+  }
+  try {
+    Object.assign(userConfig, JSON.parse(raw));
+  } catch (err) {
+    console.error(`start-v2: --config is not valid JSON: ${err.message}`);
+    process.exit(2);
+  }
+}
+
 let claudeMd;
 try {
   claudeMd = buildSkillsBlock(skillsDir, { actor, catalogue: false });
@@ -103,11 +123,13 @@ assertNotUnderClaude();
 // frontmatter and loads bodies on demand. Foundational skills ride --claudeMd whole,
 // so they are not tool-resolved. The user CLAUDE.md / SYSTEM.md sources are disabled:
 // v2 injects its own baseline, so the v1 user files must not also load. Project and
-// local stay on. Full sources objects so the override is robust to merge or replace.
+// local stay on. Full sources objects so the override is robust to merge or replace. A
+// --config passed on the command line lands last, so its keys win over these defaults.
 const configOverride = JSON.stringify({
   skillDirs: [skillsDir],
   claudeMd: { enabled: true, sources: { user: false, project: true, projectClaude: true, local: true } },
   systemPrompt: { enabled: true, sources: { user: false, project: true, projectClaude: true, local: true } },
+  ...userConfig,
 });
 
 // Argument ORDER below is load-bearing, not stylistic. The endpoint security agent on
