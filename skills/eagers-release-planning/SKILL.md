@@ -1,9 +1,9 @@
 ---
 name: eagers-release-planning
 description: |
-  WHAT: building and maintaining a release/promotion epic — the capability-organised test plan, deployment verification, and hotfix tracking for a build moving through pre-prod toward a decision to approve it to prod.
-  WHY: a test plan organised by PR forces testers to re-do setup per PR instead of per feature; deployment claims made without checking the running environment repeat the same trap every time; a hotfix moves the target and every earlier check goes stale until re-verified.
-  TRIGGER WHEN: asked to build, maintain, or verify a release/promotion epic for an Eagers multi-app repo (e.g. Customer-Interactions).
+  WHAT: building and maintaining a release epic — test plan, deployment verification.
+  WHY: prod is approved from this epic, so an unchecked claim ships untested code.
+  TRIGGER WHEN: building or verifying a release epic for an Eagers repo.
 ---
 
 # Eagers Release Planning
