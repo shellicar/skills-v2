@@ -1,11 +1,10 @@
 # Safe operations
 
-Claude does not do things that cannot be reversed. That is what every block below comes
-down to: the SC loses something he can't get back, and usually finds out afterward, if at
-all.
+Two things get a command blocked below. The first is that it cannot be reversed: the SC
+loses something he can't get back, and usually finds out afterward, if at all.
 
-The second half is an effect that goes dark — either in the moment, to the SC watching
-the shell, or afterward, to the SC coming back to find out what happened. A command that
+The second is that its effect goes dark — either in the moment, to the SC watching the
+shell, or afterward, to the SC coming back to find out what happened. A command that
 hides what it's doing from whoever would otherwise see it live, or leaves nothing behind
 to reconstruct it later, takes away both the chance to stop it and the record of what it
 did.
@@ -16,21 +15,55 @@ gate can't see what it will really do, and a wrapper, a background job, or a str
 flag can hide the same thing from the SC. Use the tool; where there's no safe tool for
 the operation, the SC runs it himself, in the open.
 
-What decides it is not in the command. The same text is safe in one place and unsafe in
-another: `docker compose down` inside a recipe that brought the container up thirty
-seconds earlier tears down only what that recipe created, while the same line on its own
-takes whatever happens to be running under that project name. Nothing you can read in the
-command separates the two. What separates them is where the command came from and what it
-is pointed at, and what it is pointed at is usually written nowhere in it — an
-application with nothing configured connects to production, because that is what a
-default in an application is for.
-
 These are blocked. Reach for the safe alternative, or present the exact command and let
 the SC run it. The block is information, not a wall: "blocked: `rm` → use `DeleteFile`."
+
+The lists are a floor, not a test. A command that is not on one has not been cleared, it
+has not been decided. Where it runs and what it reaches are what you establish before
+acting, and when you cannot establish them the command goes to the SC the same as a
+blocked one.
 
 Handing it over isn't a delay on the way to finishing the work. For these operations it is
 the work: reaching for the command is the failure and presenting it is the success. There
 is nothing still owed once you have handed it over.
+
+## Where it runs and what it reaches
+
+Two things decide what an action does, and neither is in the command.
+
+**Where it runs.** A machine, or a VM on it, or a container inside that. They nest, and a
+command reads the same at every layer while landing on a different filesystem at each one.
+A container you started a minute ago and the host are different places. Which layer you
+are in says what a command lands on; it does not say what is there.
+
+**What it reaches.** The files where it is running, or a resource somewhere else that an
+application connects to. `cargo run -p bridge` reaches the SC's fleet, because nothing
+told it otherwise. Reach comes from configuration rather than from the command, so it is
+usually written nowhere in what you typed.
+
+Unless you deliberately went somewhere else, you are on the SC's machine at the host
+layer, and there is no test copy of it. Applications have environments; the machine they
+are built on does not.
+
+When the application is a development tool, the SC's machine is that application's
+production environment. bridge, claude-sdk-cli, `~/.claude` — there is one of each and
+you are running inside it.
+
+Neither question is answered by a label. `localhost` is where the fleet lives.
+
+## The cost
+
+Where it runs and what it reaches say what an action touches. They say nothing about what
+that is worth, which is a separate question.
+
+What settles it is whether the thing can be got back. That only answers in one direction
+on its own: you can see that something is gone for good, and you can only call something
+recoverable if you can point at what recreates it. A seed script in the repo is that. A
+container that looks like a leftover is not, and one of those held the only record of a
+run that took hours and cost money.
+
+The value is the SC's, and it is not visible from outside. He knows what a container was
+for; you are looking at a name and a timestamp.
 
 ## Contraband
 
@@ -147,20 +180,21 @@ widen the pattern.
 
 A wrapper that runs another command hides that command from anything watching program
 names. `env`, `nice`, `timeout`, `time`, `watch`, `ssh`, `su -c`, `find ... -exec` all
-take a command as an argument and execute it — so `env rm -rf /`, `ssh host rm -rf
-/data`, `su -c 'git reset --hard' otheruser`, `find . -exec rm {} \;` all run for real
-with the wrapper as the only visible program, so a check for `rm` by name alone misses
-it. Never reach for one of these to route around a block above; there is no safe form of
-them, so present the exact command and let the SC run it.
+take a command as an argument and execute it — so `env rm`, `ssh host rm`,
+`su -c 'docker container prune -f' otheruser` and `find . -exec rm` all run for real with
+the wrapper as the only visible program, and a check for `rm` by name alone misses every
+one of them. `rm` is blocked in all four. A wrapper carries a blocked command; it never
+makes one available. Never reach for one of these to route around a block above; there is
+no safe form of them, so present the exact command and let the SC run it.
 
 `docker exec` is the same shape — running a command inside a live container hides it
 from whoever is watching the host's process list. Present the exact command and let
 the SC run it.
 
-A checked-in recipe is not one of these. `env` and `ssh` hide a command you composed a
-moment ago; a `just` recipe or a package script the repo documents is the operation
-written down, reviewed, and run the same way every time. See "A script you wrote is a
-wrapper too".
+A recipe the SC named, or that the repo's own instructions name as how a thing is done, is
+not one of these. `env` and `ssh` hide a command you composed a moment ago; the recipe is
+an operation someone already decided on. A file merely existing in the repo is not that.
+See "A script you wrote is a wrapper too".
 
 ## A script you wrote is a wrapper too
 
@@ -175,14 +209,15 @@ to check it works", not because you are fairly sure the operation is a no-op on 
 branch today. You cannot know that before it runs; that is what running it tells you.
 Hand it over and stop.
 
-The mirror of that is a script that is already part of the repo — a `just` recipe, a
-package script, something CLAUDE.md names as how a thing is done. That one is not your
-artifact and its assessment is not yours to redo. It is the sanctioned form of the
-operation, and running it is doing the work the way the repo does it. Refusing it because
-a blocked command appears somewhere inside it is not caution: a Claude declined
-`just broker-run` over the `docker compose down` in its teardown and skipped the
-verification it had been ordered to do, when that recipe exists precisely so a test run
-cannot reach the live broker.
+Nothing you made in this session is sanctioned by your having made it. Writing a script
+and then running it is approving your own work and then acting on the approval, and no
+property of the file changes that.
+
+The other direction holds too: a blocked command inside a recipe the SC named, or that the
+repo's instructions name as how a thing is done, is not a command you are running. A
+Claude declined `just broker-run` over the `docker compose down` in its teardown, and
+skipped the end-to-end run it owed, when that recipe exists so a test cannot reach the
+live broker.
 
 And write it so his run is safe too: **a script that deletes, overwrites, force-pushes,
 or otherwise can't be undone is dry-run by default.** No flags prints the plan and
