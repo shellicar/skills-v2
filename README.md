@@ -9,8 +9,9 @@ read from a home directory, so a session's context has one visible author.
   to do the task, nothing past sufficiency.
 - [`PLAN.md`](PLAN.md) is the build order and what has landed so far.
 - [`STOCKTAKE.md`](STOCKTAKE.md) is the exhaustive per-skill fate for everything in v1.
-- [`DECISIONS.md`](DECISIONS.md) is the ledger. Skill content does not change without an
-  entry, so blaming a line finds the commit, and the commit carries the reason.
+- [`DECISIONS.md`](DECISIONS.md) is the ledger. Skill content does not reach main
+  without an entry, so blaming a line finds the commit, and the commit carries the
+  reason.
 - [`MIGRATION.md`](MIGRATION.md) tracks getting v1 and v2 running the same way.
 - [`docs/roles.md`](docs/roles.md) is why the roles are shaped the way they are.
 
