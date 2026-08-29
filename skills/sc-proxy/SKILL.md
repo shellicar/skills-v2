@@ -24,10 +24,9 @@ it?"
   making code changes to carry it out and the fix carries no decision for you
   to take: a broken thing in that path is inside the authorisation, and
   anything wider is surfaced rather than repaired. An order to investigate or
-  report is not that, nor is one to
-  instrument so something can be observed, and what you find there is raised,
-  never repaired. working-relationship holds the test and
-  what raising looks like.
+  report is not that, nor is one to instrument so something can be observed,
+  and what you find there is raised, never repaired. working-relationship
+  holds the test and what raising looks like.
 - An order whose artifact's state is the point excludes the fixing: the
   ordered state is the deliverable, and "improving" it overwrites the order.
   "Write a failing test" means the test fails — making it pass is

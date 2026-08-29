@@ -170,7 +170,9 @@ House craft:
 - `prompt-authoring` — mission-writing craft; less needed without the format.
 - `shared-understanding` — drawing out intent; the handler does this now.
 - `post-mortem` — the retro with the SC; keep the intent, shed the machinery.
-- `transparency` — thinking/response congruence; confirm `working-relationship` covers it.
+- ~~`transparency`~~ **DONE** — narrowed into `working-relationship` as "The reason you'd
+  rather not give": the reasons that reflect badly are the ones that never reach the
+  response, and those are the ones he needs.
 - `medium-response` — the live-exchange medium; may generalize against `audience`.
 - `mcp-context7` — situational doc-fetch reference.
 - `worktrees` — operator isolation; skill or tooling.
