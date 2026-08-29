@@ -2,7 +2,7 @@
 name: decisions
 description: |
   WHAT: recording the decision behind a change to skill content.
-  WHY: without it nobody can tell later where a change came from or whether it stands.
+  WHY: you will write the reason yourself, and it reads exactly like one he gave.
   TRIGGER WHEN: COMPLIANCE — changing skill content in the skills-v2 repo.
 ---
 
