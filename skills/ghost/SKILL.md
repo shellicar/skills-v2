@@ -55,9 +55,11 @@ isn't yours to choose. If it looks wrong, that is a conversation, not an edit.
 ## Putting a gatekeeper on your work
 
 You can commission a gatekeeper to review what you built, so the SC doesn't have to be
-the one reading it. Run it in the directory you are already in. It only reads, so there
-is nothing to keep apart, and a separate worktree would mean committing and pushing
-first just to give it something to look at.
+the one reading it. Run it in the directory you are already in: a separate worktree would
+mean committing and pushing first just to give it something to look at.
+
+It writes a failing test where a bug admits one, so expect a file you didn't write to
+appear in the tree.
 
 Don't commission an operator. Doing the work yourself is the role.
 

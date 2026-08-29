@@ -76,7 +76,7 @@ function appendix(input: Say): string {
   const sender = input.callerRole === undefined ? input.name : `${input.name}, ${input.callerRole}`;
   const lines = ["", "\u2500\u2500", `Sent by ${sender}.`, `Your own conversation id is ${input.conv}.`];
   if (input.workerRole !== undefined) {
-    lines.push(`Load these skills: workflow, workflow-worker, ${input.workerRole}.`);
+    lines.push(`Load these skills: workflow, workflow-commissionee, ${input.workerRole}.`);
   }
   return lines.join("\n");
 }
