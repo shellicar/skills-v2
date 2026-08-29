@@ -296,3 +296,14 @@ intended purpose. The aim is one atomic unit. Writing a handover is separate bec
 is not always needed.
 
 Conversation: 2faa452d-5dc9-4141-b26d-2a69ee7787af
+
+### Separate reference from process
+
+Make `changes` a reference for `changes.jsonl` rather than a process for working with it.
+
+The skill held guidance on writing a changelog entry that was not about `changes.jsonl` at
+all. It applies to any changelog, but it only fired when a repo used `changes.jsonl`, so a
+repo without that file never saw it. The trigger is right for the mechanics of the file and
+wrong for anything that outlives it.
+
+Conversation: 86aab257-6bd1-4102-b225-4c65e725fbcc
