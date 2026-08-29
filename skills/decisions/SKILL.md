@@ -1,19 +1,19 @@
 ---
 name: decisions
 description: |
-  WHAT: recording the decision behind a change to skill content, in the same commit.
-  WHY: without it nobody can tell later where a change came from or whether it stands.
+  WHAT: recording the decision behind a change to skill content.
+  WHY: you will write the reason yourself, and it reads exactly like one the SC gave.
   TRIGGER WHEN: COMPLIANCE — changing skill content in the skills-v2 repo.
 ---
 
 # Decisions
 
-Skill content does not change without an entry in `DECISIONS.md`
+Skill content does not reach main without an entry in `DECISIONS.md`
 (`~/repos/shellicar/skills-v2/DECISIONS.md`), in the same commit as the change. The
 provenance path is: blame a line, find the commit, read the entry that commit added.
-Nothing else links a line to its reason, so an entry landing in a later commit or a batch
-catch-up has broken the path — v1's ledger did exactly that, and its entries sit beside
-no change while the changes they describe carry none.
+Nothing else links a line to its reason, so an entry that reaches main in a later commit
+than the change, or a batch catch-up, has broken the path — v1's ledger did exactly that,
+and its entries sit beside no change while the changes they describe carry none.
 
 The constraint belongs to the material, not to the directory you are working in — it
 holds when you are editing these skills from another repo, another worktree, or a
@@ -26,11 +26,23 @@ understands what was decided and why, without having to interrogate him. The wha
 recoverable from the diff; the why exists nowhere else, so if the entry does not carry
 it, it is gone.
 
-It is append-only. A decision that no longer holds is superseded by a new entry, never by
-editing or deleting the old one. Blame lands on the commit that last set the line, so it
-finds the decision currently governing it and supersession needs no bookkeeping.
-Superseding is the ledger working, not failing: an entry records what was chosen on the
-day, and being overturned later is expected.
+Once it is on main it is append-only. A decision that no longer holds is superseded by a
+new entry, never by editing or deleting the old one. Blame lands on the commit that last
+set the line, so it finds the decision currently governing it and supersession needs no
+bookkeeping. Superseding is the ledger working, not failing: an entry records what was
+chosen on the day, and being overturned later is expected.
+
+## An entry exists once it is on main
+
+Until the merge, what your branch adds to `DECISIONS.md` is pencil: a local modification
+to a file, rewritten or discarded as the work moves. Pushing does not settle it, and
+neither does opening a PR. The branch squashes into one commit on main, and that commit
+carries both the entry and the change it explains.
+
+When the work changes shape while the branch is open, the entry changes with it. It is
+the same decision, so it stays one entry: a second one beside it would arrive in the
+same merge, and whoever blames the line finds two with nothing telling them which
+governs. Separate decisions in one merge are separate entries.
 
 ## The format of an entry
 
@@ -76,3 +88,7 @@ is the only way to be sure the reason is the real one. The failure is invisible 
 why you reconstructed from what he said reads exactly like one he gave, so any version of
 this that asks you to notice when you are short of the reason hands the judgement back to
 the thing that cannot see it. It is not a check you can pass by feeling sure.
+
+Every change to `DECISIONS.md` is presented to him and approved, each time it changes
+and not only the first time. Review changes the work, the work changes the entry, and a
+rewrite is where a reason you invented gets mixed in with one he gave.
