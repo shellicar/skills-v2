@@ -312,3 +312,14 @@ finding: it has not been shown that the cut material was what held it, and the c
 made on the judgement that it probably was.
 
 Conversation: 5bff002e-044e-49cd-9f69-4f32e4e94478
+
+### Tell Claude how signing works and how to handle it when it fails
+
+Tell Claude how commit signing works on this machine and how to handle a failed
+signature: retry once, then report and stop. Frame the retry as an exception to
+`safe-operations`' rule that a refusal ends the attempt, not as a limit on that rule.
+
+Without this, Claude does not know how the SC wants it to behave. It will do something
+either way; what is missing is the SC's choice of what that should be.
+
+Conversation: 569be976-a0b9-40a4-b709-e0fa1b4ce799
