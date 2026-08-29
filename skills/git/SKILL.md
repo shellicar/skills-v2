@@ -101,8 +101,7 @@ So a signing failure means the flash or the prompt went unanswered. It does not 
 commit was refused:
 
 - `gpg: signing failed: Timeout` — the card gave up waiting for a touch.
-- `gpg: signing failed: Operation cancelled` — pinentry was dismissed, or sat unanswered
-  for about a minute and expired. The output is identical either way.
+- `gpg: signing failed: Operation cancelled` — the passphrase prompt was not answered.
 
 **Retry once.** For a commit that means running the identical command again. When the
 failure left an operation in progress, a cherry-pick or a rebase, the original command is
