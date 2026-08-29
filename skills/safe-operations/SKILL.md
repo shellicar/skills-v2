@@ -1,17 +1,29 @@
 # Safe operations
 
-Claude does not run commands whose effect goes dark — either in the moment, to the SC
-watching the shell, or afterward, to the SC coming back to find out what happened. That's
-the thing every block below has in common, not that the command is destructive: it hides
-what's happening from whoever would otherwise see it live, or leaves nothing behind to
-reconstruct it later. Irreversibility is often a result of that, not the reason for the
-block.
+Claude does not do things that cannot be reversed. That is what every block below comes
+down to: the SC loses something he can't get back, and usually finds out afterward, if at
+all.
+
+The second half is an effect that goes dark — either in the moment, to the SC watching
+the shell, or afterward, to the SC coming back to find out what happened. A command that
+hides what it's doing from whoever would otherwise see it live, or leaves nothing behind
+to reconstruct it later, takes away both the chance to stop it and the record of what it
+did.
 
 A structured tool — `DeleteFile`, `EditFile` — is safe because it does one clear thing,
 visible in the call itself, gated by permission. An arbitrary shell command isn't: the
 gate can't see what it will really do, and a wrapper, a background job, or a stripped
 flag can hide the same thing from the SC. Use the tool; where there's no safe tool for
 the operation, the SC runs it himself, in the open.
+
+What decides it is not in the command. The same text is safe in one place and unsafe in
+another: `docker compose down` inside a recipe that brought the container up thirty
+seconds earlier tears down only what that recipe created, while the same line on its own
+takes whatever happens to be running under that project name. Nothing you can read in the
+command separates the two. What separates them is where the command came from and what it
+is pointed at, and what it is pointed at is usually written nowhere in it — an
+application with nothing configured connects to production, because that is what a
+default in an application is for.
 
 These are blocked. Reach for the safe alternative, or present the exact command and let
 the SC run it. The block is information, not a wall: "blocked: `rm` → use `DeleteFile`."
@@ -87,8 +99,8 @@ it.
 
 A container is someone's running state, and you cannot see what's in it from the
 outside. `docker rm`, `docker kill`, `docker stop`, `docker rmi`, `docker volume rm`,
-`docker network rm`, and `docker compose down` (worse with `-v`, which takes the
-volumes and their data with it) all destroy that state with no undo.
+`docker network rm`, and `docker compose down -v`, where the `-v` takes the volumes and
+their data with it, all destroy that state with no undo.
 
 The prune family is the worst of them, because one command reaches everything at once:
 `docker system prune`, `docker container prune`, `docker image prune`,
@@ -145,6 +157,11 @@ them, so present the exact command and let the SC run it.
 from whoever is watching the host's process list. Present the exact command and let
 the SC run it.
 
+A checked-in recipe is not one of these. `env` and `ssh` hide a command you composed a
+moment ago; a `just` recipe or a package script the repo documents is the operation
+written down, reviewed, and run the same way every time. See "A script you wrote is a
+wrapper too".
+
 ## A script you wrote is a wrapper too
 
 The file you just authored is the last wrapper on that list, and the easiest one to
@@ -157,6 +174,15 @@ Testing it is not part of that task and does not follow from it — not once, no
 to check it works", not because you are fairly sure the operation is a no-op on this
 branch today. You cannot know that before it runs; that is what running it tells you.
 Hand it over and stop.
+
+The mirror of that is a script that is already part of the repo — a `just` recipe, a
+package script, something CLAUDE.md names as how a thing is done. That one is not your
+artifact and its assessment is not yours to redo. It is the sanctioned form of the
+operation, and running it is doing the work the way the repo does it. Refusing it because
+a blocked command appears somewhere inside it is not caution: a Claude declined
+`just broker-run` over the `docker compose down` in its teardown and skipped the
+verification it had been ordered to do, when that recipe exists precisely so a test run
+cannot reach the live broker.
 
 And write it so his run is safe too: **a script that deletes, overwrites, force-pushes,
 or otherwise can't be undone is dry-run by default.** No flags prints the plan and
