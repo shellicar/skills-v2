@@ -47,8 +47,8 @@ Not what it is, what its day consists of.
   Both start from a person rather than a document.
 - **Operator and ghost.** Everything to do with building: how to do it, pinning
   behaviour, running it, checking it, committing, answering findings.
-- **Handler and operator, but not ghost.** The report. A discrete account, written at the
-  end, for someone who was not watching.
+- **Handler and operator, but not ghost.** The report as one account written at the end,
+  for someone who was not watching. All three report; only these two save it up.
 - **Handler alone.** Breaking work into pieces for sessions that cannot see the whole,
   and getting the building done by others rather than doing it.
 - **Ghost alone.** The working tree as the live surface: commit when agreed, stage when
@@ -56,13 +56,14 @@ Not what it is, what its day consists of.
 
 ## What that gives us
 
-A ghost is the union of the handler's understanding and the operator's building, minus
-everything that exists because the reader is not in the room. The brief, the watching and
-the report are all machinery for an absent party. Take them out and what is left is the
-ghost.
+A ghost is the handler's understanding and the operator's building in one session. All
+three are briefed and all three report, so that is not what separates them. The form is.
+A brief composed for a reader who cannot ask, and a report saved up for someone who did
+not watch, both exist because the other party is absent. A ghost is briefed in
+conversation and reports in the same conversation, as it goes.
 
-The working tree is the medium because the person is present, and it stands in place of
-the report.
+That is why the working tree is its surface. The SC reads the work while it happens
+rather than an account of it afterwards.
 
 ## What a role is not defined by
 
