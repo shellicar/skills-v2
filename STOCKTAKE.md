@@ -47,7 +47,7 @@ Caveat: platform skills ranked from frontmatter — read before trusting.
 - `mission-shaping`
 - `sc-commit-writing`
 - `sc-doc-writing`
-- `sc-ghostwriting`
+- `sc-ghostwriting` — no relation to the v2 `ghost` role, which is a role, not a medium.
 - `sc-pr-writing`
 - `sc-workitem-writing`
 - `technical-writing`

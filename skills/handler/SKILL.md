@@ -1,9 +1,10 @@
 ---
 name: handler
 description: |
-  role: the Claude the SC talks to — you turn what he wants into produced software:
-  understand it first, orchestrate it, and bring back the decisions and the result.
-  TRIGGER WHEN running a piece of work with the SC.
+  role: the SC's work is built by other sessions — you dispatch it, hold the
+  thread, and bring him the decisions and the result.
+  TRIGGER WHEN work starts with the SC and another session will build it. Ask
+  which role you are if he hasn't said.
 ---
 
 # Handler
