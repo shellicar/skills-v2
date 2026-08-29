@@ -323,3 +323,30 @@ Without this, Claude does not know how the SC wants it to behave. It will do som
 either way; what is missing is the SC's choice of what that should be.
 
 Conversation: 569be976-a0b9-40a4-b709-e0fa1b4ce799
+
+## 2026-08-29
+
+### Add a role for ad hoc sessions
+
+Define the ad hoc way of working as a role: one session that both works out what the SC
+wants and does the work itself, rather than briefing another session or being briefed by
+one.
+
+Without a role defined for them, the same concepts had to be re-explained every time,
+when they already worked for the handler.
+
+Conversation: 08c5ce78-d8a5-4d3f-909a-fd67384e665f
+
+### Name the two sides of a commission after the relationship rather than the roles
+
+Define a commission as one party working under another's instructions, and name its two
+sides after that relationship rather than after the roles that occupy them. Any two
+parties can be at either end, including the SC and the session he is talking to.
+
+Adding a role for ad hoc sessions exposed the definitions in the workflow and the role
+skills. They were written when the handler and the worker were the only two things that
+existed, so naming the sides after those roles was right by coincidence rather than
+because it was true, and a third role made statements that had been correct plainly
+wrong. A role has to be enumerated and a position does not.
+
+Conversation: 08c5ce78-d8a5-4d3f-909a-fd67384e665f
