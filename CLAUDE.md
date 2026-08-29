@@ -7,7 +7,7 @@ build order; `STOCKTAKE.md` is the exhaustive per-skill fate for everything in v
 
 ## Every change to skill content lands with its decision
 
-Skill content does not change without a `DECISIONS.md` entry in the same commit. The
+Skill content does not reach main without a `DECISIONS.md` entry in the same commit. The
 `decisions` skill carries the whole of it: what the ledger is for, how an entry is
 written, and where its why comes from. It is self-contained because this file is not —
 editing these skills from another repo or another worktree loads the skill and never

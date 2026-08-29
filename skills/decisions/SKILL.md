@@ -1,19 +1,19 @@
 ---
 name: decisions
 description: |
-  WHAT: recording the decision behind a change to skill content, in the same commit.
+  WHAT: recording the decision behind a change to skill content.
   WHY: without it nobody can tell later where a change came from or whether it stands.
   TRIGGER WHEN: COMPLIANCE — changing skill content in the skills-v2 repo.
 ---
 
 # Decisions
 
-Skill content does not change without an entry in `DECISIONS.md`
+Skill content does not reach main without an entry in `DECISIONS.md`
 (`~/repos/shellicar/skills-v2/DECISIONS.md`), in the same commit as the change. The
 provenance path is: blame a line, find the commit, read the entry that commit added.
-Nothing else links a line to its reason, so an entry landing in a later commit or a batch
-catch-up has broken the path — v1's ledger did exactly that, and its entries sit beside
-no change while the changes they describe carry none.
+Nothing else links a line to its reason, so an entry that reaches main in a later commit
+than the change, or a batch catch-up, has broken the path — v1's ledger did exactly that,
+and its entries sit beside no change while the changes they describe carry none.
 
 The constraint belongs to the material, not to the directory you are working in — it
 holds when you are editing these skills from another repo, another worktree, or a
@@ -88,3 +88,7 @@ is the only way to be sure the reason is the real one. The failure is invisible 
 why you reconstructed from what he said reads exactly like one he gave, so any version of
 this that asks you to notice when you are short of the reason hands the judgement back to
 the thing that cannot see it. It is not a check you can pass by feeling sure.
+
+Every change to `DECISIONS.md` is presented to him and approved before it stands, not
+only the first one. Review changes the work, the work changes the entry, and a rewrite
+is where a reason you invented gets mixed in with one he gave.

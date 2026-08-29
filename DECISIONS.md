@@ -1,8 +1,9 @@
 # Decisions
 
-This file records the decisions behind the skills. Every change to skill content lands
-with its entry here, in the same commit. Append entries; never rewrite them. Skill
-content that predates this file has no entry, and may be given one later.
+This file records the decisions behind the skills. Every change to skill content reaches
+main in the same commit as its entry here. Append entries; an entry on main is never
+rewritten. Skill content that predates this file has no entry, and may be given one
+later.
 
 ## 2026-08-10
 
