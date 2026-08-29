@@ -25,12 +25,14 @@ generalize it. Task skills are written the day a scenario needs one, not before.
 commander-protocol, teapot-protocol, operating-mode, co-working, continuity,
 cast-name, system-glossary, safe-operations.
 
-**Actors** — operator, gatekeeper (replaces the old "supervisor"), handler, planner.
+**Actors** — operator, gatekeeper (replaces the old "supervisor"), handler, planner,
+ghost (new, no v1 source: the SC working directly with one Claude that both understands
+and builds).
 
 **Task skills built** — safe-operations, git, commit, pr, pr-github, pr-ado,
 scripting, handover, testing, typescript, rust, azure-devops-deploy (new, no v1
 source), nats (new, no v1 source), decisions (new, no v1 source), workflow /
-workflow-worker / workflow-handler (split out of nats).
+workflow-commissionee / workflow-commissioner (split out of nats).
 
 **Launchers** — `start-v2` + `load-skills` inject INSTRUCTIONS and the `<skills>` block
 via `--claudeMd`, BASELINE via `--system`, and disable the ambient user sources via

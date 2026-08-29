@@ -142,7 +142,7 @@ const sent: Say | null = lastSay;
 check("the brief was sent", (sent?.text ?? "").includes(brief), JSON.stringify(sent));
 check("the brief opens with the opener", sent?.text?.startsWith(opener) === true, JSON.stringify(sent?.text));
 check("the brief names who commissioned it", (sent?.text ?? "").includes("Sent by Selftest, handler"), JSON.stringify(sent?.text));
-check("the brief names the skills the worker's role loads", (sent?.text ?? "").includes("Load these skills: workflow, workflow-worker, operator."), JSON.stringify(sent?.text));
+check("the brief names the skills the worker's role loads", (sent?.text ?? "").includes("Load these skills: workflow, workflow-commissionee, operator."), JSON.stringify(sent?.text));
 check("the brief tells the worker its own conversation id", (sent?.text ?? "").includes(CONV), "the conversation id is missing");
 check("the brief carries no return address", !(sent?.text ?? "").includes(OWNER), sent?.text ?? "");
 check("the say is attributable to the owner", sent?.from?.conversationId === OWNER, JSON.stringify(sent?.from));
