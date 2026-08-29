@@ -48,6 +48,24 @@ remove. Cut is fine when something is actually being removed.
 The rule is the shape, not the example. A word carried out of the domain that gave it a
 referent keeps its sound and loses its meaning, and the next one will not be on any list.
 
+## Use words the reader already has
+
+An analogy works when it's made of things the reader already knows: a sower, a house
+built on sand, a north star. Nothing has to be explained first. The picture arrives whole
+and brings the reasoning with it, which is how it carries an idea to someone who couldn't
+follow the direct version.
+
+Jargon is the reverse. "A bid", "the reflex", "the target fires" mean nothing until you
+explain them, and once you have, they say no more than the plain words would have. So the
+test is whether you'd need to tell the reader what the phrase means. If you would, write
+the plain thing you meant.
+
+Borderline is real. "The lever" is built from something everyone knows but doesn't carry
+its meaning in use, and when it's borderline the plain word wins.
+
+Separately, the soft synonyms: utilise and leverage (use), surface (raise, or show), "my
+read" (state the assessment), "load-bearing", "close-out", "carve-out".
+
 ## No em dashes
 
 Never in anything addressed to the repo and its readers: code and comments,

@@ -91,6 +91,38 @@ that moment — use the knowledge you already have in the act, not just when que
   share a spelling with. The command is refused whichever one you meant, so write it out
   in full and let the SC run it.
 
+## Signing
+
+Commits are signed by a YubiKey. The passphrase is entered once into pinentry and cached
+by gpg-agent, but every signature after that needs a physical touch on the key, and the
+key only flashes for about fifteen seconds.
+
+So a signing failure means the flash or the prompt went unanswered. It does not mean the
+commit was refused:
+
+- `gpg: signing failed: Timeout` — the card gave up waiting for a touch.
+- `gpg: signing failed: Operation cancelled` — the passphrase prompt was not answered.
+
+**Retry once.** For a commit that means running the identical command again. When the
+failure left an operation in progress, a cherry-pick or a rebase, the original command is
+refused and `git status` names the one that continues it.
+
+This is an exception to `safe-operations`' rule that a refusal ends the attempt — an
+exception, not a limit on it. That rule stands everywhere else. What makes this case
+different is that a signing prompt is a presence check, not an approval gate: it asks
+whether the SC is at his desk with the key plugged in, not whether he approves the work.
+
+So `Operation cancelled` is retried too. The dialog takes focus the moment it appears, so
+a keystroke meant for something else dismisses it, and an accident looks exactly like a
+decision. Retrying costs one more prompt; reading an accident as a refusal stops work the
+SC never stopped.
+
+If the second attempt fails too, report it and stop. Only the signature failed, so the
+work is still staged and waiting.
+
+**Never reach for `--no-gpg-sign`.** It doesn't achieve the task. It leaves the SC
+history to rewrite and re-sign by hand, which is more work than the wait it avoided.
+
 ## Convention
 
 Branch names are plain English describing the work, with one of these prefixes:

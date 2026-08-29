@@ -76,7 +76,9 @@ Not work-log — "what I did" is a diary the git log already keeps.
 
 The title is a claim, not a topic, because that is what search ranks: "node:sqlite cannot
 open a database in a missing directory", not "sqlite notes". The body is self-contained,
-because the reader has no thread. A guess is marked as a guess. Sign it `— Name`.
+because the reader has no thread. A guess is marked as a guess, and a fact says how it is
+known, because you built the check while already believing the answer and only the reader
+can catch that. Sign it `— Name`.
 
 When one is wrong, delete it and write the correct one whole. Never a chain of
 amendments, because search surfaces the wrong one either way. If the stale one still

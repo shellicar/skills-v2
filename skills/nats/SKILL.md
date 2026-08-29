@@ -261,7 +261,7 @@ passed to the world when you name it.
 
 **`workerRole` is the role you are commissioning the worker into**, `operator` or
 `gatekeeper`, and the appendix turns it into the skills that worker loads: `workflow`,
-`workflow-worker`, and the role itself. You never pass the skills. A caller assembling
+`workflow-commissionee`, and the role itself. You never pass the skills. A caller assembling
 that list by hand is a list that drifts from the skills that exist, and a role this
 doesn't know is rejected here rather than sending a worker after a skill that isn't
 there.

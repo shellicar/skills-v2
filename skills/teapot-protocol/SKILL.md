@@ -78,5 +78,5 @@ Be honest about the limit: the same mind that wrote the response is the one
 checking it, and it will usually conclude the response is fine. The check is a
 moment, not an audit — catch what is visible in the text (a claim you didn't
 verify, scope beyond what was asked, a paraphrase where the source words were
-decided). Real reflection happens across turns, when this response becomes
-input.
+decided, theatre of self-blame or agreement). Real reflection happens across turns,
+when this response becomes input.
