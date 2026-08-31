@@ -18,7 +18,8 @@
 // that had been stopped on an unanswered approval for hours.
 //
 //   the turn      conv.v2.{conv}.changes.{message,query}   is a turn open?
-//   the instance  conv.v2.{conv}.attachment.{attached,detached} -> instanceId,
+//   the instance  conv.v2.{conv}.attachment.{attached,detached} -> instanceId, or
+//                 agent.v1.default.telemetry.{attached,detached} when that is empty,
 //                 then agent.v1.{world}.telemetry.pulse for that instance
 //                                                          is anything serving it?
 //   the block     approval.v1.*.lifecycle correlated to this conversation,
@@ -40,7 +41,7 @@ import { EXIT_BAD_INPUT, readStdin } from "../../../shared/stdin.mts";
 
 type Message = { id?: string; role?: string; ts?: string; content?: { type?: string; text?: string }[] };
 type QueryEvent = { queryId?: string; reason?: string; ts?: string };
-type Attachment = { ts?: string; instanceId?: string; world?: string; cwd?: string; intervalS?: number };
+type Attachment = { ts?: string; instanceId?: string; conversationId?: string; world?: string; cwd?: string; intervalS?: number };
 type Pulse = { ts?: string; instanceId?: string; intervalS?: number };
 type Heartbeat = { ts?: string };
 type Lifecycle = {
@@ -63,6 +64,9 @@ type Instance = {
   /** null when the read could not be completed: unknown, which is not the same as dead. */
   alive: boolean | null;
 };
+
+/** An instance's claim on a conversation, before anything is known about its liveness. */
+type Claim = Omit<Instance, "lastPulse" | "pulseAgeSeconds" | "alive">;
 
 type Blocked = {
   approvalId: string;
@@ -91,6 +95,7 @@ type Edge = { conv: string; edge: "idle" | "quiet"; ts: string; silentForSeconds
 const url = process.env.NATS_URL ?? "nats://127.0.0.1:4222";
 const stream = process.env.NATS_STREAM ?? "conv-approval";
 const ephemeralStream = process.env.NATS_EPHEMERAL_STREAM ?? "conv-ephemeral";
+const diagnosticStream = process.env.NATS_DIAGNOSTIC_STREAM ?? "conv-diagnostic";
 
 // The longest legitimate silence seen on this fleet is a workspace build; the dead ones
 // were silent for hours. It is a reading of that fleet rather than a derived number, so
@@ -100,6 +105,12 @@ const DEFAULT_QUIET_AFTER_SECONDS = 600;
 // An attachment or pulse that never carried intervalS made no promise, so it gets this
 // rather than being presumed alive for ever.
 const DEFAULT_PROMISE_SECONDS = 600;
+
+// claude-sdk-cli is the one producer still publishing attachment on the world subject,
+// and it only ever publishes to `default`. Hardcoded rather than wildcarded: every other
+// producer is on the conversation leaf by specification, so there is no second world to
+// serve, and a wildcard would drag in dead attaches from worlds that stopped in July.
+const LEGACY_WORLD = "default";
 
 // A pulse is a promise to be heard from again within intervalS. Two intervals of silence
 // is late rather than merely unlucky; one interval would strand a healthy instance on a
@@ -162,24 +173,29 @@ try {
     }
   };
 
+  /** A detached only counts when it comes from the instance whose claim stands. */
+  const releasedBy = (attached: Attachment, detached: Attachment | null): string | null =>
+    detached?.instanceId === attached.instanceId && (detached.ts ?? "") >= (attached.ts ?? "") ? (detached.ts ?? null) : null;
+
   /**
-   * Walk one subject forward from a point in time, offering each event to `take`.
+   * Walk one subject, offering each event to `take`.
    *
-   * Bounded by `since`, because these subjects carry hundreds of thousands of events and
-   * only the window that could change the answer is worth reading. The stream is named
-   * explicitly — pulses exist under the same subject in two streams, and letting the
-   * subject pick chooses wrongly.
+   * `since` bounds it, because these subjects carry hundreds of thousands of events and
+   * usually only the window that could change the answer is worth reading; pass null to
+   * read the subject whole, which is what a subject holding one event per attachment
+   * needs. The stream is named explicitly — pulses exist under the same subject in two
+   * streams, and letting the subject pick chooses wrongly.
    */
-  const walkSince = async <T>(fromStream: string, subject: string, since: Date, take: (event: T, on: string) => void): Promise<boolean> => {
+  const walk = async <T>(fromStream: string, subject: string, since: Date | null, take: (event: T, on: string) => void): Promise<boolean> => {
     let consumer: string | undefined;
     try {
-      const created = await jsm.consumers.add(fromStream, {
-        filter_subject: subject,
-        deliver_policy: DeliverPolicy.StartTime,
-        opt_start_time: since.toISOString(),
-        ack_policy: AckPolicy.None,
-        inactive_threshold: 60_000_000_000,
-      });
+      const shared = { filter_subject: subject, ack_policy: AckPolicy.None, inactive_threshold: 60_000_000_000 };
+      const created = await jsm.consumers.add(
+        fromStream,
+        since === null
+          ? { ...shared, deliver_policy: DeliverPolicy.All }
+          : { ...shared, deliver_policy: DeliverPolicy.StartTime, opt_start_time: since.toISOString() },
+      );
       consumer = created.name;
 
       // no_wait is what makes this terminate: the fetch returns whatever is there and
@@ -205,36 +221,86 @@ try {
   };
 
   /**
-   * Who is serving this conversation, and is it still alive?
+   * The claim the conversation's own attachment leaf carries.
    *
    * Attachment is singular: the newest `attached` supersedes whatever stood before it,
    * and a `detached` only counts when it comes from the instance whose claim stands.
-   * Liveness is then that instance's own pulse, which is one fact per instance on a
-   * world-wide subject — so the scan filters by instanceId rather than taking whatever
-   * pulsed last.
    */
-  const readInstance = async (conv: string): Promise<Instance | null> => {
+  const readConversationClaim = async (conv: string): Promise<Claim | null> => {
     const attached = await lastOn<Attachment>(stream, `conv.v2.${conv}.attachment.attached`);
     if (attached?.instanceId == null) return null;
 
     const detached = await lastOn<Attachment>(stream, `conv.v2.${conv}.attachment.detached`);
-    const releasedBy =
-      detached?.instanceId === attached.instanceId && (detached.ts ?? "") >= (attached.ts ?? "") ? (detached.ts ?? null) : null;
+    return {
+      instanceId: attached.instanceId,
+      world: attached.world ?? null,
+      cwd: attached.cwd ?? null,
+      attachedAt: attached.ts ?? null,
+      detachedAt: releasedBy(attached, detached),
+      promisedIntervalS: attached.intervalS ?? DEFAULT_PROMISE_SECONDS,
+    };
+  };
 
-    const promisedIntervalS = attached.intervalS ?? DEFAULT_PROMISE_SECONDS;
-    const world = attached.world ?? null;
+  /**
+   * The claim a producer still on the world subject carries, which is claude-sdk-cli
+   * and nothing else: bridge publishes the conversation leaf, claude-sdk-cli publishes
+   * AgentPresence here, and the tower spec's migration note has it as the one producer
+   * left to move.
+   *
+   * The world is in the subject rather than the payload, so this walks one world's
+   * attaches filtered by conversationId instead of reading a subject's tip. It walks
+   * from the start of the stream because an attach is not repeated: the standing claims
+   * here were published weeks ago and nothing has been said on them since.
+   */
+  const readWorldClaim = async (conv: string): Promise<Claim | null> => {
+    const newestFor = async (leaf: string): Promise<Attachment | null> => {
+      const mine: Attachment[] = [];
+      await walk<Attachment>(diagnosticStream, `agent.v1.${LEGACY_WORLD}.telemetry.${leaf}`, null, (event) => {
+        if (event.conversationId === conv && event.ts != null) mine.push(event);
+      });
+      return mine.reduce<Attachment | null>((newest, event) => (newest === null || (event.ts ?? "") > (newest.ts ?? "") ? event : newest), null);
+    };
+
+    const attached = await newestFor("attached");
+    if (attached?.instanceId == null) return null;
+
+    const detached = await newestFor("detached");
+    return {
+      instanceId: attached.instanceId,
+      world: LEGACY_WORLD,
+      cwd: attached.cwd ?? null,
+      attachedAt: attached.ts ?? null,
+      detachedAt: releasedBy(attached, detached),
+      promisedIntervalS: attached.intervalS ?? DEFAULT_PROMISE_SECONDS,
+    };
+  };
+
+  /**
+   * Who is serving this conversation, and is it still alive?
+   *
+   * The world subject is a strict fallback, consulted only when the conversation leaf
+   * is empty and never merged with it: a conversation whose servicer publishes the leaf
+   * is described by that leaf alone.
+   *
+   * Liveness is then the claiming instance's own pulse, which is one fact per instance
+   * on a world-wide subject — so the scan filters by instanceId rather than taking
+   * whatever pulsed last.
+   */
+  const readInstance = async (conv: string): Promise<Instance | null> => {
+    const claim = (await readConversationClaim(conv)) ?? (await readWorldClaim(conv));
+    if (claim === null) return null;
 
     let lastPulse: string | null = null;
     let known = true;
-    if (world !== null && releasedBy === null) {
-      const subject = `agent.v1.${world}.telemetry.pulse`;
-      const windowMs = promisedIntervalS * MISSED_PULSES_BEFORE_STRANDED * 1000;
+    if (claim.world !== null && claim.detachedAt === null) {
+      const subject = `agent.v1.${claim.world}.telemetry.pulse`;
+      const windowMs = claim.promisedIntervalS * MISSED_PULSES_BEFORE_STRANDED * 1000;
       const since = new Date(Date.now() - windowMs);
 
       // One pulse subject carries every instance in the world, so the walk filters by
       // instanceId rather than taking whatever pulsed last.
-      known = await walkSince<Pulse>(ephemeralStream, subject, since, (pulse) => {
-        if (pulse.instanceId === attached.instanceId && pulse.ts != null && (lastPulse === null || pulse.ts > lastPulse)) {
+      known = await walk<Pulse>(ephemeralStream, subject, since, (pulse) => {
+        if (pulse.instanceId === claim.instanceId && pulse.ts != null && (lastPulse === null || pulse.ts > lastPulse)) {
           lastPulse = pulse.ts;
         }
       });
@@ -242,15 +308,10 @@ try {
 
     const pulseAge = ageSeconds(lastPulse);
     return {
-      instanceId: attached.instanceId,
-      world,
-      cwd: attached.cwd ?? null,
-      attachedAt: attached.ts ?? null,
-      detachedAt: releasedBy,
-      promisedIntervalS,
+      ...claim,
       lastPulse,
       pulseAgeSeconds: pulseAge,
-      alive: pulseAge !== null ? pulseAge <= promisedIntervalS * MISSED_PULSES_BEFORE_STRANDED : known ? false : null,
+      alive: pulseAge !== null ? pulseAge <= claim.promisedIntervalS * MISSED_PULSES_BEFORE_STRANDED : known ? false : null,
     };
   };
 
@@ -271,7 +332,7 @@ try {
     // The approval id lives in the subject, so the fold keys on it: raised puts one in,
     // settled takes it out, and whatever is left was never answered.
     const outstanding = new Map<string, Lifecycle>();
-    const known = await walkSince<Lifecycle>(stream, "approval.v1.*.lifecycle", new Date(from - 60_000), (event, on) => {
+    const known = await walk<Lifecycle>(stream, "approval.v1.*.lifecycle", new Date(from - 60_000), (event, on) => {
       const approvalId = on.split(".")[2];
       if (approvalId === undefined) return;
       if (event.type === "raised" && event.correlation?.conversationId === conv) outstanding.set(approvalId, event);
