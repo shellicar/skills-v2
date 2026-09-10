@@ -41,13 +41,6 @@ run by anyone.
 So the shape of a PR is: create a Task for what this PR does, describe it, put it under
 the PBI, link the Task, mention the PBI.
 
-**Do not "fix" a PBI mention that renders as plain text.** Work items live in a
-different project from the code in most orgs, and a cross-project `#1234` does not
-become a hyperlink. That is not a defect to repair by linking the work item: the
-mention is context for whoever reads the PR, and linking it is the one thing this
-skill exists to prevent. If you want the reader to reach it, spell out the id or paste
-its URL.
-
 Creating the Task is `azure-devops-work-items`: it owns the sequence, the parenting and
 the description format.
 
