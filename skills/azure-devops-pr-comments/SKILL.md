@@ -13,7 +13,9 @@ and anchored, not what it should say.
 
 A comment lives in a **thread**. A thread carries a `status`, an optional
 `threadContext` anchoring it to a file and a range, and its comments. The first comment
-in a thread is `id: 1` and replies count up from there.
+in a thread is `id: 1` and replies count up from there, but the ids are not contiguous:
+deleting a reply leaves a hole, so a thread can run 1, 3. Read the id you need rather
+than working it out from position.
 
 ## A suggestion replaces the anchored range
 
@@ -71,7 +73,7 @@ Quicker than any of that, when the PR already has a comment that renders correct
 copy its `threadContext`.
 
 ```
-az devops invoke --area git --resource pullRequestThreads --route-parameters project=<P> repositoryId=<R> pullRequestId=<PR> --org <ORG> --api-version 7.1 --query "value[?threadContext].{id:id,file:threadContext.filePath,start:threadContext.rightFileStart,end:threadContext.rightFileEnd}"
+az devops invoke --area git --resource pullRequestThreads --route-parameters project=<P> repositoryId=<R> pullRequestId=<PR> --org <ORG> --api-version 7.1 --query "value[?threadContext && comments[?isDeleted != \`true\`]].{id:id,file:threadContext.filePath,start:threadContext.rightFileStart,end:threadContext.rightFileEnd}"
 ```
 
 ## The calls
@@ -90,16 +92,27 @@ Base: `https://dev.azure.com/<ORG>/<PROJECT>/_apis/git/repositories/<REPO>/pullR
 | delete a comment | DELETE `/threads/<T>/comments/<C>` | |
 | set thread status | PATCH `/threads/<T>` | `{status: <int>}` |
 
-`commentType: 1` is text. `filePath` is repo-root-relative with a leading slash. Filter
-reads with `value[?comments[?commentType=='text']]` to drop the system ref-update
-threads, and check the response's `count` so you page to the end rather than stopping
-part way.
+`commentType: 1` is text. `filePath` is repo-root-relative with a leading slash. Check the
+response's `count` so you page to the end rather than stopping part way.
+
+**Filter twice, at both levels:**
+
+```
+value[?comments[?commentType=='text' && isDeleted != `true`]].{id:id,status:status,comments:comments[?commentType=='text' && isDeleted != `true`]}
+```
+
+The outer filter drops threads with nothing live left in them. The inner one drops dead
+comments inside a thread that is still alive, which the outer filter cannot do: a thread
+with a live comment and a deleted reply passes the outer test and then hands you the
+reply. `commentType` drops the system ref-update threads at both levels.
+
+**Leaving either out is how you report comments nobody can see.**
 
 Editing replaces the text and leaves the anchor alone, so fixing wording never needs a
-delete. **Deleting a comment leaves its thread behind as an empty shell, visible on the
-PR permanently**, because there is no delete for a thread. A wrong anchor therefore
-costs a shell that cannot be cleaned up, which is why the range is worth checking before
-posting rather than after.
+delete. Deleting a comment removes it from the pull request as far as any reader is
+concerned, but the thread survives in the API with its comments flagged `isDeleted`, and
+there is no delete for a thread. A pull request displaying no comments at all still
+returns its old threads, so an unfiltered read of it is not empty.
 
 ## Thread status
 
@@ -140,8 +153,8 @@ green build, so "it will merge once people approve" is wrong wherever that polic
 Resolving threads is part of the work, not tidying up after it.
 
 `pending` is the trap in that: it reads like a harmless in-progress marker and blocks
-exactly as `active` does. The shell left by a deleted comment does not block, even at
-`active`.
+exactly as `active` does. A thread whose comments have all been deleted does not block,
+even when it still reads `active`.
 
 What the branch requires:
 
