@@ -36,29 +36,32 @@ an unresolved thread does to a merge.
 It does not say what a comment should contain. That is a separate skill, about how a
 review is done here, and it does not exist yet.
 
-## What Claude needs it for
+## User stories
 
-Each of these is a task Claude was doing when the mechanics bit.
+As Claude, posting a review comment, I want the suggestion to replace the lines I meant,
+so that the author can apply it in one click instead of reading a corrupted comment.
 
-1. Posting a suggestion on one line, so the block replaces that line rather than being
-   inserted before it.
-2. Suggesting a change that needs a new import, so the suggestion is applicable at all
-   rather than being split across two threads or left as prose.
-3. Looking at a suggestion that rendered oddly, so the range is checked rather than the
-   block rewritten.
-4. Finding a line's length, so an uncommitted edit in a worktree cannot supply the wrong
-   number.
-5. Replying to a thread someone else opened, so the reply joins that thread instead of
-   starting another.
-6. Fixing the wording of a comment already posted, so the anchor survives untouched rather
-   than being rebuilt.
-7. Resolving a thread, so the write lands rather than storing nothing.
-8. Answering whether a pull request can merge, so an unresolved thread is not reported as
-   ready.
-9. Answering whether a comment is resolved, so the answer comes from the reply and the
-   diff rather than from a field someone set.
-10. Reading what has already been said on a pull request, so deleted comments are not
-    reported back as live ones.
+As Claude, asked whether a pull request can merge, I want to know which thread statuses
+hold a blocking policy, so that I do not report it as ready when nothing will merge.
+
+As Claude, reading a pull request's discussion, I want only the comments that are actually
+on it, so that I do not report a conversation the author cannot see.
+
+## Requirements
+
+The skill carries:
+
+- The three anchor shapes, being a single line, a range of lines and a whole file, each
+  with a worked example rather than a rule to derive one from.
+- The calls to create a thread, read threads, reply to a thread, edit a comment, delete a
+  comment and set a thread's status.
+- The valid thread status values, listed. The API accepts anything it is given and renders
+  what it does not recognise as Unknown, so a list is needed and a description of one is
+  not enough.
+- Which statuses hold the Comment requirements policy, and the queries for what a branch
+  requires and where a single pull request stands against it.
+- Reads that exclude deleted threads and deleted comments, at both levels.
+- Line lengths taken from the commit rather than from a working tree.
 
 ## Decisions
 
@@ -98,22 +101,15 @@ addressed is answered from the reply and the diff.
 - The validation build, which is `pr-ado`.
 - Work item linking, which is `azure-devops-pr`.
 - Creating, completing or abandoning a pull request.
+- Reading the existing comments before adding one, to avoid duplicating them or to reply
+  instead. That is worth doing and it is process, not mechanics.
 
 ## How the content was established
 
-Every value in the skill was written and read back against the live API rather than
-recalled, at `api-version 7.1`, on 26 August and 10 September 2026. The anchor shapes were
-posted to a pull request and checked visually, the status values were driven one at a time
-while reading the policy back, and the label-to-value mapping came from watching what the
-web interface itself sends.
-
-Where a case did not exist it was built. The thread carrying a live comment, a deleted
-reply and a live reply was made deliberately, and it broke a filter that had already been
-written down as correct.
-
-This is recorded because the claims are unusual: the API accepts a wrong status silently,
-and an untested guess about it would read exactly like a tested one. Anyone using the skill
-re-checks the risky part anyway, because it says to write the status and read it back.
+Every value in the skill was written and read back against the live API at
+`api-version 7.1`, on 26 August and 10 September 2026, rather than recalled. Where a case
+did not exist it was built: the thread carrying a live comment, a deleted reply and a live
+reply was made deliberately, and it broke a filter already written down as correct.
 
 ## Where the deleted-thread rule came from
 
