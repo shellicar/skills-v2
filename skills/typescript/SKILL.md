@@ -123,7 +123,82 @@ it is unjustified.
 
 ## Testing
 
-Composes onto `testing` — read that first; this is just the TypeScript syntax for it.
+Composes onto `testing` — read that first. This is the TypeScript for it.
+
+### The real thing comes from the container
+
+Resolve the unit under test from the container with the real implementations registered. A
+test module replaces only what is awkward, and everything else stays real:
+
+```typescript
+export class easyquoteTestModule implements IServiceModule {
+  public registerServices(services: IServiceCollection): void {
+    services.register(IOfferConfigService).to(IOfferConfigService, () => ({ get: async () => config })).singleton();
+  }
+}
+```
+
+### A double is a class
+
+It implements the interface the production code depends on, so the compiler holds it to the
+contract:
+
+```typescript
+export class MockClock extends Clock {
+  public constructor(private currentTime: Instant) { super(); }
+  public setTime(time: Instant): void { this.currentTime = time; }
+  public advanceBy(duration: Duration): void { this.currentTime = this.currentTime.plus(duration); }
+  public instant(): Instant { return this.currentTime; }
+  public millis(): number { return this.currentTime.toEpochMilli(); }
+}
+```
+
+The remaining `Clock` members are implemented too, because the compiler requires it, which
+is the point.
+
+Never `vi.useFakeTimers()`. `Clock` is injected and `setTimeout` is injected, so there is no
+ambient time left to fake.
+
+### Registering it
+
+The double goes in the same way the real implementation does, through the container. Never
+`Object.assign` onto a constructed instance: that binds the test to private field names the
+production code never promised, so it breaks on a rename and passes when the real wiring is
+wrong.
+
+Where the dependency is injectable, the double goes through DI rather than module
+interception. `vi.mock` of an injectable is replacing the import graph to avoid using a seam
+that already exists.
+
+### Indicators
+
+Each raises a question rather than settling one. Weigh what the occurrence costs before
+reporting it.
+
+| Seen | Question |
+|---|---|
+| `vi.fn` | Did this collaborator need a double at all? |
+| `vi.mock` | The dependency was injectable, so why is the module being intercepted? |
+| `vi.spyOn` | What resulting state could have been asserted instead? |
+| `toHaveBeenCalledWith`, `toHaveBeenCalled` | Is there state the call left behind? |
+| `.mock.calls` | Should the double have recorded this as its own state? |
+| `vi.clearAllMocks` | What is surviving between tests, and why? |
+| `expect.objectContaining` | Which fields are being left unchecked, and was that deliberate? |
+
+A file carrying several of these usually made one decision wrongly near the top, and the
+rest followed. Report that decision, not the occurrences.
+
+### Test data
+
+`satisfies`, not `as`. A cast on data the test reads is the expensive one: it removes the
+only statement of what that object is supposed to be, so when the test breaks there is
+nothing left saying what it should have been doing.
+
+`{} as ICarBuyingPortalService` for a dependency that is never called is a different thing.
+Nothing reads it, so the cast hides no disagreement.
+
+### Syntax
+
 Group with `describe`/`it`. Name expected/actual before comparing:
 
 ```typescript
