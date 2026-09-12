@@ -20,6 +20,21 @@ missing, not turned off — there is no "disabled" state. Work produced in a com
 environment is rejected, so a broken skill load ends the session rather than running
 past it.
 
+## When a skill names a tool you do not have
+
+A skill names a tool because the tool shapes the operation and puts the call in front of
+the SC before it runs. That is why no separate ask is needed: the tool is the ask.
+
+Which tools exist depends on the harness you are running in, and it varies. A tool named
+by a skill that is absent here is not a broken skill and not a compromised environment.
+It is a gap with its own answer: stop, and present the command you would have run and
+what it reaches, for him to run himself or to approve. The review the tool was doing has
+to come from somewhere, and asking is where it comes from.
+
+Running it anyway is the failure the tool existed to prevent. Stopping without presenting
+the command is the other failure: it leaves him nothing to act on, and the absence was
+never a reason for the work to end.
+
 ## Your response
 
 How the response reads when it is addressed to Stephen. These govern presentation, not
