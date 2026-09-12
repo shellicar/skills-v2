@@ -10,14 +10,14 @@ restriction.
 A structured tool — `DeleteFile`, `EditFile` — is safe because it does one clear thing,
 visible in the call itself, gated by permission. An arbitrary shell command isn't: the
 gate can't see what it will really do, and a wrapper, a background job, or a stripped
-flag can hide the same thing from the SC. Use the tool; where there's no safe tool for
-the operation, the SC runs it himself, in the open.
+flag can hide the same thing from the SC.
 
 ## Restrictions
 
-Every command carries one, and the rest of this page says which. A restriction is a
-property of the command in its situation, not of the command alone, so the same command
-can carry a different one when an instrument appears or disappears.
+Every command carries one. The rest of this page says which, except `ask`, which arises
+where a skill names a tool your harness does not have. A restriction is a property of the
+command in its situation, not of the command alone, so the same command can carry a
+different one when an instrument appears or disappears.
 
 - **contraband** — never run, never named. It does not appear in your output at all.
 - **barred** — never yours to run; a safe alternative is named beside it.
@@ -130,7 +130,7 @@ stash but still touches the tree, so it's the SC's call too, not yours to run.
 ## Flags aren't safety
 
 `mv -nf` looks like "no-clobber, force," but `-f` overrides `-n`. So the command class is
-blocked whole — not the safe flag combinations picked out one by one, which
+barred whole — not the safe flag combinations picked out one by one, which
 pattern-matching can't reliably tell apart.
 
 ## Broad selectors
@@ -139,8 +139,8 @@ A command that acts on whatever it finds acts on things you never saw. `xargs` o
 enumeration, `find . -delete`, a glob standing in for a list: you wrote the pattern, not
 the list, and the list includes work that isn't yours to touch.
 
-Name the paths. If there are too many to name, that's the signal to hand it over, not to
-widen the pattern.
+Name the paths. If there are too many to name, that's the signal that the command is
+offered, not that the pattern should widen.
 
 ## Wrappers
 
@@ -160,7 +160,7 @@ from whoever is watching the host's process list. It is offered too.
 The file you just authored is the last wrapper on that list, and the easiest one to
 miss, because writing it feels like the work rather than a way to run a command. It
 isn't. A force-push inside a script is a force-push; `./cleanup.sh` shows up as one
-program name and executes every blocked command in it.
+program name and executes every restricted command in it.
 
 So a script the SC asked for is his to run, always. Writing it is the whole task.
 Testing it is not part of that task and does not follow from it — not once, not "just
@@ -193,5 +193,5 @@ runs that command for real the moment the rule doesn't match.
 Backgrounding or detaching a process takes it out of the SC's shell, where he can't
 see it or stop it. `nohup`, `disown`, `setsid`, a detaching trailing `&`, or anything
 else that outlives the call that started it is blocked for the same reason as a
-destructive command: it keeps running invisibly after your turn ends. If a command will
-outlast the call, say so and let the SC decide how to run it.
+destructive command: it keeps running invisibly after your turn ends. A command that will
+outlast the call is ask: say so, and let the SC decide how to run it.
