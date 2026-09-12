@@ -2,10 +2,10 @@
 
 Claude does not run commands whose effect goes dark — either in the moment, to the SC
 watching the shell, or afterward, to the SC coming back to find out what happened. That's
-the thing every block below has in common, not that the command is destructive: it hides
-what's happening from whoever would otherwise see it live, or leaves nothing behind to
-reconstruct it later. Irreversibility is often a result of that, not the reason for the
-block.
+the thing every restriction below has in common, not that the command is destructive: it
+hides what's happening from whoever would otherwise see it live, or leaves nothing behind
+to reconstruct it later. Irreversibility is often a result of that, not the reason for the
+restriction.
 
 A structured tool — `DeleteFile`, `EditFile` — is safe because it does one clear thing,
 visible in the call itself, gated by permission. An arbitrary shell command isn't: the
@@ -13,19 +13,32 @@ gate can't see what it will really do, and a wrapper, a background job, or a str
 flag can hide the same thing from the SC. Use the tool; where there's no safe tool for
 the operation, the SC runs it himself, in the open.
 
-These are blocked. Reach for the safe alternative, or present the exact command and let
-the SC run it. The block is information, not a wall: "blocked: `rm` → use `DeleteFile`."
+## Restrictions
 
-Handing it over isn't a delay on the way to finishing the work. For these operations it is
-the work: reaching for the command is the failure and presenting it is the success. There
-is nothing still owed once you have handed it over.
+Every command carries one, and the rest of this page says which. A restriction is a
+property of the command in its situation, not of the command alone, so the same command
+can carry a different one when an instrument appears or disappears.
+
+- **contraband** — never run, never named. It does not appear in your output at all.
+- **barred** — never yours to run; a safe alternative is named beside it.
+- **offered** — never yours to run, and there is no alternative. Present the exact
+  command; the SC runs it.
+- **ask** — not yours to run without his authorisation. Present the exact command and what
+  it reaches; he runs it, or tells you to.
+- **none** — nothing here applies. Not a finding that the command is safe.
+
+An entry is information, not a wall: "barred: `rm` → use `DeleteFile`."
+
+Handing it over isn't a delay on the way to finishing the work. For an offered command it
+is the work: reaching for the command is the failure and presenting it is the success.
+There is nothing still owed once you have handed it over.
 
 ## Contraband
 
-A small set of commands are not blocked, they are contraband: they never appear in your
+A small set of commands are not barred, they are contraband: they never appear in your
 output at all. Not run, not suggested, not written into a script, not named in a warning
 about themselves, not left in a comment or a handover. Four things put a command here,
-and each closes a route the ordinary blocks leave open. You reach for it by reflex,
+and each closes a route the ordinary restrictions leave open. You reach for it by reflex,
 before any thinking that could catch it. It destroys work, certainly rather than
 probably, and you cannot see the tree well enough to judge otherwise. The SC will never
 run it, so presenting it is not a safe hand-off, it is contraband with his name on the
@@ -67,7 +80,7 @@ wrapper, not by a route that happens to be unguarded. Stop and hand it to the SC
 
 ## Files
 
-Blocked — use the tool instead:
+Barred — use the tool instead:
 
 - `rm`, `rmdir`, `unlink` → the `DeleteFile` / `DeleteDirectory` tools
 - `sed -i` → the `EditFile` tools
@@ -80,8 +93,7 @@ invisible to you. `kill`, `pkill`, `killall`, and session/server teardown like t
 `kill-session` / `kill-server` / `kill-pane` / `kill-window` end running work with no
 undo. The SC may have set that session or pane up himself; you can't see what's in it or
 what it was for. Never run one to clear away what looks like your own noise — a name you
-don't recognise is a reason to ask, not to kill. Present the command and let the SC run
-it.
+don't recognise is a reason to ask, not to kill. These are offered.
 
 ## Docker
 
@@ -98,23 +110,22 @@ of the SC's have been destroyed this way by a Claude tidying up. `-f`/`--force` 
 even the confirmation prompt that would have surfaced it.
 
 Never run one to clean up — not disk space, not clutter, not "leftovers" from your own
-work. An unfamiliar container or image is a reason to ask, not to remove. Present the
-exact command and let the SC run it.
+work. An unfamiliar container or image is a reason to ask, not to remove. These are
+offered.
 
 ## Git
 
 Git is not recoverable — you think it is, and that's the trap. `git reset`,
 `git checkout` / `restore` for state, `git rm`, `--hard`, `clean -f`, `branch -D`, `worktree remove -f`,
 `git stash pop`, `git stash drop` all destroy working-tree or index state with no undo.
-Use `git switch` for branches only; for anything destructive, present the command and let
-the SC run it.
+Use `git switch` for branches only; anything destructive is offered.
 
 A stash is never yours to resolve. The SC may have stashed it deliberately, for his own
 reason, mid-thought — popping or dropping it overrules that reason without asking. If a
 stash is in the way, present it and let the SC decide; `git stash apply` doesn't drop the
 stash but still touches the tree, so it's the SC's call too, not yours to run.
 
-- `git push --force-with-lease` — present it, don't run it.
+- `git push --force-with-lease` — offered: present it, don't run it.
 
 ## Flags aren't safety
 
@@ -138,12 +149,11 @@ names. `env`, `nice`, `timeout`, `time`, `watch`, `ssh`, `su -c`, `find ... -exe
 take a command as an argument and execute it — so `env rm -rf /`, `ssh host rm -rf
 /data`, `su -c 'git reset --hard' otheruser`, `find . -exec rm {} \;` all run for real
 with the wrapper as the only visible program, so a check for `rm` by name alone misses
-it. Never reach for one of these to route around a block above; there is no safe form of
-them, so present the exact command and let the SC run it.
+it. Never reach for one of these to route around a restriction above; there is no safe
+form of them, so they are offered.
 
 `docker exec` is the same shape — running a command inside a live container hides it
-from whoever is watching the host's process list. Present the exact command and let
-the SC run it.
+from whoever is watching the host's process list. It is offered too.
 
 ## A script you wrote is a wrapper too
 
