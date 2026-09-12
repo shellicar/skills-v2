@@ -192,6 +192,6 @@ runs that command for real the moment the rule doesn't match.
 
 Backgrounding or detaching a process takes it out of the SC's shell, where he can't
 see it or stop it. `nohup`, `disown`, `setsid`, a detaching trailing `&`, or anything
-else that outlives the call that started it is blocked for the same reason as a
+else that outlives the call that started it is restricted for the same reason as a
 destructive command: it keeps running invisibly after your turn ends. A command that will
-outlast the call is ask: say so, and let the SC decide how to run it.
+outlast the call is offered: say so, and let the SC run it.
