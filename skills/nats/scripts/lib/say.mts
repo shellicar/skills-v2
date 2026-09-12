@@ -67,6 +67,11 @@ export type Say = {
  * There is no route back in it. A recipient does not write to its sender: it answers in
  * its own conversation, and whoever commissioned it reads the answer where it sits.
  *
+ * The harness line repeats what the bridge's own system prompt already says. It is here
+ * because this is what the worker reads as it starts, while a missing tool is discovered
+ * much later, at the step that needs it. It names no tools: which ones exist is not
+ * something this script can know, and the recipient can read its own list anyway.
+ *
  * A commission also names the skills to load. The list is derived here rather than
  * passed in, so a caller cannot hand a worker the wrong one, and it points at skills
  * rather than quoting them: a skill loaded through the skill system is told when it
@@ -74,7 +79,13 @@ export type Say = {
  */
 function appendix(input: Say): string {
   const sender = input.callerRole === undefined ? input.name : `${input.name}, ${input.callerRole}`;
-  const lines = ["", "\u2500\u2500", `Sent by ${sender}.`, `Your own conversation id is ${input.conv}.`];
+  const lines = [
+    "",
+    "\u2500\u2500",
+    `Sent by ${sender}.`,
+    `Your own conversation id is ${input.conv}.`,
+    "You are running in bridge, so a skill may name a tool you do not have.",
+  ];
   if (input.workerRole !== undefined) {
     lines.push(`Load these skills: workflow, workflow-commissionee, ${input.workerRole}.`);
   }

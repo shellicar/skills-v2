@@ -46,10 +46,22 @@ Good:
 Create with `GitHub_PullRequest_Create` / `AzureDevOps_PullRequest_Create`, never the
 bare `gh pr create` / `az repos pr create` CLI — the tool always opens as a draft and
 carries its own approval gate, so no separate ask is needed first. Same for editing
-(`_Edit`), commenting (`_Comment`), marking ready (`_Ready`), and auto-merge
-(`_AutoMerge`): the tool is the gate, the bare CLI isn't. Since each call is already
-gated, batch what you can — e.g. create and then immediately edit/label in the same
-turn — rather than pausing between them.
+(`_Edit`), marking ready (`_Ready`), and auto-merge (`_AutoMerge`): the tool is the gate,
+the bare CLI isn't. Commenting has a tool on GitHub (`GitHub_PullRequest_Comment`) and
+none on Azure DevOps, where posting a comment is a platform mechanic rather than a
+missing tool. Since each call is already gated, batch what you can — e.g. create and then
+immediately edit/label in the same turn — rather than pausing between them.
+
+Opening a PR needs the SC's approval, and the tool is what collects it. So the CLI and the
+tool carry a restriction each, and they move as a pair:
+
+| | CLI | tool |
+|---|---|---|
+| tool present | barred | none |
+| tool absent | ask | n/a |
+
+Where the tools are absent, present the command with the draft flag and ask for the
+approval the tool would have collected.
 
 Title is the effect, in one line. Body is `## Summary` with three to five bullets, each
 the effect too — not the implementation (no modules, functions, or file lists). E.g.
