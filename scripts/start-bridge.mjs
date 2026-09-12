@@ -3,9 +3,9 @@
  * Start a bridge with the v2 baseline injected — the bridge counterpart of
  * start-v2.mjs.
  *
- * BASELINE.md rides the `system` control line, the foundational skills block
- * rides `context`, and the repo's own config.jsonl follows so its skills dir,
- * model and permissions still apply.
+ * BASELINE.md and BASELINE-BRIDGE.md ride the `system` control line, the
+ * foundational skills block rides `context`, and the repo's own config.jsonl
+ * follows so its skills dir, model and permissions still apply.
  *
  *   start-bridge.mjs                       # ./config.jsonl, ./target/debug/bridge
  *   start-bridge.mjs --config path.jsonl
@@ -13,7 +13,8 @@
  *   start-bridge.mjs --doctor              # print what would be sent, then exit
  *
  * Everything else is forwarded to bridge verbatim. Runs in the current pane and
- * exits with bridge's status; exit 2 if the skills or config cannot be read.
+ * exits with bridge's status; exit 2 if the skills, config or bridge baseline
+ * cannot be read.
  * BRIDGE_BIN overrides the binary, same as --bridge.
  */
 
@@ -58,6 +59,17 @@ try {
 } catch {
   // No BASELINE.md — launch without a system prompt, same as start-v2.
 }
+
+// Not optional the way BASELINE.md is: a bridge that never tells the session it is a
+// bridge is the failure this file exists to prevent.
+let bridgeBaseline;
+try {
+  bridgeBaseline = readFileSync(join(scriptDir, "..", "BASELINE-BRIDGE.md"), "utf8").trim();
+} catch (err) {
+  console.error(`start-bridge: cannot read BASELINE-BRIDGE.md: ${err.message}`);
+  process.exit(2);
+}
+system = system ? `${system}\n\n${bridgeBaseline}` : bridgeBaseline;
 
 let repoConfig;
 try {

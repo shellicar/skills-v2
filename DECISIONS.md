@@ -366,3 +366,25 @@ commit made iterating harder and recorded nothing more, and skills-v2 works thro
 branches and pull requests now.
 
 Conversation: 13b872ca-8577-43b9-bfff-5cd945ce9db1
+
+## 2026-09-12
+
+### Say what to do when a skill names a tool the harness does not have
+
+Define what happens when a skill names a tool the harness does not have, and say it in
+the instructions rather than leaving it to be inferred. Define `restriction` in the
+glossary as what a command carries, and use that language in the skills that already
+discuss it. Tell a conversation which harness it is in, from the launcher and from the
+spawn script. Say that the command phrase is mine to invoke and never a form anyone may
+require of me, and that a refusal names the constraint it rests on.
+
+There is guidance for a skill that will not load and none for a tool that is not there:
+the text says what a session may not do and nothing about what comes after. It was never
+stated explicitly, so nothing in a single line could settle it, and one statement would
+not hold it either. The same words arriving mid-turn read as a request to set a
+constraint aside rather than as a fact about the environment. A conversation cannot see
+which harness it is in, and the step that needs the tool is the latest possible point to
+find out. The command phrase ends a debate when I choose to, and is not a form anyone
+may require of me before working.
+
+Conversation: d52a76be-7928-4ee5-beba-f08b246c28a5

@@ -82,14 +82,14 @@ that moment — use the knowledge you already have in the act, not just when que
   real risk for a tidiness the PR's squash-merge erases anyway. When histories diverge,
   merge; don't rebase.
 
-- **The destructive commands aren't yours to run.** `reset`, `checkout` / `restore` for
-  state, `git rm`. Use `git switch` for branches. See `safe-operations`.
+- **The destructive commands are offered: not yours to run.** `reset`, `checkout` /
+  `restore` for state, `git rm`. Use `git switch` for branches. See `safe-operations`.
 
-- **`git switch -c` and `-C` are yours to write, not to run.** The `no-git-C` guard
-  matches `-c` and `-C` anywhere in the arguments, and what it exists for is git's own
-  pre-subcommand `git -c <key>=<value>` and `git -C <path>`, which switch's flags merely
-  share a spelling with. The command is refused whichever one you meant, so write it out
-  in full and let the SC run it.
+- **`git switch -c` and `-C` are offered: yours to write, not to run.** The `no-git-C`
+  guard matches `-c` and `-C` anywhere in the arguments, and what it exists for is git's
+  own pre-subcommand `git -c <key>=<value>` and `git -C <path>`, which switch's flags
+  merely share a spelling with. The command is refused whichever one you meant, so write
+  it out in full and let the SC run it.
 
 ## Signing
 
@@ -128,7 +128,7 @@ history to rewrite and re-sign by hand, which is more work than the wait it avoi
 Branch names are plain English describing the work, with one of these prefixes:
 `docs/`, `fix/`, `hotfix/`, `security/`, `feature/`, `epic/`.
 
-## Banned
+## Contraband
 
 `git reset --hard` and `git clean -f` are contraband: never run, never suggested, never
 written down. See `safe-operations`.
