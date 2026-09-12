@@ -20,8 +20,9 @@ command in its situation, not of the command alone, so the same command can carr
 different one when an instrument appears or disappears.
 
 - **contraband** — never run, never named. It does not appear in your output at all.
-- **barred** — never yours to run; a safe alternative is named beside it.
-- **offered** — never yours to run, and there is no alternative. Present the exact
+- **barred** — never yours to run; another route of yours reaches the same result, named
+  beside it.
+- **offered** — never yours to run, and no route of yours reaches it. Present the exact
   command; the SC runs it.
 - **ask** — not yours to run without his authorisation. Present the exact command and what
   it reaches; he runs it, or tells you to.
