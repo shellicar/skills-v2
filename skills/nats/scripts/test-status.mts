@@ -29,11 +29,14 @@ const CONV = {
   staysWorking: "00000000-0000-4000-8000-00000000a005",
   goesQuiet: "00000000-0000-4000-8000-00000000a006",
   keepsTalking: "00000000-0000-4000-8000-00000000a007",
+  approvalSits: "00000000-0000-4000-8000-00000000a008",
+  approvalAnswered: "00000000-0000-4000-8000-00000000a009",
+  approvalSeeded: "00000000-0000-4000-8000-00000000a00a",
   // Published to by nothing, ever: it is the conversation on which no edge can fire.
   untouched: "00000000-0000-4000-8000-00000000a0ff",
 };
 
-type Edge = { conv?: string; edge?: string; ts?: string; silentForSeconds?: number };
+type Edge = { conv?: string; edge?: string; ts?: string; silentForSeconds?: number; approvalId?: string; pendingForSeconds?: number };
 type Status = { conv?: string; state?: string };
 type Waited = { edge?: Edge | null; status?: Status[] };
 
@@ -57,6 +60,24 @@ const commit = async (conv: string, text: string): Promise<void> => {
 const closeQuery = async (conv: string): Promise<void> => {
   const body = { queryId: randomUUID(), reason: "completed", ts: new Date().toISOString() };
   await js.publish(`conv.v2.${conv}.changes.query`, jc.encode(body));
+};
+
+// The approval id is its own, minted by the agent's model, and only the correlation ties
+// it back to a conversation — which is exactly why the script cannot find one by
+// constructing a subject from a tool-use id.
+const raiseApproval = async (conv: string, approvalId: string): Promise<void> => {
+  const body = {
+    type: "raised",
+    ts: new Date().toISOString(),
+    ask: { type: "tool_use", name: "Delete", input: {} },
+    correlation: { conversationId: conv, toolUseId: randomUUID() },
+  };
+  await js.publish(`approval.v1.${approvalId}.lifecycle`, jc.encode(body));
+};
+
+const settleApproval = async (approvalId: string): Promise<void> => {
+  const body = { type: "settled", ts: new Date().toISOString(), approved: true, by: { kind: "human" } };
+  await js.publish(`approval.v1.${approvalId}.lifecycle`, jc.encode(body));
 };
 
 type Result = { status: number | null; stdout: string; stderr: string; elapsedMs: number };
@@ -158,6 +179,46 @@ const firedAfterMs = Date.now() - firstCommitAt;
 check("a conversation still committing eventually fires quiet", talkingEdge?.edge === "quiet", JSON.stringify(talkingEdge));
 check("a commit restarts the quiet clock", firedAfterMs >= 3600, `fired ${firedAfterMs}ms after the first commit, quietAfter=3s`);
 
+// An approval that sits is the state this tool was blind to: the turn never closes, so
+// idle cannot fire, and the conversation is not silent by its own reckoning either.
+await commit(CONV.approvalSits, "test-status: about to ask permission");
+const sittingId = randomUUID();
+const sitting = run({ convs: [CONV.approvalSits], wait: 20, quietAfter: 30, approvalAfter: 1 });
+await sitting.watching;
+await raiseApproval(CONV.approvalSits, sittingId);
+const sittingOut = await sitting.result;
+const sittingEdge = parse<Waited>(sittingOut.stdout)?.edge;
+check("an approval past approvalAfter exits 0", sittingOut.status === 0, `status=${sittingOut.status} stderr=${sittingOut.stderr}`);
+check("an approval past approvalAfter fires awaiting-approval", sittingEdge?.edge === "awaiting-approval", JSON.stringify(sittingEdge));
+check("the approval edge names the conversation", sittingEdge?.conv === CONV.approvalSits, JSON.stringify(sittingEdge));
+check("the approval edge names the approval", sittingEdge?.approvalId === sittingId, JSON.stringify(sittingEdge));
+check("the approval edge says how long it has been pending", typeof sittingEdge?.pendingForSeconds === "number", JSON.stringify(sittingEdge));
+
+// A raise is not an edge. One answered inside approvalAfter must reach nobody, or every
+// routine tool call wakes the handler and the tool stops being worth calling.
+await commit(CONV.approvalAnswered, "test-status: asks and is answered");
+const answeredId = randomUUID();
+const answered = run({ convs: [CONV.approvalAnswered], wait: 4, quietAfter: 30, approvalAfter: 3 });
+await answered.watching;
+await raiseApproval(CONV.approvalAnswered, answeredId);
+await sleep(500);
+await settleApproval(answeredId);
+const answeredOut = await answered.result;
+const answeredEdge = parse<Waited>(answeredOut.stdout)?.edge;
+check("an approval answered inside approvalAfter fires nothing", answeredEdge === null, JSON.stringify(answeredEdge));
+check("an approval answered inside approvalAfter elapses the wait", answeredOut.status === 2, `status=${answeredOut.status}`);
+
+// One already sitting when the wait begins is seeded from its raise, so it does not get
+// another full term of patience it has already served.
+await commit(CONV.approvalSeeded, "test-status: already stopped before anyone looked");
+const seededId = randomUUID();
+await raiseApproval(CONV.approvalSeeded, seededId);
+await sleep(1200);
+const preSeeded = await run({ convs: [CONV.approvalSeeded], wait: 20, quietAfter: 30, approvalAfter: 1 }).result;
+const preSeededEdge = parse<Waited>(preSeeded.stdout)?.edge;
+check("an approval already sitting fires awaiting-approval", preSeededEdge?.edge === "awaiting-approval", JSON.stringify(preSeededEdge));
+check("an approval already sitting fires without waiting again", preSeeded.elapsedMs < 3000, `${preSeeded.elapsedMs}ms of a 20s wait`);
+
 // The wait elapsing is not a verdict: nothing has finished, and 2 says so.
 const elapsed = await run({ convs: [CONV.untouched], wait: 1 }).result;
 const elapsedOut = parse<Waited>(elapsed.stdout);
@@ -169,6 +230,8 @@ const badWait = await run({ convs: [CONV.untouched], wait: "soon" }).result;
 check("a non-numeric wait exits 64", badWait.status === 64, `status=${badWait.status}`);
 const badQuiet = await run({ convs: [CONV.untouched], wait: 1, quietAfter: 0 }).result;
 check("a quietAfter of zero exits 64", badQuiet.status === 64, `status=${badQuiet.status}`);
+const badApproval = await run({ convs: [CONV.untouched], wait: 1, approvalAfter: -1 }).result;
+check("a negative approvalAfter exits 64", badApproval.status === 64, `status=${badApproval.status}`);
 
 await nc.drain();
 
