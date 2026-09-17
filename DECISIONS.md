@@ -388,3 +388,24 @@ find out. The command phrase ends a debate when I choose to, and is not a form a
 may require of me before working.
 
 Conversation: d52a76be-7928-4ee5-beba-f08b246c28a5
+
+## 2026-09-17
+
+### A PR body says what the change was meant to do, not what the code now does
+
+Say what a PR body is for in the pr skill: it records what someone decided to do, so a
+title and every bullet leads with the verb, and the verb is what was done to the code
+rather than what the code now does. State how the examples are to be read: each one
+demonstrates a single rule, and a line under Good is the bad line with that one fault
+removed, not a model to copy.
+
+"Effect, not implementation" was doing its job and still is, but it said what to leave
+out and never said where to land. The examples came from real messages and each contrast
+held only for the point that message was making, which was never said, so the whole line
+read as endorsed and its grammar was learned with it. What that produced described the
+state of the code, and answered neither why the code was written this way nor what it was
+meant to do. Naming what was done carries the purpose with it. A description of the state
+carries none, so there is nothing to check the code against, on the day or in a year, and
+it stops being true as the code moves.
+
+Conversation: e5f9f0a3-7fd6-43cb-ac9e-7d73247d612d
