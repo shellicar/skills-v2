@@ -55,3 +55,9 @@ none. A property of the command in its situation, not of the command alone, so t
 same command can carry a different restriction depending on what else exists.
 
 _Avoid_: permission, permissions, control, custody, handling, clearance
+
+### Claim
+
+What someone holds to be true at the time: a person's or a session's understanding,
+sincerely meant. Believing it does not make it so, and carrying it onward does not
+either. It stays the claim of whoever made it, when they made it.
