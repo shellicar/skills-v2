@@ -84,9 +84,11 @@ that moment — use the knowledge you already have in the act, not just when que
   real risk for a tidiness the PR's squash-merge erases anyway. When histories diverge,
   merge; don't rebase.
 
+- **Run `git switch -c` to create a branch.** Use `git switch` for branches.
+
 - **The destructive commands are offered: not yours to run.** `checkout` / `restore` for
-  state, `git rm`, `git switch -C`. Use `git switch` for branches, and run `git switch -c` to
-  create one. `-C` resets a branch that already exists, a force change, so it is offered.
+  state, `git rm`, `git switch -C`. `-C` resets a branch that already exists, a force
+  change, so it is offered.
   Discarding work is explicit: `git restore <paths>` names the files, and is offered too.
   See `safe-operations`.
 
