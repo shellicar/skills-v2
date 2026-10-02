@@ -388,3 +388,13 @@ find out. The command phrase ends a debate when I choose to, and is not a form a
 may require of me before working.
 
 Conversation: d52a76be-7928-4ee5-beba-f08b246c28a5
+
+## 2026-10-02
+
+### Create branches without handing the command to the SC
+
+Run `git switch -c` to create a branch instead of writing it out for the SC to run. Keep `git switch -C` offered.
+
+The rule that `git switch -c` was the SC's to run came from the harness, not from the command. His own harness blocked any git command carrying `-c` or `-C`, so a session could not run it unless he lifted the block, and the 2026-08-11 entry kept the restriction only until that changed. Working in Claude Code with auto mode and the sandbox, he has cut the block list down to a few entries, and nothing blocks `-c`, so Claude can run it himself. `-C` stays offered because it is effectively a reset, and a branch should only be moved when he wants it moved.
+
+Conversation: b5d1c3e1-bf5e-4d38-972b-4e08c15684ae
