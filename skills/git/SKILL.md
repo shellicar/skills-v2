@@ -85,7 +85,7 @@ that moment — use the knowledge you already have in the act, not just when que
   merge; don't rebase.
 
 - **The destructive commands are offered: not yours to run.** `checkout` / `restore` for
-  state, `git rm`, `git switch -C`. Use `git switch` for branches, and `git switch -c` to
+  state, `git rm`, `git switch -C`. Use `git switch` for branches, and run `git switch -c` to
   create one. `-C` resets a branch that already exists, a force change, so it is offered.
   Discarding work is explicit: `git restore <paths>` names the files, and is offered too.
   See `safe-operations`.
