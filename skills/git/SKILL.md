@@ -99,9 +99,9 @@ that moment — use the knowledge you already have in the act, not just when que
   made mid-command, changes which entry it names. Work that is not wanted is stashed
   rather than discarded, so it can be reviewed and dropped: `git stash push -u -m
   "<unique tag>"`, then read the SHA from `git stash list --format='%H %gs'`.
-  Run `git stash apply <sha>` on a stash you made; it takes the SHA directly. `git stash drop` and `pop` are offered, even
-  for a stash you made. `drop` and `pop` take only `stash@{n}`, so the command you offer looks the
-  index up by SHA:
+  Run `git stash apply <sha>` on a stash you made; it takes the SHA directly.
+  `git stash drop` and `pop` are offered, even for a stash you made. They take only
+  `stash@{n}`, so the command you offer looks the index up by SHA:
   `git stash drop "$(git stash list --format='%H %gd' | awk -v s=<sha> '$1==s {print $2}')"`
   `git stash pop "$(git stash list --format='%H %gd' | awk -v s=<sha> '$1==s {print $2}')"`
 
