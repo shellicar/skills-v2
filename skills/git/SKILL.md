@@ -48,7 +48,7 @@ that moment — use the knowledge you already have in the act, not just when que
   `-c <branch>` creates it at the start point and switches to it; `-C <branch>` does the
   same but resets the branch when it already exists. So moving a branch onto another
   commit is `git switch -m -C <branch> <commit>`, which is offered: uncommitted work is
-  preserved rather than thrown away, and both forms are
+  kept, in the files or in a stash entry, and both forms are
   transactional, so the branch is not created or moved unless the switch succeeds. A
   branch checked out in another worktree leaves everything where it was rather than
   half-moved. `-m` is for a dirty tree — local changes that differ between here and there
@@ -65,6 +65,9 @@ that moment — use the knowledge you already have in the act, not just when que
 - **`git switch -m` exits 0 even when reapplying the stash conflicts.** You land on the
   target branch with conflict markers, an unmerged index and the stash entry still in the
   list, while the exit status says success — so a script can't catch it with `|| exit 1`.
+  The work is in the stash entry, not in the files. Git's message then suggests discarding
+  the changes it could not reapply; that is not yours to take, so say what state the tree
+  is in and stop.
 
 ## Rules
 
@@ -96,7 +99,7 @@ that moment — use the knowledge you already have in the act, not just when que
   made mid-command, changes which entry it names. Work that is not wanted is stashed
   rather than discarded, so it can be reviewed and dropped: `git stash push -u -m
   "<unique tag>"`, then read the SHA from `git stash list --format='%H %gs'`.
-  `git stash apply <sha>` takes it directly. `git stash drop` and `pop` are offered, even
+  Run `git stash apply <sha>` on a stash you made; it takes the SHA directly. `git stash drop` and `pop` are offered, even
   for a stash you made. `drop` and `pop` take only `stash@{n}`, so the command you offer looks the
   index up by SHA:
   `git stash drop "$(git stash list --format='%H %gd' | awk -v s=<sha> '$1==s {print $2}')"`
