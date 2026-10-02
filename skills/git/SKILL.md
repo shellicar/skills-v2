@@ -53,9 +53,7 @@ that moment — use the knowledge you already have in the act, not just when que
   branch checked out in another worktree leaves everything where it was rather than
   half-moved. `-m` is for a dirty tree — local changes that differ between here and there
   normally refuse the switch, and `-m` stashes them, switches, then reapplies them on the
-  other side. It is a judgment call, not required: without it git refuses rather than
-  loses the changes, so reach for it when the plain switch is refused and the changes
-  should come along.
+  other side.
 
 - **`git switch -C` gives identical output whether it fast-forwards or discards
   commits.** Both cases end `Switched to and reset branch`, so nothing git prints tells
