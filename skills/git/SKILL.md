@@ -47,13 +47,15 @@ that moment — use the knowledge you already have in the act, not just when que
 - **`git switch` is how a branch is created or moved, and its flags aren't guessable.**
   `-c <branch>` creates it at the start point and switches to it; `-C <branch>` does the
   same but resets the branch when it already exists. So moving a branch onto another
-  commit is `git switch -C <branch> <commit>`, and that is the safe way to do it:
-  uncommitted work is preserved rather than thrown away, and both forms are
+  commit is `git switch -C <branch> <commit>`, which is offered: uncommitted work is
+  preserved rather than thrown away, and both forms are
   transactional, so the branch is not created or moved unless the switch succeeds. A
   branch checked out in another worktree leaves everything where it was rather than
   half-moved. `-m` is for a dirty tree — local changes that differ between here and there
   normally refuse the switch, and `-m` stashes them, switches, then reapplies them on the
-  other side.
+  other side. It is a judgment call, not required: without it git refuses rather than
+  loses the changes, so reach for it when the plain switch is refused and the changes
+  should come along.
 
 - **`git switch -C` gives identical output whether it fast-forwards or discards
   commits.** Both cases end `Switched to and reset branch`, so nothing git prints tells
@@ -82,14 +84,21 @@ that moment — use the knowledge you already have in the act, not just when que
   real risk for a tidiness the PR's squash-merge erases anyway. When histories diverge,
   merge; don't rebase.
 
-- **The destructive commands are offered: not yours to run.** `reset`, `checkout` /
-  `restore` for state, `git rm`. Use `git switch` for branches. See `safe-operations`.
+- **The destructive commands are offered: not yours to run.** `checkout` / `restore` for
+  state, `git rm`, `git switch -C`. Use `git switch` for branches, and `git switch -c` to
+  create one. `-C` resets a branch that already exists, a force change, so it is offered.
+  Discarding work is explicit: `git restore <paths>` names the files, and is offered too.
+  See `safe-operations`.
 
-- **`git switch -c` and `-C` are offered: yours to write, not to run.** The `no-git-C`
-  guard matches `-c` and `-C` anywhere in the arguments, and what it exists for is git's
-  own pre-subcommand `git -c <key>=<value>` and `git -C <path>`, which switch's flags
-  merely share a spelling with. The command is refused whichever one you meant, so write
-  it out in full and let the SC run it.
+- **A stash is named by its SHA, never `stash@{n}`.** `stash@{n}` counts from the newest
+  entry, and the stack is shared by every worktree, so another session's stash, or one
+  made mid-command, changes which entry it names. Work that is not wanted is stashed
+  rather than discarded, so it can be reviewed and dropped: `git stash push -u -m
+  "<unique tag>"`, then read the SHA from `git stash list --format='%H %gs'`.
+  `git stash apply <sha>` takes it directly. `git stash drop` and `pop` are offered, even
+  for a stash you made. `drop` takes only `stash@{n}`, so the command you offer looks the
+  index up by SHA:
+  `git stash drop "$(git stash list --format='%H %gd' | awk -v s=<sha> '$1==s {print $2}')"`
 
 ## Signing
 
@@ -130,5 +139,5 @@ Branch names are plain English describing the work, with one of these prefixes:
 
 ## Contraband
 
-`git reset --hard` and `git clean -f` are contraband: never run, never suggested, never
-written down. See `safe-operations`.
+Some git commands are contraband: never run, never suggested, never written down. The
+list is in `safe-operations`.

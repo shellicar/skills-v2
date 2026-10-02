@@ -116,15 +116,10 @@ offered.
 
 ## Git
 
-Git is not recoverable — you think it is, and that's the trap. `git reset`,
-`git checkout` / `restore` for state, `git rm`, `--hard`, `clean -f`, `branch -D`, `worktree remove -f`,
-`git stash pop`, `git stash drop` all destroy working-tree or index state with no undo.
+Git is not recoverable — you think it is, and that's the trap. `git checkout` / `restore`
+for state, `git rm`, `git switch -C`, `branch -D`, `worktree remove -f`, `git stash pop`,
+`git stash drop` all destroy working-tree or index state with no undo.
 Use `git switch` for branches only; anything destructive is offered.
-
-A stash is never yours to resolve. The SC may have stashed it deliberately, for his own
-reason, mid-thought — popping or dropping it overrules that reason without asking. If a
-stash is in the way, present it and let the SC decide; `git stash apply` doesn't drop the
-stash but still touches the tree, so it's the SC's call too, not yours to run.
 
 - `git push --force-with-lease` — offered: present it, don't run it.
 
@@ -148,7 +143,7 @@ offered, not that the pattern should widen.
 A wrapper that runs another command hides that command from anything watching program
 names. `env`, `nice`, `timeout`, `time`, `watch`, `ssh`, `su -c`, `find ... -exec` all
 take a command as an argument and execute it — so `env rm -rf /`, `ssh host rm -rf
-/data`, `su -c 'git reset --hard' otheruser`, `find . -exec rm {} \;` all run for real
+/data`, `su -c 'rm -rf /data' otheruser`, `find . -exec rm {} \;` all run for real
 with the wrapper as the only visible program, so a check for `rm` by name alone misses
 it. Never reach for one of these to route around a restriction above; there is no safe
 form of them, so they are offered.
