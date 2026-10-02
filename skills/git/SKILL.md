@@ -47,7 +47,7 @@ that moment — use the knowledge you already have in the act, not just when que
 - **`git switch` is how a branch is created or moved, and its flags aren't guessable.**
   `-c <branch>` creates it at the start point and switches to it; `-C <branch>` does the
   same but resets the branch when it already exists. So moving a branch onto another
-  commit is `git switch -C -m <branch> <commit>`, which is offered: uncommitted work is
+  commit is `git switch -m -C <branch> <commit>`, which is offered: uncommitted work is
   preserved rather than thrown away, and both forms are
   transactional, so the branch is not created or moved unless the switch succeeds. A
   branch checked out in another worktree leaves everything where it was rather than
