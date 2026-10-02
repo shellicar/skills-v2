@@ -96,8 +96,8 @@ that moment — use the knowledge you already have in the act, not just when que
   rather than discarded, so it can be reviewed and dropped: `git stash push -u -m
   "<unique tag>"`, then read the SHA from `git stash list --format='%H %gs'`.
   `git stash apply <sha>` takes it directly. `git stash drop` and `pop` are offered, even
-  for a stash you made. `drop` takes only `stash@{n}`, so the command you offer looks the
-  index up by SHA, and `pop` takes the same form:
+  for a stash you made. `drop` and `pop` take only `stash@{n}`, so the command you offer looks the
+  index up by SHA:
   `git stash drop "$(git stash list --format='%H %gd' | awk -v s=<sha> '$1==s {print $2}')"`
   `git stash pop "$(git stash list --format='%H %gd' | awk -v s=<sha> '$1==s {print $2}')"`
 
