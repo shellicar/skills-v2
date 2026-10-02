@@ -117,8 +117,9 @@ offered.
 ## Git
 
 Git is not recoverable — you think it is, and that's the trap. `git checkout` / `restore`
-for state, `git rm`, `git switch -C`, `branch -D`, `worktree remove -f`, `git stash pop`,
+for state, `git rm`, `branch -D`, `worktree remove -f`, `git stash pop`,
 `git stash drop` all destroy working-tree or index state with no undo.
+`git switch -C` is offered too: it keeps uncommitted work and only resets the branch's tip.
 Use `git switch` for branches only; anything destructive is offered.
 
 - `git push --force-with-lease` — offered: present it, don't run it.
