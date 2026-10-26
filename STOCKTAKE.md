@@ -162,7 +162,7 @@ House craft:
 - `refactoring` — carries the gatekeeper's "improve in your area of effect" bar.
 - ~~`shell-scripting`~~ **DONE** → `scripting` (broader: scripts that will be kept, in
   any language: choosing the language, POSIX shell, static, dynamic and interactive
-  scripts and their dry runs, input and output, errors, cleanup).
+  scripts and how each one goes ahead, input and output, errors, cleanup).
 
 ## Reassess — may generalize, thin out, or change shape
 

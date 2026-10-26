@@ -20,10 +20,11 @@ with no recommendation.
 
 - **The kind of work.** Running other programs is shell's work. Working on data is where
   a scripting language helps.
-- **The order to offer.** Shell first, then Node.js. Rust when the job is extremely
-  complex: a program that owns processes, memory and the communication between them,
-  such as a shell implementation or an orchestrator that works like a build system.
-  That is where Rust's memory management and control over communication earn their cost.
+- **The order to offer.** Shell first, then Node.js, whose types catch the mistakes shell
+  hides. Rust when the job is extremely complex: a program that owns processes, memory
+  and the communication between them, such as a shell implementation or an orchestrator
+  that works like a build system. That is where Rust's memory management and control
+  over communication earn their cost.
 - **Python** needs a reason Node.js lacks: a library, a real performance difference, or
   a maintenance gain. It is judged against Node.js, not against shell, because both beat
   shell for the same kinds of work. You reach for Python before Node.js; the SC prefers
@@ -31,12 +32,9 @@ with no recommendation.
 - **Moving up.** A script moves to the next language once maintaining it where it is
   costs more than the move gains. Less code against Node.js version trouble is one form
   of that trade. The weighing is yours, and what it produces is the case you bring him.
-- **Node.js only strips TypeScript types**, it doesn't compile them, so the code has to
-  use erasable syntax: no `enum`, no constructor parameter properties, no `namespace`
-  with runtime members, no `import =`.
 - **Ask before installing any other SDK or software.** An install changes his machines,
-  and every machine that runs the script then needs it. For the same reason, Python runs
-  under `uv` with a venv, never a global install.
+  and every machine that runs the script then needs it. Python runs under `uv` with a
+  venv, never a global install, so its packages stay out of the machine's global state.
 
 ## Three kinds of script
 
@@ -46,8 +44,9 @@ with no recommendation.
 - **Dynamic** scripts work out what to do from what they find when they run, so they are
   dry runs by default. This is the default kind.
 - **Interactive** scripts suit cases where what runs may vary by choice, or where several
-  related operations belong together, such as git cleanup and catchup offered in one
-  script. The person's selection is also the go-ahead.
+  related operations belong together, such as removing branches whose work has landed
+  and then bringing the default branch into the rest, in one script. The person's
+  selection is also the go-ahead.
 
 ### Dynamic scripts: `--apply` and every other flag
 
@@ -90,8 +89,9 @@ an interactive script. This is the pattern, unless a script has a reason to diff
   `--remove`. `--apply` there would imply the rest of the script is a dry run.
 - **The pause.** Wherever the action is destructive, in any kind of script, pause with a
   way to cancel first: 5 seconds and Ctrl-C. Once it starts there is no taking it back.
-  A destructive static script is usually better gated, because a static script acts
-  every time it runs.
+  A destructive static script is usually better gated with `--apply`, so it becomes a
+  dry run by default: that default is what makes a destructive script cancellable before
+  it acts.
 
 ## Run what you wrote, except the mutation
 
@@ -99,14 +99,19 @@ Run and test the script you wrote, and don't hand over code that has never run: 
 over untested, its first run, and whatever breaks in it, is his.
 
 What you don't run is the mutation: that is the SC's to run, unless he gives it to you.
-Having written the script doesn't make it yours to run. A script can hold commands you
-would never run directly, and "I wrote it, so I can run it" would make every one of them
-a way around the safety rules you work under. So how you test it follows its kind:
+Having written the script doesn't make the mutation yours to run. A script can hold
+commands you would never run directly, and "I wrote it, so I can run it" would make every
+one of them a way around the safety rules you work under.
 
-- **Static:** running it is the change itself, so test it somewhere disposable, such as
-  a container or a scratch copy, never on the SC's real machine.
-- **Dynamic:** run its dry runs freely, never `--apply`.
-- **Interactive:** test it through `--plan`, never `--plan --apply`.
+Nothing is created or deleted on his machine for a test, not even something harmless,
+because he doesn't want it there. So test setup always runs in Docker: a temp directory
+with a git repo put into some state for the test, and anything else a test creates or
+deletes. How you test the script itself follows its kind:
+
+- **Static:** running it is the change itself, so test it in Docker.
+- **Dynamic:** its own dry run may run on his machine, since showing the plan is what a
+  dry run is for. Never `--apply`.
+- **Interactive:** test it through `--plan`, which is its dry run, never `--plan --apply`.
 
 ## Which system it acts on
 
@@ -123,10 +128,11 @@ change who may run the mutation.
 
 - **When the SC runs it,** it takes arguments.
 - **When you call it,** it takes what suits you, not what a person at a prompt would
-  type. That is often JSON on stdin. A soft guide: two or more values as JSON, one or
-  none as arguments; you may only find out by using it. Take every input up front,
-  because you can't answer a prompt. A script that reads stdin guards the case where
-  nothing is piped, or a run from a terminal waits forever.
+  type. That is often JSON on stdin, which composes without the quoting and
+  string-splitting that break agent-driven calls. A soft guide: two or more values as
+  JSON, one or none as arguments; you may only find out by using it. Take every input up
+  front, because you can't answer a prompt. A script that reads stdin guards the case
+  where nothing is piped, or a run from a terminal waits forever.
 - **Long or sensitive input stays off the command line,** in stdin or a file. A security
   scanner can kill a process with a long argument before it starts, with no output, so
   the script just looks broken. Anything that lists processes sees the arguments, another
@@ -165,9 +171,9 @@ command's own error reach stderr, then print the script's reading of it.
 
 ## Temporary files
 
-Create them where `$TMPDIR` points: `mktemp` with no `/tmp` template, or `os.tmpdir()`
-in Node.js. Never hardcode `/tmp`. The sandbox sets `$TMPDIR` to a place it can write,
-and makes `/tmp` read-only.
+Create them where `$TMPDIR` points: `mktemp` or `mktemp -d` with no template, or
+`os.tmpdir()` in Node.js. Never hardcode `/tmp`. The sandbox sets `$TMPDIR` to a place it
+can write, and makes `/tmp` read-only.
 
 ## Shell scripts
 
@@ -187,14 +193,14 @@ The tools underneath differ too: macOS has BSD tools and WSL has GNU ones, so `s
 
 ### `set -e`
 
-Prefer it, so scripts behave the same way on failure. Know its gaps:
+Prefer it, so scripts behave the same way on failure. Know its traps:
 
 - conditions, and functions called from them;
 - `local x=$(cmd)`;
 - pipelines;
 - commands that exit non-zero as a normal answer.
 
-One gap needs spelling out, because its consequence gets missed even when the rule is
+One trap needs spelling out, because its consequence gets missed even when the rule is
 known. In `a && b && c`, a failing `b` skips `c`, and the script carries on to the
 next line, because `set -e` ignores a failure anywhere in an `&&` list except the last
 command. The chain stops; the script doesn't.
@@ -208,8 +214,10 @@ script started, where that applies:
 
 ```sh
 tmp=$(mktemp -d) || exit 1
+pid=''
 cleanup() {
   set +e
+  [ -n "$pid" ] && kill "$pid"
   [ -n "$tmp" ] && [ -d "$tmp" ] && rm -rf -- "$tmp"
 }
 trap cleanup EXIT
@@ -217,15 +225,20 @@ trap 'exit 129' HUP
 trap 'exit 130' INT
 trap 'exit 131' QUIT
 trap 'exit 143' TERM
+
+some_command &
+pid=$!
 ```
 
-`cleanup` starts with `set +e` because it should attempt every step: under `set -e`, one
-failing step stops it partway, and the steps after it never run. `set +e` isn't local to
-the function, which is harmless while `cleanup` only runs at exit.
+`cleanup` starts with `set +e` because it should attempt every step. `kill` fails when
+the process has already gone, and under `set -e` that would end `cleanup` before it
+removes `$tmp`. `set +e` isn't local to the function, which is harmless while `cleanup`
+only runs at exit.
 
-Each signal becomes an `exit` so that the EXIT trap, and the cleanup with it, runs
-however the script ends, while the exit status still says which signal ended it. These
-four are the signals generally worth catching, in any order.
+Each signal becomes an `exit`, so the EXIT trap, and the cleanup with it, also runs when
+one of these four ends the script, and the exit status still says which signal it was. A
+signal with no trap, and SIGKILL, which no trap can catch, can still end the script
+without it. These four are the signals generally worth catching, in any order.
 
 In a non-interactive `sh`, a child started in the background ignores Ctrl-C. The script
 ends and the child carries on, unless `cleanup` stops it.
@@ -238,10 +251,21 @@ root containing `disable=SC3043`, so both you and the repo's own checks skip tha
 and no other. Without it every `local` warns, and you either "fix" them away or read the
 failing exit as a failed test.
 
+## TypeScript scripts
+
+A Node.js script is `.mjs` for JavaScript and `.mts` for TypeScript, so Node treats it as
+an ES module whatever the nearest `package.json` says.
+
+Node.js runs a `.mts` script directly, with no build step, by stripping the types without
+compiling them. So syntax that needs code generated for it, such as `enum` or
+constructor parameter properties, makes Node stop with an error. Keep to erasable
+syntax: no `enum`, no constructor parameter properties, no `namespace` with runtime
+members, no `import =`.
+
 ## A reusable tool for the SC lives in his dotfiles
 
 A reusable script with no home goes in `~/dotfiles`, which its own installer symlinks
-into `$HOME`: a git subcommand, an alias, anything that ends up on his global path. One
-that already has a home, such as the repo it serves, stays there. Written straight into
-`~/bin` instead, a tool exists on one machine and no repo knows it is there. Check the
-dotfiles first; `~/dotfiles/CLAUDE.md` has the rules for changing anything in it.
+into `$HOME`: a git subcommand, an alias, anything that ends up on his global path.
+Written straight into `~/bin` instead, a tool exists on one machine and no repo knows it
+is there. Check the dotfiles first; `~/dotfiles/CLAUDE.md` has the rules for changing
+anything in it.
