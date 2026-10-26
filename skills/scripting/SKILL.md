@@ -1,83 +1,219 @@
 ---
 name: scripting
 description: |
-  WHAT: writing portable scripts — POSIX shell, not bash.
-  WHY: you default to bash/python because that's your training; this is how the SC does it.
-  TRIGGER WHEN: writing or modifying a script.
+  WHAT: writing a script that will be kept: language, POSIX shell, dry runs, input, output, cleanup.
+  WHY: you default to bash and Python from training; this is how the SC does it.
+  TRIGGER WHEN: writing or changing a kept script, not a throwaway.
 ---
 
 # Scripting
 
-Default to portable scripts, POSIX / Bourne.
+This is for scripts that will be kept: reused, and most likely checked into a repo. What
+follows pays off in a script someone maintains and runs again. A throwaway script is your
+own choice, bash included.
 
-My main toolstack is NodeJS (TypeScript) and Rust.
+## Language
 
-Ask before installing any other SDKs or software.
+The language is the SC's decision, so always ask him. Compare the options as a whole,
+starting from the kind of work the script does, and bring him the case for each option
+with no recommendation.
 
-- **Shell (POSIX / Bourne)** — prefer starting with shell scripting for simple tasks. Keep it POSIX, not bash-isms. The environments are macOS (BSD coreutils) and WSL2/Ubuntu (GNU), and their `sed`, `date`, and friends differ — a GNU flag silently fails on the Mac. Think about moving to NodeJS when more advanced operations are needed.
+- **The kind of work.** Running other programs is shell's work. Working on data is where
+  a scripting language helps.
+- **The order to offer.** Shell first, then Node.js. Rust when the job is extremely
+  complex: a program that owns processes, memory and the communication between them,
+  such as a shell implementation or an orchestrator that works like a build system.
+  That is where Rust's memory management and control over communication earn their cost.
+- **Python** needs a reason Node.js lacks: a library, a real performance difference, or
+  a maintenance gain. It is judged against Node.js, not against shell, because both beat
+  shell for the same kinds of work. You reach for Python before Node.js; the SC prefers
+  Node.js.
+- **Moving up.** A script moves to the next language once maintaining it where it is
+  costs more than the move gains. Less code against Node.js version trouble is one form
+  of that trade. The weighing is yours, and what it produces is the case you bring him.
+- **Node.js only strips TypeScript types**, it doesn't compile them, so the code has to
+  use erasable syntax: no `enum`, no constructor parameter properties, no `namespace`
+  with runtime members, no `import =`.
+- **Ask before installing any other SDK or software.** An install changes his machines,
+  and every machine that runs the script then needs it. For the same reason, Python runs
+  under `uv` with a venv, never a global install.
 
-- **JavaScript (`.mjs`)/TypeScript (`.mts`)** — My main techstack and what I'm familiar with. Node 22+ runs TypeScript directly, no build step, and types catch the mistakes shell hides. Node only *strips* types, it doesn't compile them, so keep to erasable syntax: no `enum`, no constructor parameter properties (`constructor(private x: number)`), no `namespace` with runtime members, no `import =`. Use a union or `as const` and assign fields explicitly — anything that needs code generation rather than type removal errors.
+## Run what you wrote, except the mutation
 
-- **Rust** — when it should be a *program*: a real tool, something distributable, or where performance is the point. The main benefit of Rust is the discipline it enforces.
+Run and test the script you wrote, and don't hand over code that has never run: handed
+over untested, its first run, and whatever breaks in it, is his.
 
-- **Python** — only when its ecosystem is the reason (data analysis, ML) and it's genuinely the best fit. When you do, use `uv` and a `venv` — never a bare global install.
+What you don't run is the mutation, the `--apply`: that is the SC's to run, unless he
+gives it to you. Having written the script doesn't make it yours to run. A script can
+hold commands you would never run directly, and "I wrote it, so I can run it" would make
+every one of them a way around the safety rules you work under.
 
-## Dry run by default
+## Three kinds of script
 
-A script that deletes, overwrites, or otherwise can't be undone defaults to a dry run.
-The shape is one computation, shown before it runs:
+- **Static** scripts do the same thing every time, as setup and install scripts do. They
+  act with no dry run, because a dry run would have nothing to show. Being idempotent is
+  what makes running one again safe.
+- **Dynamic** scripts work out what to do from what they find when they run, so they are
+  dry runs by default. This is the default kind.
+- **Interactive** scripts suit cases where what runs may vary by choice, or where several
+  related operations belong together, such as git cleanup and catchup offered in one
+  script. The person's selection is also the go-ahead.
 
-- **No flags: print the plan, then exit.** Nothing is touched. Running the script with
-  no flags is always safe.
-- **`--apply`: print the plan, then carry it out.** The plan is what the script is
-  going to attempt, listed before it attempts any of it. Not what the outcome will
-  be: a pull can conflict, a delete can be refused, and no script knows that in
-  advance. Seeing the branches it is about to try is the whole of the promise.
-- **Act on the plan you printed, not a fresh one.** Compute once, hold it, print
-  from it, execute from it. Recomputing after printing reopens the gap this closes.
-- **Whether `--apply` pauses first is a decision, not a rule.** A pause with a
-  warning earns its place where the effect cannot be undone: writing a production
-  database, deleting the only copy of something. Ordinary git operations do not
-  need one. Where there is a pause, 5 seconds and a Ctrl-C is the shape.
-- **One flag acts, `--apply`.** Every other flag only narrows *what's in the plan* —
-  which items are considered. None of them cause anything to happen by itself.
-- **Never let a flag both select and execute.** The moment one does, running the
-  script with no `--apply` stops being safe, and the whole point of a dry run is gone.
+### Dynamic scripts: `--apply` and every other flag
 
-For example, a branch-cleanup script: `--apply` is the only flag that deletes anything.
-Flags like `--rescue` or `--gone` just decide which branches show up in the plan — on
-their own they print, they don't touch a branch.
+The flags answer two separate questions. `--apply` decides whether the run does what it
+shows, or only shows it, and it gates everything the script would change. Every other
+flag decides which behaviour the run includes. The combination says what happens: in
+`git cleanup`, `--rescue` alone shows the rescue it would do, and `--rescue --apply` does
+it. So whether a new flag needs `--apply` is never a question.
 
-Why `--apply` prints the plan itself, instead of trusting the dry run the SC already
-ran: two invocations are two readings of the world. The actions he approved were chosen
-from the tree, the remote, the settings file as they stood; the second run chooses again
-from whatever they are now. He approves one set of actions and executes another, and
-neither run is in a position to tell him they differed. One run removes the gap — what
-he saw is what gets attempted, because it is the same plan.
+Compute the plan once, print it, and act on that same plan. Two runs are two readings of
+the world: the SC approved what the first one found, and a second would choose again from
+whatever is there now, with neither able to tell him they differed. The plan is what the
+script will attempt, not what will happen: a pull can still conflict, and no script knows
+that in advance.
 
-This is not a judgement call, and there is no question in it to ask. `safe-operations`
-holds why, along with the other half of it: the script is his to run, never yours, not
-even to test.
+What `--apply` holds back is decided for each script and written down in it. A dry run
+still reads, and may fetch or fill a cache, so whoever runs it needs to know what it does
+and what it leaves for `--apply`. The common cases held back are changes that can't be
+undone, and external calls such as running Claude or calling the Anthropic API.
 
-## Who is it for: you, or the SC
+### Extra actions and the pause
 
-This decides the interface, not who is permitted to execute it — a script written for
-you to call can still be one only he may run.
+- **An extra action in a static script** is a flag named for that action, like setup's
+  `--remove`. `--apply` there would imply the rest of the script is a dry run.
+- **The pause.** Wherever the action is destructive, in any kind of script, pause with a
+  way to cancel first: 5 seconds and Ctrl-C. Once it starts there is no taking it back.
+  A destructive static script is usually better gated, because a static script acts
+  every time it runs.
 
-The default is that a script is for you — an LLM — to run, not a person. Claude still writes for the pre-LLM world, where someone typed the script at a prompt with `--flags` and read its friendly output. The SC doesn't run scripts anymore; he asks you to. So write for the caller you actually have:
+## Which system it acts on
 
-- **Input is JSON on stdin, never argv.** One shape for every script, so a caller never has to work out whether a value is an argument or a field, and it composes without the quoting and string-splitting that break agent-driven calls. The harder reason: a long value sitting in the process argv trips endpoint security scanning (SentinelOne on the work machine), which SIGKILLs the process before it starts, in about 20ms, with no output — so it reads as the script being broken rather than as a scanner. Read fd 0: `readFileSync(0, "utf8")` in node (`readStdin` in `shared/stdin.mts` does it here), `INPUT=$(cat)` then `jq` in shell. Guard the no-pipe case or an interactive run blocks on the terminal forever.
-- **Output that fits the tool** — not JSON by default. Structured (JSON) when it returns data or a status a caller parses: `preflight` reporting identity, branch, and tree is this. Plain lines when the output is a stream to scan or pipe: a file search or a grep is naturally linewise, and wrapping it in JSON helps no one. Match the shape to what the output *is*.
-- **Exit codes say what the caller does next**, not how bad it was. `0` succeeded. `1` it ran and the answer is no: failed, rejected, refused. `2` no answer yet: timed out or still running, so retrying is meaningful. `64` the call itself is wrong, so only fixing the call helps — that's `EX_USAGE` from sysexits.h, and it sits far above the low codes so a script can add its own verdicts later without ever colliding with it. Negative codes don't exist: the status is 8 unsigned bits, so `-1` arrives as 255 and `-2` as 254, silently.
-- **Quiet on success.** No noise unless there's something to return.
-- **No interactive prompts** — you can't answer them; take every input up front.
+A script that acts on an external system (an org, tenant or subscription) works the
+target out where it can, such as from the git remote. Where it can't, the target is a
+required input with no default, because a default quietly sends a caller who forgot it to
+the wrong system. When it can be neither worked out nor found in the input, the script
+stops and says what's missing.
 
-A human-run script is the exception, and it looks different: named `--flags` a person types, maybe a `--doctor` dry-run. Write one that way only when the SC asks for a script he'll run himself. `launch-handler` reads a JSON config because a cast composes and runs it; `start-planner` takes `--flags` because the SC does.
+## Input
+
+Design it for whoever calls the script. Who calls it shapes the interface; it doesn't
+change who may run the mutation.
+
+- **When the SC runs it,** it takes arguments.
+- **When you call it,** it takes what suits you, not what a person at a prompt would
+  type. That is often JSON on stdin. A soft guide: two or more values as JSON, one or
+  none as arguments; you may only find out by using it. Take every input up front,
+  because you can't answer a prompt. A script that reads stdin guards the case where
+  nothing is piped, or a run from a terminal waits forever.
+- **Long or sensitive input stays off the command line,** in stdin or a file. A security
+  scanner can kill a process with a long argument before it starts, with no output, so
+  the script just looks broken. Anything that lists processes sees the arguments, another
+  session included. And other users on the machine can read them, so a secret never goes
+  there.
+
+## Output
+
+It has two readers.
+
+- **You** shouldn't be flooded with output you have to read through. Its shape fits what
+  it is: structured where a caller parses it, lines where it is scanned.
+- **The SC** shouldn't be left watching a run that shows nothing. Progress goes to stderr
+  while it runs, so it stays out of the result, and the result comes at the end.
+
+## Exit codes
+
+An exit code says what the caller does next, not how bad it was. These shared codes
+cover the common cases:
+
+- `0` succeeded.
+- `1` it ran and the answer is no: failed, rejected, refused.
+- `2` no answer yet: timed out or still running, so retrying means something.
+- `64` the call itself is wrong, so only fixing the call helps. It is `EX_USAGE` from
+  sysexits.h, and it sits well above the low codes, which leaves room for a script's own.
+
+Each script also defines its own codes for its other failures. Either way the codes are
+documented: for you, a documented code can be the difference between knowing why a
+script failed and not knowing.
+
+## Errors
+
+Never swallow one. `cmd 2>/dev/null` followed by a printed guess at what went wrong
+leaves only the guess, and when the guess is wrong it hides the real cause. Let the
+command's own error reach stderr, then print the script's reading of it.
+
+## Temporary files
+
+Create them where `$TMPDIR` points: `mktemp` with no `/tmp` template, or `os.tmpdir()`
+in Node.js. Never hardcode `/tmp`. The sandbox sets `$TMPDIR` to a place it can write,
+and makes `/tmp` read-only.
+
+## Shell scripts
+
+### POSIX
+
+The SC's shell scripts are POSIX (Bourne) shell, with `local` the only exception so far.
+
+- Most examples online use bash when they don't need it, so you reach for features a
+  script doesn't need.
+- He wants his scripts portable.
+- Shell portability errors are rare, but painful to solve.
+- Strict compliance beyond that, such as giving up `local`, makes scripts worse for no
+  gain.
+
+The tools underneath differ too: macOS has BSD tools and WSL has GNU ones, so `sed`,
+`date` and friends don't take the same flags.
+
+### `set -e`
+
+Prefer it, so scripts behave the same way on failure. Know its gaps:
+
+- conditions, and functions called from them;
+- `local x=$(cmd)`;
+- pipelines;
+- commands that exit non-zero as a normal answer.
+
+One gap needs spelling out, because its consequence gets missed even when the rule is
+known. In `a && b && c`, a failing `b` skips `c`, and the script carries on to the
+next line, because `set -e` ignores a failure anywhere in an `&&` list except the last
+command. The chain stops; the script doesn't.
+
+### Cleanup and signals
+
+You get traps wrong constantly, and the result is often processes left running. So every
+script that creates anything or starts processes uses this pattern. Its function is
+always named `cleanup`, for consistency, and it stops the processes and removes what the
+script started, where that applies:
+
+```sh
+tmp=$(mktemp -d) || exit 1
+cleanup() { [ -n "$tmp" ] && [ -d "$tmp" ] && rm -rf -- "$tmp"; }
+trap cleanup EXIT
+trap 'exit 129' HUP
+trap 'exit 130' INT
+trap 'exit 131' QUIT
+trap 'exit 143' TERM
+```
+
+Each signal becomes an `exit` so that the EXIT trap, and the cleanup with it, runs
+however the script ends, while the exit status still says which signal ended it. These
+four are the signals generally worth catching, in any order.
+
+In a non-interactive `sh`, a child started in the background ignores Ctrl-C. The script
+ends and the child carries on, unless `cleanup` stops it.
+
+### ShellCheck
+
+Check a shell script with ShellCheck in `sh` mode (`shellcheck -s sh`) as part of testing
+it. The `local` exception is recorded once per repo, in a `.shellcheckrc` at the repo
+root containing `disable=SC3043`, so both you and the repo's own checks skip that warning
+and no other. Without it every `local` warns, and you either "fix" them away or read the
+failing exit as a failed test.
 
 ## A reusable tool for the SC lives in his dotfiles
 
-Not every script. The ones written for him to keep and reuse — a git subcommand, an
-alias, anything that ends up on his global path — belong in `~/dotfiles`, which its
-own installer symlinks into `$HOME`. Written straight into `~/bin` instead, a tool
-exists on one machine and no repo knows it is there. Check the dotfiles first;
-`~/dotfiles/CLAUDE.md` has the rules for changing anything in it.
+A reusable script with no home goes in `~/dotfiles`, which its own installer symlinks
+into `$HOME`: a git subcommand, an alias, anything that ends up on his global path. One
+that already has a home, such as the repo it serves, stays there. Written straight into
+`~/bin` instead, a tool exists on one machine and no repo knows it is there. Check the
+dotfiles first; `~/dotfiles/CLAUDE.md` has the rules for changing anything in it.

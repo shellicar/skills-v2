@@ -160,8 +160,9 @@ House craft:
   direct instruction — overriding this doc's original "standalone, not merged" call.
   `rust` has no v1 source; it's new, and currently carries only testing syntax.
 - `refactoring` — carries the gatekeeper's "improve in your area of effect" bar.
-- ~~`shell-scripting`~~ **DONE** → `scripting` (broader: portable scripts generally,
-  not just POSIX shell).
+- ~~`shell-scripting`~~ **DONE** → `scripting` (broader: scripts that will be kept, in
+  any language: choosing the language, POSIX shell, static, dynamic and interactive
+  scripts and their dry runs, input and output, errors, cleanup).
 
 ## Reassess — may generalize, thin out, or change shape
 
