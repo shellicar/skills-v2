@@ -26,6 +26,8 @@ happen in its comments.
 
 ## The title
 
+<!-- TODO(claude): undecided: this section's heading and place. "The title", after the table and before the body guidance, for now. -->
+
 The title is the first line of the commit on main. Most of its readers come later,
 scanning or searching the log, often as a Claude session, with neither the code nor
 the conversation. They use the title to find a change and to tell whether it's the one
@@ -99,7 +101,8 @@ Opening a PR and merging one each need the SC's approval. On GitHub that is one 
 When one instruction says to open a PR and merge it, ask and get a yes for the merge
 before doing it, even when that instruction is in your brief.
 
-Open with `gh pr create --draft`. Editing, marking ready and commenting need no approval.
+Open with `gh pr create --draft`. Editing and commenting need no approval. Marking ready
+is the SC's alone, because it is his approval of the merge.
 
 On Azure DevOps, create with `AzureDevOps_PullRequest_Create`, never the bare
 `az repos pr create` CLI: the tool always opens as a draft and carries its own approval
@@ -109,7 +112,7 @@ is a platform mechanic rather than a missing tool. Since each call is already ga
 batch what you can, e.g. create and then edit in the same turn.
 
 Body is `## Summary`, a short description of what the
-change is for, then bullets, commonly one to five, each the effect too — not the
+change is for, then bullets, commonly one to five, each the effect — not the
 implementation (no modules, functions, or file lists). E.g.
 "Show token usage on every turn," not "StreamProcessor emits both frames."
 
