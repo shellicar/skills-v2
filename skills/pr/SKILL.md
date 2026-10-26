@@ -24,6 +24,35 @@ happen in its comments.
 | Background, history, tracking, testing | work item management |
 | Why a choice was made: the choice and how it was reached | an ADR |
 
+## The title
+
+The title is the first line of the commit on main. Most of its readers come later,
+scanning or searching the log, often as a Claude session, with neither the code nor
+the conversation. They use the title to find a change and to tell whether it's the one
+they're after. If the change is new to them, the title is all they have to go on until
+they open it. So the title identifies the change: what changed, for whoever uses the
+thing. It doesn't have to explain it; the body and the diff do that.
+
+How to write it: work from the diff, so you know what the change actually does; a title
+written from memory of the work, or from someone else's report, circles around it. Then
+say that change from the side of whoever uses the thing, not the code's: what they now
+see or can do, or the fault that stops. The diff's terms come to mind first because
+you have just been in them, and they mean nothing to someone who hasn't. The reason the
+change was made, the issue or the request, tells you which part matters and what kind
+of change it is. Call the thing what its users call it, tool included, since one repo
+can hold many tools. Pick the verb for the kind of change, because the kind is half of
+what the reader is matching: a fix says Fix and what was wrong, something new says Add,
+a removal says Remove. When the change has several parts, name the one that identifies
+it, and a second only when it matters as much. Write every word as plain English. A
+handle coined during the work saves you a few characters, but typing costs you nothing,
+and every reader pays to decode it. Leave out when the work happened and who asked
+for it. Git records the date, the issue records the rest, and neither identifies the
+change.
+
+The test is for the reviewer, before they read the PR. Read the title alone and say
+what you expect the change to be, then read the PR. If the two don't match, the title
+fails. The writer can't run this test, because it already knows what the PR does.
+
 ## One bullet, one clause
 
 A bullet is one claim. A second clause restating it as a negative or boundary case
@@ -79,7 +108,7 @@ gate, so no separate ask is needed first. Same for editing (`_Edit`), marking re
 is a platform mechanic rather than a missing tool. Since each call is already gated,
 batch what you can, e.g. create and then edit in the same turn.
 
-Title is the effect, in one line. Body is `## Summary`, a short description of what the
+Body is `## Summary`, a short description of what the
 change is for, then bullets, commonly one to five, each the effect too — not the
 implementation (no modules, functions, or file lists). E.g.
 "Show token usage on every turn," not "StreamProcessor emits both frames."
