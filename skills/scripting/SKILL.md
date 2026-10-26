@@ -38,16 +38,6 @@ with no recommendation.
   and every machine that runs the script then needs it. For the same reason, Python runs
   under `uv` with a venv, never a global install.
 
-## Run what you wrote, except the mutation
-
-Run and test the script you wrote, and don't hand over code that has never run: handed
-over untested, its first run, and whatever breaks in it, is his.
-
-What you don't run is the mutation, the `--apply`: that is the SC's to run, unless he
-gives it to you. Having written the script doesn't make it yours to run. A script can
-hold commands you would never run directly, and "I wrote it, so I can run it" would make
-every one of them a way around the safety rules you work under.
-
 ## Three kinds of script
 
 - **Static** scripts do the same thing every time, as setup and install scripts do. They
@@ -62,10 +52,10 @@ every one of them a way around the safety rules you work under.
 ### Dynamic scripts: `--apply` and every other flag
 
 The flags answer two separate questions. `--apply` decides whether the run does what it
-shows, or only shows it, and it gates everything the script would change. Every other
-flag decides which behaviour the run includes. The combination says what happens: in
-`git cleanup`, `--rescue` alone shows the rescue it would do, and `--rescue --apply` does
-it. So whether a new flag needs `--apply` is never a question.
+shows, or only shows it, and it gates everything the script counts as a change. Every
+other flag decides which behaviour the run includes. The combination says what happens:
+in `git cleanup`, `--rescue` alone shows the rescue it would do, and `--rescue --apply`
+does it. So whether a new flag needs `--apply` is never a question.
 
 Compute the plan once, print it, and act on that same plan. Two runs are two readings of
 the world: the SC approved what the first one found, and a second would choose again from
@@ -73,10 +63,26 @@ whatever is there now, with neither able to tell him they differed. The plan is 
 script will attempt, not what will happen: a pull can still conflict, and no script knows
 that in advance.
 
-What `--apply` holds back is decided for each script and written down in it. A dry run
-still reads, and may fetch or fill a cache, so whoever runs it needs to know what it does
-and what it leaves for `--apply`. The common cases held back are changes that can't be
-undone, and external calls such as running Claude or calling the Anthropic API.
+What counts as a change is decided for each script and written down in it, and `--apply`
+gates all of it. A fetch or a cache refresh may not count, so a dry run can still do
+them, and whoever runs it needs to know what it does and what it leaves for `--apply`.
+What counts usually includes changes that can't be undone, and external calls such as
+running Claude or calling the Anthropic API.
+
+### Interactive scripts: `--plan`
+
+You can't drive a picker, so without a non-interactive mode you can neither use nor test
+an interactive script. This is the pattern, unless a script has a reason to differ:
+
+- **`--plan`** prints the plan and stops. The plan is every operation, each marked with
+  whether it runs, as the picker would start.
+- **`--plan --apply`** carries out what `--plan` shows, acting on the plan it printed as
+  a dynamic script does. The behaviour flags shape what's on offer, as they do in the
+  picker.
+- **With no terminal and no `--plan`,** the script refuses, and tells the caller to run
+  it with `--plan` or `--help`. It doesn't fall back to `--plan`, because then the same
+  command would do different things depending on whether there's a terminal, which is
+  more confusing.
 
 ### Extra actions and the pause
 
@@ -86,6 +92,21 @@ undone, and external calls such as running Claude or calling the Anthropic API.
   way to cancel first: 5 seconds and Ctrl-C. Once it starts there is no taking it back.
   A destructive static script is usually better gated, because a static script acts
   every time it runs.
+
+## Run what you wrote, except the mutation
+
+Run and test the script you wrote, and don't hand over code that has never run: handed
+over untested, its first run, and whatever breaks in it, is his.
+
+What you don't run is the mutation: that is the SC's to run, unless he gives it to you.
+Having written the script doesn't make it yours to run. A script can hold commands you
+would never run directly, and "I wrote it, so I can run it" would make every one of them
+a way around the safety rules you work under. So how you test it follows its kind:
+
+- **Static:** running it is the change itself, so test it somewhere disposable, such as
+  a container or a scratch copy, never on the SC's real machine.
+- **Dynamic:** run its dry runs freely, never `--apply`.
+- **Interactive:** test it through `--plan`, never `--plan --apply`.
 
 ## Which system it acts on
 
@@ -187,13 +208,20 @@ script started, where that applies:
 
 ```sh
 tmp=$(mktemp -d) || exit 1
-cleanup() { [ -n "$tmp" ] && [ -d "$tmp" ] && rm -rf -- "$tmp"; }
+cleanup() {
+  set +e
+  [ -n "$tmp" ] && [ -d "$tmp" ] && rm -rf -- "$tmp"
+}
 trap cleanup EXIT
 trap 'exit 129' HUP
 trap 'exit 130' INT
 trap 'exit 131' QUIT
 trap 'exit 143' TERM
 ```
+
+`cleanup` starts with `set +e` because it should attempt every step: under `set -e`, one
+failing step stops it partway, and the steps after it never run. `set +e` isn't local to
+the function, which is harmless while `cleanup` only runs at exit.
 
 Each signal becomes an `exit` so that the EXIT trap, and the cleanup with it, runs
 however the script ends, while the exit status still says which signal ended it. These
