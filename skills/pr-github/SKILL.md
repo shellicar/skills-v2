@@ -45,8 +45,7 @@ The union driver concatenates both sides, so a removed line on one side can leav
 boundary duplicated or a trailing newline stripped. Read the diff and confirm each
 merged file still reads correctly before pushing.
 
-Mark ready with `GitHub_PullRequest_Ready`, not `gh pr ready` — same tool-is-the-gate
-reasoning as `pr`.
+Mark ready with `gh pr ready`.
 
 **Done when:** the PR is open, integrated with the latest target branch, any union-merge
 files verified, and every check has completed and passed.
