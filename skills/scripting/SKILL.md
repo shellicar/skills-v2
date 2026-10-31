@@ -14,9 +14,9 @@ own choice, bash included.
 
 ## Language
 
-The language is the SC's decision, so always ask him. Compare the options as a whole,
-starting from the kind of work the script does, and bring him the case for each option
-with no recommendation.
+The language is the SC's decision, so ask him. Compare the options as a whole, starting
+from the kind of work the script does, and bring him the case for each option without a
+recommendation, so the choice stays his.
 
 - **The kind of work.** Running other programs is shell's work. Working on data is where
   a scripting language helps.
@@ -34,7 +34,8 @@ with no recommendation.
   of that trade. The weighing is yours, and what it produces is the case you bring him.
 - **Ask before installing any other SDK or software.** An install changes his machines,
   and every machine that runs the script then needs it. Python runs under `uv` with a
-  venv, never a global install, so its packages stay out of the machine's global state.
+  venv rather than a global install, so its packages stay out of the machine's global
+  state.
 
 ## Three kinds of script
 
@@ -54,7 +55,8 @@ The flags answer two separate questions. `--apply` decides whether the run does 
 shows, or only shows it, and it gates everything the script counts as a change. Every
 other flag decides which behaviour the run includes. The combination says what happens:
 in `git cleanup`, `--rescue` alone shows the rescue it would do, and `--rescue --apply`
-does it. So whether a new flag needs `--apply` is never a question.
+does it. So a new flag needs no decision about `--apply`: whatever it adds, `--apply`
+already gates.
 
 Compute the plan once, print it, and act on that same plan. Two runs are two readings of
 the world: the SC approved what the first one found, and a second would choose again from
@@ -103,15 +105,16 @@ Having written the script doesn't make the mutation yours to run. A script can h
 commands you would never run directly, and "I wrote it, so I can run it" would make every
 one of them a way around the safety rules you work under.
 
-Nothing is created or deleted on his machine for a test, not even something harmless,
-because he doesn't want it there. So test setup always runs in Docker: a temp directory
-with a git repo put into some state for the test, and anything else a test creates or
-deletes. How you test the script itself follows its kind:
+A test creates and deletes what it needs in Docker rather than on his machine, even when
+it's harmless, because he doesn't want it there. So test setup runs in Docker: a temp
+directory with a git repo put into some state for the test, and anything else a test
+creates or deletes. How you test the script itself follows its kind:
 
 - **Static:** running it is the change itself, so test it in Docker.
 - **Dynamic:** its own dry run may run on his machine, since showing the plan is what a
-  dry run is for. Never `--apply`.
-- **Interactive:** test it through `--plan`, which is its dry run, never `--plan --apply`.
+  dry run is for. `--apply` is the mutation, so it stays his.
+- **Interactive:** test it through `--plan`, which is its dry run. `--plan --apply` is
+  the mutation, so it stays his.
 
 ## Which system it acts on
 
@@ -136,8 +139,8 @@ change who may run the mutation.
 - **Long or sensitive input stays off the command line,** in stdin or a file. A security
   scanner can kill a process with a long argument before it starts, with no output, so
   the script just looks broken. Anything that lists processes sees the arguments, another
-  session included. And other users on the machine can read them, so a secret never goes
-  there.
+  session included. And other users on the machine can read them, which matters most for
+  a secret.
 
 ## Output
 
@@ -165,15 +168,32 @@ script failed and not knowing.
 
 ## Errors
 
-Never swallow one. `cmd 2>/dev/null` followed by a printed guess at what went wrong
-leaves only the guess, and when the guess is wrong it hides the real cause. Let the
-command's own error reach stderr, then print the script's reading of it.
+By default, let a tool's own error reach stderr, then print the script's reading of it.
+A script that assumes it knows what an error will be and silences it, as with
+`cmd 2>/dev/null`, silences every error it didn't consider too, and whatever it prints in
+its place is then wrong or misleading.
+
+The trap is inferring what happened from an exit code when the command can fail for other
+reasons:
+
+```sh
+docker image inspect foo >/dev/null 2>&1 || echo "docker image not found"
+```
+
+That prints "docker image not found" when the real cause is that docker isn't installed,
+or its daemon is down. Even `kill -0 "$pid"` fails for a process that exists but belongs
+to another user, so its non-zero exit doesn't only mean "not running".
+
+So the test for silencing an error is whether a non-zero exit from the command can mean
+only the one thing the script concludes. `command -v jq >/dev/null 2>&1` asks only whether
+jq is installed, so its exit code is the whole answer and silencing it hides nothing. If
+the exit can mean anything else, let the error through.
 
 ## Temporary files
 
 Create them where `$TMPDIR` points: `mktemp` or `mktemp -d` with no template, or
-`os.tmpdir()` in Node.js. Never hardcode `/tmp`. The sandbox sets `$TMPDIR` to a place it
-can write, and makes `/tmp` read-only.
+`os.tmpdir()` in Node.js, rather than a hardcoded `/tmp`. The sandbox sets `$TMPDIR` to a
+place it can write, and makes `/tmp` read-only.
 
 ## Shell scripts
 
@@ -207,10 +227,10 @@ command. The chain stops; the script doesn't.
 
 ### Cleanup and signals
 
-You get traps wrong constantly, and the result is often processes left running. So every
-script that creates anything or starts processes uses this pattern. Its function is
-always named `cleanup`, for consistency, and it stops the processes and removes what the
-script started, where that applies:
+You get traps wrong constantly, and the result is often processes left running. So a
+script that creates anything or starts processes uses this pattern. Its function is named
+`cleanup`, for consistency, and it stops the processes and removes what the script
+started, where that applies:
 
 ```sh
 tmp=$(mktemp -d) || exit 1
@@ -260,7 +280,7 @@ Node.js runs a `.mts` script directly, with no build step, by stripping the type
 compiling them. So syntax that needs code generated for it, such as `enum` or
 constructor parameter properties, makes Node stop with an error. Keep to erasable
 syntax: no `enum`, no constructor parameter properties, no `namespace` with runtime
-members, no `import =`.
+members, no `import =`. Use a union or `as const` and assign fields explicitly.
 
 ## A reusable tool for the SC lives in his dotfiles
 
